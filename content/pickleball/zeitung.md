@@ -1,4 +1,5 @@
 ---
+sport: pickleball
 title: Zeitung
 category: Exercise
 skill_requirement: All Levels

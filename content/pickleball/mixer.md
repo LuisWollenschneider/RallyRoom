@@ -1,4 +1,5 @@
 ---
+sport: pickleball
 title: Mixer
 category: Game
 skill_requirement: All Levels

@@ -1,4 +1,5 @@
 ---
+sport: pickleball
 title: Lob & Schmetterball
 category: Exercise
 skill_requirement: Intermediate

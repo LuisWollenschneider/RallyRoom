@@ -1,4 +1,5 @@
 ---
+sport: pickleball
 title: Dinken
 category: Exercise
 skill_requirement: All Levels
