@@ -77,7 +77,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
   font-family:var(--sans);font-size:0.7rem;transition:all 0.1s;
 }
 .chip-btn:hover{border-color:var(--ink-faint);color:var(--ink)}
-.chip-btn.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+/* category */
+.chip-btn[data-val="Exercise"].active{border-color:#4caf6e;background:rgba(76,175,110,.13);color:#4caf6e}
+.chip-btn[data-val="Drill"].active   {border-color:#4385d4;background:rgba(67,133,212,.13);color:#4385d4}
+.chip-btn[data-val="Game"].active    {border-color:#d4863a;background:rgba(212,134,58,.13);color:#d4863a}
+/* skill level */
+.chip-btn[data-val="Beginner"].active   {border-color:#4caf6e;background:rgba(76,175,110,.13);color:#4caf6e}
+.chip-btn[data-val="Intermediate"].active{border-color:#d4a843;background:rgba(212,168,67,.13);color:#d4a843}
+.chip-btn[data-val="Advanced"].active   {border-color:#d45c43;background:rgba(212,92,67,.13);color:#d45c43}
+.chip-btn[data-val="All Levels"].active {border-color:#4385d4;background:rgba(67,133,212,.13);color:#4385d4}
 .sport-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
 .sport-btn{
   display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -86,7 +94,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
   font-family:var(--sans);font-size:0.6rem;text-align:center;transition:all 0.1s;
 }
 .sport-btn:hover{border-color:var(--ink-faint);color:var(--ink)}
-.sport-btn.active{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.sport-btn[data-sport="pickleball"].active{border-color:#4caf6e;background:rgba(76,175,110,.13);color:#4caf6e}
+.sport-btn[data-sport="tennis"].active    {border-color:#d4763a;background:rgba(212,118,58,.13);color:#d4763a}
+.sport-btn[data-sport="beachtennis"].active{border-color:#e8a830;background:rgba(232,168,48,.13);color:#e8a830}
+.sport-btn[data-sport="padel"].active     {border-color:#43b5c8;background:rgba(67,181,200,.13);color:#43b5c8}
 .sport-btn img{width:28px;height:28px;object-fit:contain}
 
 /* ── Right main ── */
@@ -213,6 +224,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
 .modal-ok.danger{border-color:var(--red);background:rgba(212,92,67,.15);color:var(--red)}
 .modal-ok.danger:hover{background:rgba(212,92,67,.25)}
 
+/* ── Narrow screen block ── */
+#narrow-block{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:var(--bg);align-items:center;justify-content:center;flex-direction:column;gap:14px;
+  text-align:center;padding:32px;
+}
+#narrow-block h2{font-family:var(--serif);font-size:1.4rem;font-weight:300;font-style:italic;color:var(--ink)}
+#narrow-block p{font-size:0.82rem;color:var(--ink-muted);line-height:1.7;max-width:280px}
+#narrow-block a{color:var(--ink-faint);font-family:var(--mono);font-size:0.7rem;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){#narrow-block{display:flex}}
+
 /* ── Toast ── */
 #toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
@@ -224,6 +246,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
 </style>
 </head>
 <body>
+
+<div id="narrow-block" aria-hidden="true">
+  <h2>Zu schmal für den Editor</h2>
+  <p>Der Court-Editor braucht mindestens 900 px Breite. Bitte auf einem größeren Bildschirm öffnen.</p>
+  <a href="../">← Zurück zu Rally Room</a>
+</div>
 
 <div id="top-bar">
   <a class="back-link" href="../">← Rally Room</a>
@@ -248,6 +276,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
     <div class="field-section">
       <div class="field-label">Titel *</div>
       <input id="f-title" class="field-input" type="text" placeholder="Name der Übung" oninput="onFormChange()"/>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Kurzbeschreibung</div>
+      <input id="f-summary" class="field-input" type="text" placeholder="Einzeiler für die Übersicht" oninput="onFormChange()"/>
     </div>
 
     <div class="field-section">
@@ -299,11 +332,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
     <div class="field-section">
       <div class="field-label">Materialien</div>
       <input id="f-materials" class="field-input" type="text" placeholder="Hütchen, Bälle, … (leer = keine)" oninput="onFormChange()"/>
-    </div>
-
-    <div class="field-section">
-      <div class="field-label">Kurzbeschreibung</div>
-      <input id="f-summary" class="field-input" type="text" placeholder="Einzeiler für die Übersicht" oninput="onFormChange()"/>
     </div>
 
   </div>
@@ -397,11 +425,11 @@ const CAT_LABEL  = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
 const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
 
 // ── App state ─────────────────────────────────────────────────────────────────
-let currentSport    = "pickleball";
+let currentSport    = "tennis";
 let currentCategory = "Exercise";
 let currentSkillReq = "Beginner";
 let currentTab      = "court";
-let TC = getTCFor("pickleball");
+let TC = getTCFor("tennis");
 
 function getTCFor(id) {
   const s = SPORT_MAP[id];
@@ -859,7 +887,13 @@ function renderPreview() {
 
   const trainList = skillsV.split(",").map(s=>s.trim()).filter(Boolean);
   const matList   = matsV.split(",").map(s=>s.trim()).filter(Boolean);
-  const durStr    = durMin && durMax ? (durMin===durMax?`${durMin} min`:`${durMin}–${durMax} min`) : (durMin?`${durMin}+ min`:"");
+  const durStr    = durMin && durMax 
+        ? (durMin===durMax 
+              ?`${durMin} min`
+              :`${durMin}–${durMax} min`) 
+        : (durMin
+              ?`${durMin}+ min`
+              :`≤${durMax} min`);
 
   const catCls  = currentCategory.toLowerCase();
   const skillCls = currentSkillReq.toLowerCase().replace(/ /g, "-");

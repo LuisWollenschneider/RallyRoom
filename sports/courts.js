@@ -15,55 +15,6 @@
 
     const list = [
         {
-            id: "pickleball",
-            name: "Pickleball",
-            icon: "🥒",
-            description: "",
-            accent: "#4caf6e",
-            accentDim: "#2d5c3e",
-            teamA: "#4caf6e",
-            teamB: "#d45c43",
-            teamW: "#d4a843",
-
-            // Plastic ball with 26 holes
-            renderBall: function renderBall(mx, my, r, maskId) {
-                const br = r * 0.7,
-                    hr = br * 0.24;
-                const holePos = [
-                    [0, -0.9],
-                    [0.85, -0.27],
-                    [-0.85, -0.27],
-                    [-0.53, 0.73],
-                    [0.53, 0.73],
-                    [0, 0],
-                ];
-                return (
-                    `<defs><mask id="${maskId}"><circle cx="${mx}" cy="${my}" r="${br}" fill="white"/>${holePos.map(([hx, hy]) => `<circle cx="${mx + hx * br}" cy="${my + hy * br}" r="${hr}" fill="black"/>`).join("")}</mask></defs>` +
-                    `<circle cx="${mx}" cy="${my}" r="${br}" fill="#f5e642" stroke="#c0b020" stroke-width="1" mask="url(#${maskId})" opacity="0.9"/>`
-                );
-            },
-
-            // 20ft wide × 44ft long court, non-volley zone 7ft from net
-            courtBase: function courtBase(W, H) {
-                const net = 0.5,
-                    k = 7 / 44;
-                return `
-    <rect x="${-CMX}" y="${-CMY}" width="${W + 2 * CMX}" height="${H + 2 * CMY}" fill="#1e2d1e"/>
-    <rect width="${W}" height="${H}" fill="#2a4a2a" stroke="#4a7a4a" stroke-width="2"/>
-    <line x1="0" y1="${(net - k) * H}" x2="${W}" y2="${(net - k) * H}" stroke="#7aaa7a" stroke-width="1.5"/>
-    <line x1="0" y1="${(net + k) * H}" x2="${W}" y2="${(net + k) * H}" stroke="#7aaa7a" stroke-width="1.5"/>
-    <line x1="${W / 2}" y1="${(net + k) * H}" x2="${W / 2}" y2="${H}" stroke="#4a7a4a" stroke-width="1"/>
-    <line x1="${W / 2}" y1="0" x2="${W / 2}" y2="${(net - k) * H}" stroke="#4a7a4a" stroke-width="1"/>
-    <!-- Net -->
-    <line x1="-10" y1="${net * H}" x2="${W + 10}" y2="${net * H}" stroke="#e8e0c8" stroke-width="2.5" stroke-dasharray="5,4"/>
-    <text x="${W / 2}" y="${H * 0.97}" text-anchor="middle" fill="#4a7a4a" font-size="${W * 0.042}" font-family="DM Mono,monospace"></text>
-    <text x="${W / 2}" y="${H * 0.034}" text-anchor="middle" fill="#4a7a4a" font-size="${W * 0.042}" font-family="DM Mono,monospace"></text>
-    <text x="${W * 0.5}" y="${(net - k / 2) * H + 4}" fill="#4a9a4a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle" text-anchor="middle">Kitchen</text>
-    <text x="${W * 0.5}" y="${(net + k / 2) * H + 4}" fill="#4a9a4a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle" text-anchor="middle">Kitchen</text>`;
-            },
-        },
-
-        {
             id: "tennis",
             name: "Tennis",
             icon: "🎾",
@@ -164,7 +115,54 @@
     <text x="${W / 2}" y="${net * H - W * 0.06}" text-anchor="middle" fill="#a87030" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle"></text>`;
             },
         },
+        {
+            id: "pickleball",
+            name: "Pickleball",
+            icon: "🥒",
+            description: "",
+            accent: "#4caf6e",
+            accentDim: "#2d5c3e",
+            teamA: "#4caf6e",
+            teamB: "#d45c43",
+            teamW: "#d4a843",
 
+            // Plastic ball with 26 holes
+            renderBall: function renderBall(mx, my, r, maskId) {
+                const br = r * 0.7,
+                    hr = br * 0.24;
+                const holePos = [
+                    [0, -0.9],
+                    [0.85, -0.27],
+                    [-0.85, -0.27],
+                    [-0.53, 0.73],
+                    [0.53, 0.73],
+                    [0, 0],
+                ];
+                return (
+                    `<defs><mask id="${maskId}"><circle cx="${mx}" cy="${my}" r="${br}" fill="white"/>${holePos.map(([hx, hy]) => `<circle cx="${mx + hx * br}" cy="${my + hy * br}" r="${hr}" fill="black"/>`).join("")}</mask></defs>` +
+                    `<circle cx="${mx}" cy="${my}" r="${br}" fill="#f5e642" stroke="#c0b020" stroke-width="1" mask="url(#${maskId})" opacity="0.9"/>`
+                );
+            },
+
+            // 20ft wide × 44ft long court, non-volley zone 7ft from net
+            courtBase: function courtBase(W, H) {
+                const net = 0.5,
+                    k = 7 / 44;
+                return `
+    <rect x="${-CMX}" y="${-CMY}" width="${W + 2 * CMX}" height="${H + 2 * CMY}" fill="#1e2d1e"/>
+    <rect width="${W}" height="${H}" fill="#2a4a2a" stroke="#4a7a4a" stroke-width="2"/>
+    <line x1="0" y1="${(net - k) * H}" x2="${W}" y2="${(net - k) * H}" stroke="#7aaa7a" stroke-width="1.5"/>
+    <line x1="0" y1="${(net + k) * H}" x2="${W}" y2="${(net + k) * H}" stroke="#7aaa7a" stroke-width="1.5"/>
+    <line x1="${W / 2}" y1="${(net + k) * H}" x2="${W / 2}" y2="${H}" stroke="#4a7a4a" stroke-width="1"/>
+    <line x1="${W / 2}" y1="0" x2="${W / 2}" y2="${(net - k) * H}" stroke="#4a7a4a" stroke-width="1"/>
+    <!-- Net -->
+    <line x1="-10" y1="${net * H}" x2="${W + 10}" y2="${net * H}" stroke="#e8e0c8" stroke-width="2.5" stroke-dasharray="5,4"/>
+    <text x="${W / 2}" y="${H * 0.97}" text-anchor="middle" fill="#4a7a4a" font-size="${W * 0.042}" font-family="DM Mono,monospace"></text>
+    <text x="${W / 2}" y="${H * 0.034}" text-anchor="middle" fill="#4a7a4a" font-size="${W * 0.042}" font-family="DM Mono,monospace"></text>
+    <text x="${W * 0.5}" y="${(net - k / 2) * H + 4}" fill="#4a9a4a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle" text-anchor="middle">Kitchen</text>
+    <text x="${W * 0.5}" y="${(net + k / 2) * H + 4}" fill="#4a9a4a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle" text-anchor="middle">Kitchen</text>`;
+            },
+        },
         {
             id: "padel",
             name: "Padel",
