@@ -893,7 +893,9 @@ function renderPreview() {
               :`${durMin}–${durMax} min`) 
         : (durMin
               ?`${durMin}+ min`
-              :`≤${durMax} min`);
+              :(durMax 
+                  ?`≤${durMax} min`
+                  :""));
 
   const catCls  = currentCategory.toLowerCase();
   const skillCls = currentSkillReq.toLowerCase().replace(/ /g, "-");
