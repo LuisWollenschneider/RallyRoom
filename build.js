@@ -279,11 +279,6 @@ function buildSport(sport) {
                 skills_trained: Array.isArray(meta.skills_trained)
                     ? meta.skills_trained
                     : [],
-                tags: Array.isArray(meta.tags)
-                    ? meta.tags
-                    : meta.tags
-                      ? [meta.tags]
-                      : [],
                 players: meta.players || "",
                 duration: meta.duration || null,
                 materials: Object.keys(meta.materials || {}).length

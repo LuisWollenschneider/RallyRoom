@@ -55,6 +55,11 @@ async function main() {
     const players = (await ask("Players needed (e.g. 2–4): ")).trim();
     const durMin = (await ask("Duration min (minutes, e.g. 5): ")).trim();
     const durMax = (await ask("Duration max (minutes, e.g. 15): ")).trim();
+    const halfCourt = (await ask("Half court? (y/N): ")).trim().toLowerCase();
+    let halfCourtAvailable = false;
+    if (halfCourt === "y") {
+        halfCourtAvailable = true;
+    }
     const materials = (
         await ask("Materials needed (comma-separated, leave empty if none): ")
     ).trim();
@@ -65,7 +70,6 @@ async function main() {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);
-    const tagYaml = `[${tagList.join(", ")}]`;
     const trainYaml = trainList.length
         ? trainList.map((t) => `  - ${t}`).join("\n")
         : "";
@@ -92,6 +96,7 @@ category: ${category}
 skill_requirement: ${skillReq}
 skills_trained:
 ${trainYaml}
+half_court: ${halfCourtAvailable}
 players: ${players}
 duration: {min: ${durMin || 0}, max: ${durMax || durMin || 0}}
 materials:
