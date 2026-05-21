@@ -20,6 +20,7 @@ function mdToHtml(md) {
             (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`,
         )
         .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.+?)\*/g, "<em>$1</em>")
         .replace(/\_(.+?)\_/g, "<em>$1</em>")
