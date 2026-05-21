@@ -259,6 +259,8 @@ a.btn-ghost{text-decoration:none}
   <div class="top-sep"></div>
   <span class="top-title">Neue Übung</span>
   <div class="top-actions">
+    <input type="file" id="upload-input" accept=".md" style="display:none" onchange="handleUpload(event)"/>
+    <button class="btn-ghost" onclick="document.getElementById('upload-input').click()">↑ Öffnen</button>
     <button id="btn-download" class="btn-primary" onclick="downloadMd()">↓ .md herunterladen</button>
     <button id="btn-save" class="btn-primary" onclick="saveMd()" style="display:none">Speichern</button>
     <a class="btn-ghost" href="https://github.com/LuisWollenschneider/RallyRoom/blob/main/README.md" target="_blank" rel="noopener">Anleitung →</a>
@@ -474,28 +476,35 @@ function setSport(id) {
 function setCat(btn) {
   currentCategory = btn.dataset.val;
   document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b === btn));
+  saveToStorage();
   if (currentTab === "preview") renderPreview();
 }
 function setSkill(btn) {
   currentSkillReq = btn.dataset.val;
   document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b === btn));
+  saveToStorage();
   if (currentTab === "preview") renderPreview();
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-function setTab(tab) {
+const TAB_HASH = { court: "#court", markdown: "#md", preview: "#preview" };
+const HASH_TAB = { "#court": "court", "#md": "markdown", "#preview": "preview" };
+
+function setTab(tab, { pushState = true } = {}) {
   currentTab = tab;
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".tab-content").forEach(el => { el.style.display = "none"; el.classList.remove("active"); });
   const el = document.getElementById("tab-" + tab);
   el.style.display = "";
   el.classList.add("active");
+  if (pushState) history.replaceState(null, "", TAB_HASH[tab] || "#court");
   if (tab === "preview") renderPreview();
   if (tab === "court") render();
 }
 
 // ── Form change ───────────────────────────────────────────────────────────────
 function onFormChange() {
+  saveToStorage();
   if (currentTab === "preview") renderPreview();
 }
 
@@ -681,7 +690,7 @@ function updateProp(key, value) {
   if (state.selected) { state.selected[key] = value; renderCanvas(); }
 }
 
-function render() { renderCanvas(); updateProps(); }
+function render() { renderCanvas(); updateProps(); saveToStorage(); }
 
 // ── SVG event handling ────────────────────────────────────────────────────────
 function bindSvgEvents() {
@@ -789,11 +798,27 @@ function deleteSelected() {
   render();
 }
 
+let _preShiftTool = null;
+
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") { closeModal("clear-modal"); return; }
+  if (e.key === "Shift" && !e.repeat) {
+    const tag = document.activeElement?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    if (state.tool !== "select") { _preShiftTool = state.tool; setTool("select"); }
+    return;
+  }
   if ((e.key === "Backspace" || e.key === "Delete") && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
     e.preventDefault(); deleteSelected();
   }
+});
+
+document.addEventListener("keyup", e => {
+  if (e.key === "Shift" && _preShiftTool) { setTool(_preShiftTool); _preShiftTool = null; }
+});
+
+window.addEventListener("blur", () => {
+  if (_preShiftTool) { setTool(_preShiftTool); _preShiftTool = null; }
 });
 
 // ── Modals ────────────────────────────────────────────────────────────────────
@@ -981,6 +1006,7 @@ function generateMd() {
   const matYaml   = matList.map(m=>`  - ${m}`).join("\n");
 
   return `---
+sport: ${currentSport}
 title: ${title}
 category: ${currentCategory}
 skill_requirement: ${currentSkillReq}
@@ -1041,8 +1067,149 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove("show"), 2600);
 }
 
+// ── LocalStorage ─────────────────────────────────────────────────────────────
+const LS_KEY = "rally-room-editor";
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      sport: currentSport, category: currentCategory, skillReq: currentSkillReq,
+      title:     document.getElementById("f-title").value,
+      players:   document.getElementById("f-players").value,
+      durMin:    document.getElementById("f-dur-min").value,
+      durMax:    document.getElementById("f-dur-max").value,
+      halfCourt: document.getElementById("f-half-court").checked,
+      skills:    document.getElementById("f-skills").value,
+      materials: document.getElementById("f-materials").value,
+      summary:   document.getElementById("f-summary").value,
+      body:      document.getElementById("f-body").value,
+      court: { players: state.players, arrows: state.arrows, markers: state.markers, zones: state.zones, nextId: state.nextId },
+    }));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (d.sport && SPORT_MAP[d.sport]) { currentSport = d.sport; TC = getTCFor(d.sport); document.querySelectorAll(".sport-btn").forEach(b => b.classList.toggle("active", b.dataset.sport === d.sport)); }
+    if (d.category) { currentCategory = d.category; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.category)); }
+    if (d.skillReq) { currentSkillReq = d.skillReq; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.skillReq)); }
+    document.getElementById("f-title").value     = d.title     || "";
+    document.getElementById("f-players").value   = d.players   || "";
+    document.getElementById("f-dur-min").value   = d.durMin    || "";
+    document.getElementById("f-dur-max").value   = d.durMax    || "";
+    document.getElementById("f-half-court").checked = !!d.halfCourt;
+    document.getElementById("f-skills").value    = d.skills    || "";
+    document.getElementById("f-materials").value = d.materials || "";
+    document.getElementById("f-summary").value   = d.summary   || "";
+    document.getElementById("f-body").value      = d.body      || "";
+    if (d.court) {
+      state.players = d.court.players || []; state.arrows  = d.court.arrows  || [];
+      state.markers = d.court.markers || []; state.zones   = d.court.zones   || [];
+      state.nextId  = d.court.nextId  || 1;
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── .md upload + parsing ──────────────────────────────────────────────────────
+function parseYamlList(text, key) {
+  const re = new RegExp(`${key}:\\s*\\n((?:\\s+-.+\\n?)+)`, "m");
+  const m = text.match(re);
+  if (!m) return [];
+  return m[1].trim().split("\n").map(line => {
+    const inner = line.trim().replace(/^-\s*/, "").replace(/^\{|\}$/g, "").trim();
+    const obj = {};
+    inner.split(/,(?![^']*')/).forEach(pair => {
+      const colon = pair.indexOf(":");
+      if (colon === -1) return;
+      const k = pair.slice(0, colon).trim();
+      let v = pair.slice(colon + 1).trim().replace(/^['"]|['"]$/g, "");
+      if (v === "true") v = true; else if (v === "false") v = false;
+      else if (v !== "" && !isNaN(v)) v = Number(v);
+      obj[k] = v;
+    });
+    return obj;
+  }).filter(o => Object.keys(o).length > 0);
+}
+
+function parseFrontmatter(fm) {
+  const result = {};
+  let listKey = null;
+  for (const line of fm.split("\n")) {
+    const listM = line.match(/^\s+- (.+)/);
+    if (listM) { if (listKey) (result[listKey] = result[listKey] || []).push(listM[1].trim()); continue; }
+    const kvM = line.match(/^([\w_]+):\s*(.*)/);
+    if (!kvM) continue;
+    listKey = null;
+    const [, key, val] = kvM;
+    const v = val.trim();
+    if (v === "") { listKey = key; result[key] = []; }
+    else if (v.startsWith("{")) {
+      const obj = {};
+      v.slice(1, -1).split(",").forEach(p => { const [k,w] = p.split(":").map(s=>s.trim()); obj[k] = isNaN(w)?w:Number(w); });
+      result[key] = obj;
+    } else { result[key] = v === "true" ? true : v === "false" ? false : v; }
+  }
+  return result;
+}
+
+function populateFromParsed(meta, body, rawFm) {
+  if (meta.sport && SPORT_MAP[meta.sport]) setSport(meta.sport);
+  if (meta.category)          { currentCategory = meta.category; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === meta.category)); }
+  if (meta.skill_requirement) { currentSkillReq = meta.skill_requirement; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === meta.skill_requirement)); }
+  document.getElementById("f-title").value     = meta.title   || "";
+  document.getElementById("f-players").value   = meta.players || "";
+  document.getElementById("f-dur-min").value   = meta.duration?.min ?? "";
+  document.getElementById("f-dur-max").value   = meta.duration?.max ?? "";
+  document.getElementById("f-half-court").checked = !!meta.half_court;
+  document.getElementById("f-skills").value    = (meta.skills_trained || []).join(", ");
+  document.getElementById("f-materials").value = (meta.materials      || []).join(", ");
+  document.getElementById("f-summary").value   = meta.summary || "";
+  document.getElementById("f-body").value      = body;
+  state.players = parseYamlList(rawFm, "players");
+  state.arrows  = parseYamlList(rawFm, "arrows");
+  state.markers = parseYamlList(rawFm, "markers");
+  state.zones   = parseYamlList(rawFm, "zones");
+  const nums = [...state.players,...state.arrows,...state.markers,...state.zones]
+    .map(o => o.id).filter(id => typeof id === "string" && id.startsWith("e"))
+    .map(id => parseInt(id.slice(1))).filter(n => !isNaN(n));
+  state.nextId = nums.length ? Math.max(...nums) + 1 : 1;
+  state.selected = null;
+  render();
+  saveToStorage();
+}
+
+function readMdFile(file) {
+  if (!file || !file.name.endsWith(".md")) { showToast("⚠ Nur .md Dateien"); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const parts = text.split(/^---[ \t]*$/m);
+    if (parts.length < 3) { showToast("⚠ Kein gültiges Frontmatter gefunden"); return; }
+    const rawFm = parts[1];
+    const body  = parts.slice(2).join("---").trim();
+    const meta  = parseFrontmatter(rawFm);
+    populateFromParsed(meta, body, rawFm);
+    showToast("✓ " + (meta.title || file.name) + " geladen");
+  };
+  reader.readAsText(file);
+}
+
+function handleUpload(evt) { const f = evt.target.files[0]; evt.target.value = ""; readMdFile(f); }
+
+document.addEventListener("dragover", e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; });
+document.addEventListener("drop", e => {
+  e.preventDefault();
+  const file = [...(e.dataTransfer.files||[])].find(f => f.name.endsWith(".md"));
+  if (file) readMdFile(file);
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-render();
+loadFromStorage();
+setTab(HASH_TAB[location.hash] || "court", { pushState: false });
 </script>
 </body>
 </html>
