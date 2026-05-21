@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sports Coach Notebook</title>
+<link rel="icon" href="favicon.ico"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1f1a;--surface:#212621;--card:#282e28;--border:#313831;
+  --ink:#e8ede4;--ink-muted:#8a9486;--ink-faint:#4a5248;
+  --mono:'DM Mono',monospace;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+html{font-size:20px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Background ── */
+.bg-courts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-courts svg{position:absolute;inset:0;width:100%;height:100%}
+body>*:not(.bg-courts){position:relative;z-index:1}
+
+/* ── Header ── */
+.site-header{
+  padding:40px 40px 0;
+  display:flex;align-items:center;gap:12px;
+}
+.logo-img{width:32px;height:32px;object-fit:contain}
+.site-title{font-family:var(--serif);font-size:1.4rem;font-weight:600;font-style:italic;color:var(--ink)}
+
+/* ── Hero ── */
+.hero{
+  padding:56px 40px 40px;
+}
+.hero-eyebrow{
+  font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--ink-faint);font-family:var(--mono);margin-bottom:14px;
+}
+.hero-heading{
+  font-family:var(--serif);font-size:2.8rem;font-weight:300;font-style:italic;
+  line-height:1.15;color:var(--ink);margin-bottom:18px;
+}
+.hero-heading strong{font-weight:600}
+.hero-desc{
+  font-size:0.9rem;color:var(--ink-muted);line-height:1.8;max-width:520px;
+}
+
+/* ── Sport grid ── */
+.sports-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:16px;
+  padding:0 40px 80px;
+  max-width:1100px;
+}
+.sport-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:28px;cursor:pointer;transition:border-color 0.18s,transform 0.18s,background 0.18s;
+  text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;gap:14px;
+  position:relative;overflow:hidden;
+}
+.sport-card::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg, var(--card-accent-a) 0%, transparent 60%);
+  opacity:0;transition:opacity 0.25s;
+}
+.sport-card:hover{border-color:var(--card-accent);transform:translateY(-2px);background:var(--surface)}
+.sport-card:hover::before{opacity:1}
+.sport-card-logo{
+  position:absolute;
+  right:-10px;top:-10px;
+  width:200px;border-radius:50%;object-fit:contain;
+  aspect-ratio: 1/1;
+  opacity:0.1;pointer-events:none;z-index:0;
+  transition:opacity 0.25s;
+}
+.sport-card:hover .sport-card-logo{opacity:0.28}
+.sport-card-top{display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:1}
+.sport-card-text{
+  padding-right: 60px;
+  flex:1;min-width:0
+}
+.sport-court-preview{
+  width:56px;flex-shrink:0;opacity:0.7;border-radius:4px;overflow:hidden;
+  border:1px solid var(--border);aspect-ratio:26/54;
+  transition:opacity 0.18s;
+}
+.sport-card:hover .sport-court-preview{opacity:1}
+.sport-court-preview svg{width:100%;height:100%}
+.sport-name{
+  font-family:var(--serif);font-size:1.3rem;font-weight:600;font-style:italic;
+  color:var(--card-accent);line-height:1.2;margin-bottom:4px;
+}
+.sport-desc{font-size:0.82rem;color:var(--ink-muted);line-height:1.6}
+.sport-arrow{
+  margin-top:auto;font-size:0.72rem;font-family:var(--mono);
+  color:var(--card-accent);letter-spacing:0.05em;
+  display:flex;align-items:center;gap:6px;
+}
+
+/* Sport-specific accent colors */
+.sport-card[data-sport="pickleball"] {--card-accent:#4caf6e;--card-accent-a:rgba(76,175,110,0.08)}
+.sport-card[data-sport="tennis"]     {--card-accent:#d4763a;--card-accent-a:rgba(212,118,58,0.08)}
+.sport-card[data-sport="beachtennis"]{--card-accent:#e8a830;--card-accent-a:rgba(232,168,48,0.08)}
+.sport-card[data-sport="padel"]      {--card-accent:#43b5c8;--card-accent-a:rgba(67,181,200,0.08)}
+
+/* ── Footer ── */
+.site-footer{
+  margin-top:auto;padding:20px 40px;border-top:1px solid var(--border);
+  font-size:0.65rem;color:var(--ink-faint);display:flex;align-items:center;gap:12px;
+}
+.site-footer a{color:var(--ink-faint);text-decoration:underline;text-underline-offset:3px}
+.site-footer a:hover{color:var(--ink-muted)}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .site-header,.hero{padding-left:20px;padding-right:20px}
+  .hero{padding-top:36px}
+  .hero-heading{font-size:2rem}
+  .sports-grid{padding:0 20px 60px;grid-template-columns:1fr}
+  .site-footer{padding:20px}
+  .bg-switcher{bottom:12px;right:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-courts" aria-hidden="true">
+  <svg viewBox="0 0 900 1100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <!-- Tennis court — large, left, -9° -->
+    <g transform="translate(60,80) rotate(-9,140,310)" opacity="0.07" stroke="white" fill="none">
+      <rect x="0" y="0" width="280" height="610" stroke-width="2"/>
+      <line x1="35"  y1="0"   x2="35"  y2="610" stroke-width="1.2"/>
+      <line x1="245" y1="0"   x2="245" y2="610" stroke-width="1.2"/>
+      <line x1="0"   y1="305" x2="280" y2="305" stroke-width="2.8"/>
+      <line x1="35"  y1="164" x2="245" y2="164" stroke-width="1.2"/>
+      <line x1="35"  y1="446" x2="245" y2="446" stroke-width="1.2"/>
+      <line x1="140" y1="164" x2="140" y2="446" stroke-width="1.2"/>
+    </g>
+    <!-- Pickleball court — top-right, +11° -->
+    <g transform="translate(550,-60) rotate(11,110,244)" opacity="0.055" stroke="white" fill="none">
+      <rect x="0" y="0" width="220" height="484" stroke-width="1.8"/>
+      <line x1="0"   y1="165" x2="220" y2="165" stroke-width="1.2"/>
+      <line x1="0"   y1="319" x2="220" y2="319" stroke-width="1.2"/>
+      <line x1="0"   y1="242" x2="220" y2="242" stroke-width="2.5"/>
+      <line x1="110" y1="165" x2="110" y2="319" stroke-width="1.2"/>
+    </g>
+    <!-- Tennis court fragment — bottom-right, -6° -->
+    <g transform="translate(480,620) rotate(-6,170,370)" opacity="0.045" stroke="white" fill="none">
+      <rect x="0" y="0" width="340" height="740" stroke-width="1.8"/>
+      <line x1="42"  y1="0"   x2="42"  y2="740" stroke-width="1"/>
+      <line x1="298" y1="0"   x2="298" y2="740" stroke-width="1"/>
+      <line x1="0"   y1="370" x2="340" y2="370" stroke-width="2.5"/>
+      <line x1="42"  y1="200" x2="298" y2="200" stroke-width="1"/>
+      <line x1="42"  y1="540" x2="298" y2="540" stroke-width="1"/>
+      <line x1="170" y1="200" x2="170" y2="540" stroke-width="1"/>
+    </g>
+  </svg>
+</div>
+
+<header class="site-header">
+  <img class="logo-img" src="logo.png" alt=""/>
+  <div>
+    <div class="site-title">Rally Room</div>
+  </div>
+</header>
+
+<section class="hero">
+  <h1 class="hero-heading">
+    Übungen, Taktiken und Spiele, gemacht für <strong>Trainer</strong>
+  </h1>
+  <p class="hero-desc">Übungen für Ballbeherrschung, Beinarbeit, taktisches Verständnis und vieles mehr, für Spieler:innen aller Leistungsstufen.</p>
+</section>
+
+<div class="sports-grid" id="sports-grid">
+  <!-- cards injected by JS -->
+</div>
+
+<footer class="site-footer">
+  <a href="https://github.com/LuisWollenschneider/RallyRoom" target="_blank">GitHub</a>
+  <span>·</span>
+  <span>By Luis Wollenschneider</span>
+</footer>
+
+<script src="courts.js"></script>
+<script>
+/* ── Court preview cards ── */
+function courtPreviewSvg(sport) {
+  const W=200, H=440, CMX=30, CMY=50;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-CMX} ${-CMY} ${W+2*CMX} ${H+2*CMY}" style="width:100%;height:100%">${sport.courtBase(W, H)}</svg>`;
+}
+
+document.getElementById("sports-grid").innerHTML = SPORT_COURTS.map(s => `
+  <a class="sport-card" data-sport="${s.id}" href="${s.id}/">
+    <img class="sport-card-logo" src="logos/${s.id}.png" alt=""/>
+    <div class="sport-card-top">
+      <div class="sport-court-preview">${courtPreviewSvg(s)}</div>
+      <div class="sport-card-text">
+        <div class="sport-name">${s.name}</div>
+        <div class="sport-desc">${s.description}</div>
+      </div>
+    </div>
+    <div class="sport-arrow" style="padding-left:96px">Zu den Übungen →</div>
+  </a>
+`).join("");
+
+</script>
+</body>
+</html>

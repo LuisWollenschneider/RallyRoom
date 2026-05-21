@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>{{SPORT_NAME}} Coach</title>
+<link rel="icon" href="../favicon.ico"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1f1a;--surface:#212621;--card:#282e28;--border:#313831;
+  --ink:#e8ede4;--ink-muted:#8a9486;--ink-faint:#4a5248;
+  {{SPORT_CSS}}
+  --yellow:#d4a843;--red:#d45c43;--blue:#4385d4;
+  --team-a:{{TEAM_A}};--team-b:{{TEAM_B}};--team-w:{{TEAM_W}};
+  --sidebar:244px;
+  --mono:'DM Mono',monospace;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+html{font-size:20px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;display:flex;min-height:100vh}
+
+/* ── Background ── */
+.bg-sport-court{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-sport-court svg{position:absolute;inset:0;width:100%;height:100%}
+.bg-sport-glow{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 10% 18%, color-mix(in srgb,var(--accent) 9%,transparent) 0%,transparent 65%),
+    radial-gradient(ellipse 52% 45% at 90% 85%, color-mix(in srgb,var(--accent) 6%,transparent) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 35% at 68% 4%,  color-mix(in srgb,var(--accent) 5%,transparent) 0%,transparent 55%);
+}
+body>*:not(.bg-sport-court):not(.bg-sport-glow){position:relative;z-index:1}
+
+a{color:var(--accent);text-decoration:none;transition:color 0.12s;text-decoration:underline;
+text-decoration-thickness:1.5px;text-underline-offset:3px}
+a[target="_blank"]::after{
+  content:"↗";font-size:0.7em;margin-left:3px;display:inline-block;
+  transition:margin-left 0.12s;
+}
+a[target="_blank"]:hover::after{margin-left:6px}
+.highlight code{color:var(--accent) !important;}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+#sidebar{
+  width:var(--sidebar);min-height:100vh;background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:22px 14px 18px;
+  position:fixed;left:0;top:0;bottom:0;overflow-y:auto;gap:0;
+}
+#sidebar hr{border:none;border-top:1px solid var(--border);margin-top:10px;margin-bottom:10px}
+.logo-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.logo-img{width:50px;aspect-ratio: 1/1;object-fit:contain;flex-shrink:0}
+.logo-text{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--accent);letter-spacing:0.03em;font-style:italic;}
+.logo-sub{font-size:0.65rem;color:var(--ink-faint);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px}
+.back-to-home{
+  display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;
+  color:var(--ink-faint);text-decoration:none;margin-bottom:14px;
+  transition:color 0.12s;letter-spacing:0.05em;text-transform:uppercase;
+}
+.back-to-home:hover{color:var(--ink-muted)}
+
+.sb-section{margin-bottom:18px}
+.sb-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;font-weight:500;display:block}
+
+#search{
+  width:100%;padding:7px 10px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink);border-radius:6px;
+  font-family:var(--sans);font-size:0.82rem;outline:none;margin-bottom:18px;
+}
+#search::placeholder{color:var(--ink-faint)}
+#search:focus{border-color:var(--accent-dim)}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.72rem;transition:all 0.1s;
+}
+
+.chip:hover{border-color:var(--ink-faint);color:var(--ink)}
+.chip.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.chip.sk-beginner.active{background:rgba(76,175,110,0.15);border-color:#4caf6e;color:#4caf6e}
+.chip.sk-intermediate.active{background:rgba(212,168,67,0.15);border-color:#d4a843;color:#d4a843}
+.chip.sk-advanced.active{background:rgba(212,92,67,0.15);border-color:#d45c43;color:#d45c43}
+.chip.sk-all.active{background:rgba(67,133,212,0.15);border-color:#4385d4;color:#4385d4}
+
+.chip.danger{border-color:var(--red);color:var(--red)}
+.chip.danger:hover{border-color:var(--red);color:#ddd;background:var(--red)}
+.chip.danger.active{background:rgba(212,92,67,0.15);border-color:#d45c43;color:#d45c43}
+
+#skills-list{display:flex;flex-wrap:wrap;gap:4px}
+
+.sb-count{font-size:0.7rem;color:var(--ink-faint);font-family:var(--mono);margin-bottom:0}
+.duration-row{display:flex;align-items:center;gap:6px}
+.duration-input{width:52px;padding:5px 7px;background:var(--card);border:1px solid var(--border);color:var(--ink);border-radius:5px;font-family:var(--mono);font-size:0.78rem;outline:none;-moz-appearance:textfield}
+.duration-input::-webkit-outer-spin-button,.duration-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.duration-input:focus{border-color:var(--accent-dim)}
+.duration-sep{font-size:0.75rem;color:var(--ink-faint)}
+.sb-footer{
+  margin-top:auto;font-size:0.65rem;color:var(--ink-muted);line-height:1.75;
+  padding-top:14px;border-top:1px solid var(--border);
+}
+.sb-footer code{font-family:var(--mono);color:var(--accent-dim);font-size:0.65rem}
+
+/* ── Main ─────────────────────────────────────────────── */
+#main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+.view{display:none;padding:32px 32px 64px;max-width:1080px}
+.view.active{display:block}
+
+/* ── Badges ───────────────────────────────────────────── */
+.badge{
+  font-size:0.58rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;
+  padding:3px 8px;border-radius:20px;white-space:nowrap;font-family:var(--mono);
+  display:inline-block;
+}
+.badge-exercise{background:#1e3626;color:#4caf6e}
+.badge-drill{background:#1a2e3a;color:#4385d4}
+.badge-game{background:#3a2618;color:#d4863a}
+.badge-beginner{background:rgba(76,175,110,0.15);color:#4caf6e}
+.badge-intermediate{background:rgba(212,168,67,0.15);color:#d4a843}
+.badge-advanced{background:rgba(212,92,67,0.15);color:#d45c43}
+.badge-all-levels{background:rgba(67,133,212,0.15);color:#4385d4}
+
+/* ── List view ────────────────────────────────────────── */
+.entry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:13px}
+.entry-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:17px;cursor:pointer;transition:border-color 0.15s,transform 0.15s;
+  display:flex;flex-direction:column;gap:8px;
+}
+.entry-card:hover{border-color:var(--accent-dim);transform:translateY(-1px)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.card-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+.card-title{font-family:var(--serif);font-size:1rem;font-weight:600;line-height:1.3;font-style:italic;}
+.card-summary{font-size:0.8rem;color:var(--ink-muted);line-height:1.5}
+.card-meta{display:flex;gap:10px;font-size:0.7rem;color:var(--ink-muted);font-family:var(--mono);align-items:center}
+.card-meta svg{opacity:0.75;flex-shrink:0}
+.card-skills{display:flex;flex-wrap:wrap;gap:3px}
+.skill-tag{font-size:0.64rem;font-family:var(--mono);background:var(--surface);color:var(--ink-faint);padding:2px 7px;border-radius:20px;border:1px solid var(--border)}
+.court-thumb{border-radius:5px;overflow:hidden;border:1px solid var(--border);width:68px;flex-shrink:0;aspect-ratio:26/54}
+
+/* ── Detail view ──────────────────────────────────────── */
+#view-entry{max-width:900px}
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;background:none;border:none;
+  color:var(--ink-muted);font-family:var(--sans);font-size:0.8rem;
+  cursor:pointer;padding:0;margin-bottom:26px;transition:color 0.12s;
+}
+.back-btn:hover{color:var(--ink)}
+.entry-layout{display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:start}
+.court-inline{display:none}
+.court-wrap{cursor:pointer;transition:filter 0.15s}
+.court-wrap:hover{filter:brightness(1.12)}
+@media(max-width:780px){
+  .entry-layout{grid-template-columns:1fr}
+  .court-panel{display:none}
+  .court-inline{display:flex;gap:14px;align-items:flex-start;margin-bottom:22px}
+  .court-inline .court-wrap{width:110px;flex-shrink:0}
+  .court-inline .court-info{
+    margin-top:0
+  }
+}
+
+/* ── Court modal ─────────────────────────────────────────── */
+#court-modal{
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#court-modal.open{display:flex}
+.court-modal-inner{
+  position:relative;
+  height:min(88vh,calc(80vw * 54/26));
+  width:min(80vw,calc(88vh * 26/54));
+}
+.court-modal-inner svg{width:100%;height:100%}
+#court-modal-close{
+  position:absolute;top:-34px;right:0;
+  background:none;border:none;color:rgba(255,255,255,0.6);
+  font-family:var(--sans);font-size:0.8rem;cursor:pointer;
+  display:flex;align-items:center;gap:5px;padding:4px;
+}
+#court-modal-close:hover{color:#fff}
+.entry-byline{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.entry-heading{font-family:var(--serif);font-size:1.9rem;font-weight:300;font-style:italic;line-height:1.2;margin-bottom:8px}
+.entry-trained{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px}
+.entry-body{font-size:0.9rem;line-height:1.8;color:#c0c8bc}
+.entry-body h2{font-family:var(--serif);font-size:1.05rem;font-weight:600;margin:1.6em 0 0.4em;color:var(--ink)}
+.entry-body h3{font-family:var(--serif);font-size:0.9rem;font-style:italic;font-weight:300;margin:1.4em 0 0.35em;color:var(--ink-muted)}
+.entry-body p{margin-bottom:0.85em}
+.entry-body ul,.entry-body ol{margin:0 0 0.85em 1.4em}
+.entry-body li{margin-bottom:0.3em}
+.entry-body strong{color:var(--ink);font-weight:500}
+.entry-body code{font-family:var(--mono);font-size:0.83em;background:var(--border);padding:1px 5px;border-radius:3px}
+.entry-body pre{background:var(--surface);border:1px solid var(--border);padding:14px;border-radius:6px;overflow-x:auto;margin:1em 0;font-family:var(--mono);font-size:0.8rem;line-height:1.6}
+.court-panel{position:sticky;top:28px}
+.court-panel-label{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+.court-wrap{width:100%;aspect-ratio:26/54;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.court-wrap svg{width:100%;height:100%}
+.court-info{margin-top:13px;background:var(--card);border:1px solid var(--border);border-radius:7px;padding:11px}
+.info-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.76rem;border-bottom:1px solid var(--border);gap:10px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--ink);font-family:var(--mono);font-size:0.65rem}
+.info-value{color:var(--ink-muted);font-family:var(--mono);font-size:0.65rem}
+.info-value.danger{color:var(--red)}
+.empty{text-align:center;padding:60px 0;color:var(--ink-faint);font-family:var(--serif);font-style:italic}
+
+/* ── Mobile header ───────────────────────────────────────── */
+#mobile-header{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:200;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:10px 16px;align-items:center;justify-content:space-between;height:52px;
+}
+.mob-logo{display:flex;align-items:center;gap:8px}
+.mob-logo-text{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--accent)}
+.mob-logo-img{width:30px;height:30px;object-fit:contain}
+#menu-btn{
+  background:none;border:none;color:var(--ink-muted);cursor:pointer;
+  padding:6px;display:flex;flex-direction:column;gap:4px;
+}
+#menu-btn span{display:block;width:20px;height:2px;background:currentColor;border-radius:2px;transition:all 0.2s}
+#menu-btn:hover{color:var(--ink)}
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);
+  z-index:300;backdrop-filter:blur(2px);
+}
+
+/* ── Entry view: hide sidebar, center content ────────────── */
+body.entry-view #sidebar{display:none}
+body.entry-view #sidebar-overlay{display:none!important}
+body.entry-view #main{margin-left:0}
+body.entry-view #view-entry{margin:0 auto}
+body.entry-view #mob-back{display:flex}
+body.entry-view #menu-btn{display:none}
+
+/* ── Mobile responsive ───────────────────────────────────── */
+@media(max-width:780px){
+  #mobile-header{display:flex;}
+  #main{margin-left:0;padding-top:52px;}
+  .view{padding:20px 16px 48px;}
+  #sidebar{
+    transform:translateX(-100%);
+    transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    z-index:400;
+  }
+  body.sidebar-open #sidebar{transform:translateX(0);}
+  body.sidebar-open #sidebar-overlay{display:block;}
+  .info-row{font-size:0.7rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-sport-court" aria-hidden="true">
+  <svg id="bg-court-svg" viewBox="0 0 900 1100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+<div class="bg-sport-glow" aria-hidden="true"></div>
+
+<header id="mobile-header">
+  <button id="mob-back" onclick="showView('list',true)" aria-label="Back to list"
+    style="display:none;background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;font-size:1.1rem;line-height:1">←</button>
+  <div class="mob-logo">
+    <img class="mob-logo-img" src="../logos/{{SPORT_ID}}.png" alt=""/>
+    <span class="mob-logo-text">{{SPORT_NAME}}</span>
+  </div>
+  <button id="menu-btn" onclick="toggleSidebar()" aria-label="Open filters">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div id="court-modal" onclick="closeCourtModal()">
+  <div class="court-modal-inner" onclick="event.stopPropagation()">
+    <button id="court-modal-close" onclick="closeCourtModal()">✕ Close</button>
+    <div id="court-modal-svg"></div>
+  </div>
+</div>
+
+<nav id="sidebar">
+  <a class="back-to-home" href="../">← Alle Sportarten</a>
+  <div class="logo-row">
+    <img class="logo-img" src="../logos/{{SPORT_ID}}.png" alt=""/>
+    <span class="logo-text">{{SPORT_NAME}}</span>
+  </div>
+
+  <hr/>
+
+  <input id="search" type="text" placeholder="Suche…" oninput="filterEntries()"/>
+
+  <div class="sb-section">
+    <span class="sb-label">Kategorie</span>
+    <div class="chips" id="cat-chips">
+      <button class="chip active" data-cat="" onclick="setCat('')">All</button>
+      <button class="chip" data-cat="Drill" onclick="setCat('Drill')">Korb-Übung</button>
+      <button class="chip" data-cat="Exercise" onclick="setCat('Exercise')">Übung</button>
+      <button class="chip" data-cat="Game" onclick="setCat('Game')">Spiel</button>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Skill Level</span>
+    <div class="chips" id="skill-chips">
+      <button class="chip active" data-skill="" onclick="setSkill('')">All</button>
+      <button class="chip sk-beginner" data-skill="Beginner" onclick="setSkill('Beginner')">Beginner</button>
+      <button class="chip sk-intermediate" data-skill="Intermediate" onclick="setSkill('Intermediate')">
+        Fortgeschrittene
+      </button>
+      <button class="chip sk-advanced" data-skill="Advanced" onclick="setSkill('Advanced')">
+        Experten
+      </button>
+      <button class="chip sk-all" data-skill="All Levels" onclick="setSkill('All Levels')">Alle Niveaus</button>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Court</span>
+    <div class="chips">
+      <button class="chip" onclick="toggleHalfCourt(this)">½ Half court</button>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Kompetenzen</span>
+    <div class="chips" id="skills-list"></div>
+  </div>
+
+  <div class="sb-section" id="materials-section" style="display:none">
+    <span class="sb-label">Materialien</span>
+    <div class="chips" id="materials-list"></div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Dauer</span>
+    <div class="duration-row">
+      <input class="duration-input" id="dur-min" type="number" min="0" placeholder="0" oninput="setDuration()"/>
+      <span class="duration-sep">–</span>
+      <input class="duration-input" id="dur-max" type="number" min="0" placeholder="∞" oninput="setDuration()"/>
+      <span class="duration-sep">min</span>
+    </div>
+  </div>
+
+  <div class="sb-count" id="entry-count"></div>
+
+  <div class="sb-footer">
+    <a href="https://github.com/LuisWollenschneider/RallyRoom" target="_blank">GitHub</a>
+    <br/>
+    <span class="highlight">By <a href="https://ko-fi.com/luiswo" target="_blank"><code>Luis Wollenschneider</code></a></span>
+  </div>
+</nav>
+
+<main id="main">
+  <div id="view-list" class="view active">
+    <div class="entry-grid" id="entry-grid"></div>
+    <div class="empty" id="empty-state" style="display:none">Keine Einträge gefunden. Versuche, die Filter zu ändern.</div>
+  </div>
+
+  <div id="view-entry" class="view">
+    <button class="back-btn" onclick="showView('list',true)">← Zurück zur Übersicht</button>
+    <div id="entry-content"></div>
+  </div>
+</main>
+
+<script>
+// ── Sport config (injected by build.js) ────────────────────────────────────────
+{{SPORT_JS}}
+
+// ── Court renderer ─────────────────────────────────────────────────────────────
+const AC = { ball:"#f5e642", move:"#7ab3f5", screen:"#c084f5", line:"#b8c8b4" };
+const CMX=30, CMY=50;
+
+function courtDefs(sfx) {
+  return `<defs>
+    <marker id="ab${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
+    <marker id="am${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
+    <marker id="as${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+    <marker id="abr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
+    <marker id="amr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
+    <marker id="asr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+  </defs>`;
+}
+
+function renderDiagram(d, W, H, sfx) {
+  if (!d) return "";
+  let s = "";
+
+  (d.zones||[]).forEach(z => {
+    const zx=z.x*W, zy=z.y*H, zw=(z.width||.15)*W, zh=(z.height||.15)*H;
+    const c=z.color||"#f5e642";
+    s+=`<rect x="${zx}" y="${zy}" width="${zw}" height="${zh}" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+    if(z.label) s+=`<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle" fill="${c}" font-size="${W*.04}" font-family="DM Mono,monospace" opacity="0.9">${z.label}</text>`;
+  });
+
+  (d.arrows||[]).forEach(a => {
+    const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H;
+    const col=AC[a.type]||AC.ball;
+    const isLine=a.type==="line";
+    const mid=isLine?"":a.type==="move"?"am":a.type==="screen"?"as":"ab";
+    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amr":a.type==="screen"?"asr":"abr"):"";
+    const dash=isLine?"8,5":a.type==="move"?"6,4":"";
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${W*.012}" ${dash?`stroke-dasharray="${dash}"`:""}
+      ${mid?`marker-end="url(#${mid}${sfx})"`:""}
+      ${midStart?`marker-start="url(#${midStart}${sfx})"`:""}
+      opacity="0.9"/>`;
+  });
+
+  (d.markers||[]).forEach(m => {
+    const mx=m.x*W, my=m.y*H, r=W*.04;
+    if(m.image){
+      s+=`<image href="${m.image}" x="${mx-r}" y="${my-r}" width="${r*2}" height="${r*2}" preserveAspectRatio="xMidYMid meet"/>`;
+    } else if(m.type==="cone"){
+      const cc=m.color||"#f5a542";
+      s+=`<polygon points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}" fill="${cc}" stroke="rgba(0,0,0,0.35)" stroke-width="1.2" opacity="0.9"/>`;
+    } else if(m.type==="ball"){
+      const maskId=`bm${m.id||mx}${sfx}`;
+      s+=renderBall(mx, my, r, maskId);
+    } else {
+      s+=`<rect x="${mx-r}" y="${my-r}" width="${r*2}" height="${r*2}" fill="#9a7af5" stroke="#6a4ac5" stroke-width="1" opacity="0.9"/>`;
+    }
+  });
+
+  (d.players||[]).forEach(p => {
+    const px=p.x*W, py=p.y*H, r=W*.055;
+    const col=TC[p.team]||TC.A;
+    if(p.image){
+      s+=`<clipPath id="cp${p.id}${sfx}"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>`;
+      s+=`<image href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" clip-path="url(#cp${p.id}${sfx})" preserveAspectRatio="xMidYMid slice"/>`;
+      s+=`<circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+    } else {
+      s+=`<circle cx="${px}" cy="${py}" r="${r}" fill="${col}" stroke="#111" stroke-width="1.5" opacity="0.95"/>`;
+      s+=`<text x="${px}" y="${py}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${r*.85}" font-family="DM Mono,monospace" font-weight="500">${p.label||p.team}</text>`;
+    }
+  });
+
+  return s;
+}
+
+function courtSvg(diagram, sfx) {
+  const W=200, H=440;
+  const hasDiagram = diagram && ((diagram.players||[]).length+(diagram.arrows||[]).length+(diagram.markers||[]).length+(diagram.zones||[]).length>0);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-CMX} ${-CMY} ${W+2*CMX} ${H+2*CMY}" style="width:100%;height:100%">${courtDefs(sfx)}${courtBase(W,H)}${hasDiagram?renderDiagram(diagram,W,H,sfx):""}</svg>`;
+}
+
+// ── Badge helpers ──────────────────────────────────────────────────────────────
+const CAT_LABEL = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
+const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
+
+function catBadge(c) {
+  if(!c) return "";
+  return `<span class="badge badge-${c.toLowerCase()}">${CAT_LABEL[c]||c}</span>`;
+}
+function skillBadge(s) {
+  if(!s) return "";
+  const cls=s.toLowerCase().replace(/ /g,"-");
+  return `<span class="badge badge-${cls}">${SKILL_LABEL[s]||s}</span>`;
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let allEntries=[], activeCat="", activeSkill="", activeTrains=new Set();
+let durationMin=null, durationMax=null;
+let activeMaterials=null;
+let filterHalfCourt=false;
+
+function fmtDuration(d) {
+  if(!d||typeof d!=="object") return "";
+  if(d.min!=null&&d.max!=null) return d.min===d.max ? `${d.min} min` : `${d.min}-${d.max} min`;
+  if(d.min!=null) return `${d.min}+ min`;
+  if(d.max!=null) return `≤${d.max} min`;
+  return "";
+}
+
+function getFiltered() {
+  const q=document.getElementById("search").value.toLowerCase().trim();
+  return allEntries.filter(e => {
+    if(activeCat   && e.category!==activeCat) return false;
+    if(activeSkill && e.skill_requirement!==activeSkill) return false;
+    if(activeTrains.size>0 && ![...activeTrains].every(s=>(e.skills_trained||[]).includes(s))) return false;
+    if(activeMaterials!==null && !(e.materials||[]).every(m=>activeMaterials.has(m))) return false;
+    if(filterHalfCourt && !e.half_court) return false;
+    if(durationMin!==null||durationMax!==null){
+      const d=e.duration;
+      if(!d||typeof d!=="object") return false;
+      if(durationMin!==null&&(d.max??Infinity)<durationMin) return false;
+      if(durationMax!==null&&(d.min??0)>durationMax) return false;
+    }
+    if(q){
+      const hay=[e.title,e.summary,...(e.skills_trained||[])].join(" ").toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────────
+function setCat(cat) {
+  activeCat=cat;
+  document.querySelectorAll("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===cat));
+  filterEntries();
+  if(document.getElementById("view-entry").classList.contains("active")) showView("list",true);
+  else closeSidebar();
+}
+function setSkill(sk) {
+  activeSkill=sk;
+  document.querySelectorAll("[data-skill]").forEach(b=>b.classList.toggle("active",b.dataset.skill===sk));
+  filterEntries();
+}
+function toggleHalfCourt(btn) {
+  filterHalfCourt=!filterHalfCourt;
+  btn.classList.toggle("active",filterHalfCourt);
+  filterEntries();
+}
+function toggleTrain(skill,btn) {
+  activeTrains.has(skill)?activeTrains.delete(skill):activeTrains.add(skill);
+  btn.classList.toggle("active",activeTrains.has(skill));
+  filterEntries();
+}
+function setDuration() {
+  const mn=document.getElementById("dur-min").value;
+  const mx=document.getElementById("dur-max").value;
+  durationMin=mn!==""?+mn:null;
+  durationMax=mx!==""?+mx:null;
+  filterEntries();
+}
+
+function buildSkillsList() {
+  const all=new Set();
+  allEntries.forEach(e=>(e.skills_trained||[]).forEach(s=>all.add(s)));
+  const sec =document.getElementById("skills-list").parentElement;
+  if(!all.size){sec.style.display="none";return;}
+  document.getElementById("skills-list").innerHTML=[...all].sort().map(s=>`
+    <button class="chip" onclick="toggleTrain('${s.replace(/'/g,"\\'")}',this)">${s}</button>`).join("");
+}
+
+function buildMaterialsList() {
+  const all=new Set();
+  console.log(allEntries.map(e=>e.materials));
+  allEntries.forEach(e=>(e.materials||[]).forEach(m=>{
+    if (m) all.add(m);
+   }) );
+  const sec=document.getElementById("materials-section");
+  console.log(all);
+  if(!all.size){sec.style.display="none";return;}
+  sec.style.display="";
+  document.getElementById("materials-list").innerHTML=
+    `<button class="chip active" id="mat-any" onclick="setMaterialAny()">Alle</button>`+
+    `<button class="chip danger" id="mat-none" onclick="setMaterialNone()">Keine</button>`+
+    [...all].sort().map(m=>`<button class="chip" onclick="toggleMaterial('${m.replace(/'/g,"\\'")}',this)">${m}</button>`).join("");
+}
+
+function setMaterialAny() {
+  activeMaterials=null;
+  document.querySelectorAll("#materials-list .chip").forEach(b=>b.classList.remove("active"));
+  document.getElementById("mat-any").classList.add("active");
+  filterEntries();
+}
+
+function setMaterialNone() {
+  if (activeMaterials!==null && activeMaterials.has(null)) {
+    setMaterialAny();
+    return;
+  }
+  activeMaterials=new Set([null]);
+  document.querySelectorAll("#materials-list .chip").forEach(b=>b.classList.remove("active"));
+  document.getElementById("mat-none").classList.add("active");
+  filterEntries();
+}
+
+function toggleMaterial(mat,btn) {
+  if(activeMaterials===null){
+    activeMaterials=new Set();
+    document.getElementById("mat-any").classList.remove("active");
+    document.getElementById("mat-none").classList.remove("active");
+  }
+  if (activeMaterials.has(null)) {
+    activeMaterials.delete(null);
+    document.getElementById("mat-none").classList.remove("active");
+  }
+  activeMaterials.has(mat)?activeMaterials.delete(mat):activeMaterials.add(mat);
+  btn.classList.toggle("active",activeMaterials.has(mat));
+  if(activeMaterials.size===0) setMaterialAny();
+  filterEntries();
+}
+
+function filterEntries() {
+  const f=getFiltered();
+  document.getElementById("entry-count").textContent=`${f.length} / ${allEntries.length}`;
+  renderList(f);
+}
+
+// ── List view ──────────────────────────────────────────────────────────────────
+function renderList(entries) {
+  const grid=document.getElementById("entry-grid");
+  const empty=document.getElementById("empty-state");
+  if(!entries.length){grid.innerHTML="";empty.style.display="block";return;}
+  empty.style.display="none";
+  grid.innerHTML=entries.map(e=>{
+    const thumb=e.diagram?`<div class="court-thumb">${courtSvg(e.diagram,"t"+e.slug.replace(/-/g,""))}</div>`:"";
+    const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
+    const playerIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.03 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>`;
+    return `<div class="entry-card" onclick="openEntry('${e.slug}')">
+      <div class="card-top">
+        <div style="flex:1;min-width:0">
+          <div class="card-badges">${catBadge(e.category)}${skillBadge(e.skill_requirement)}</div>
+          <div class="card-title">${e.title}</div>
+          ${e.summary?`<div class="card-summary" style="margin-top:5px">${e.summary}</div>`:""}
+        </div>
+        ${thumb}
+      </div>
+      ${skills?`<div class="card-skills">${skills}</div>`:""}
+      <div class="card-meta">
+        ${e.players?`<span style="display:inline-flex;align-items:center;gap:4px">${playerIcon}${e.players}</span>`:""}
+        ${e.duration?`<span>⏱ ${fmtDuration(e.duration)}</span>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── Detail view ────────────────────────────────────────────────────────────────
+let _modalDiagram=null;
+
+function openEntry(slug) {
+  const e=allEntries.find(x=>x.slug===slug);
+  if(!e) return;
+  _modalDiagram=e.diagram;
+  const date=e.date?new Date(e.date+"T12:00:00").toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"";
+  const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
+  const courtInfoHtml=`
+    ${e.players?`<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${e.players}</span></div>`:""}
+    ${e.duration?`<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${fmtDuration(e.duration)}</span></div>`:""}
+    ${e.skill_requirement?`<div class="info-row"><span class="info-label">Skill</span><span class="info-value">${SKILL_LABEL[e.skill_requirement]||e.skill_requirement}</span></div>`:""}
+    <div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value ${e.half_court?"":"danger"}">${e.half_court?"Ja":"Nein"}</span></div>`;
+  document.getElementById("entry-content").innerHTML=`
+    <div class="entry-layout">
+      <div>
+        <div class="entry-byline">${catBadge(e.category)}${skillBadge(e.skill_requirement)}${date?`<span style="color:var(--ink-faint);font-size:0.75rem;font-family:var(--mono)">${date}</span>`:""}</div>
+        <div class="entry-heading">${e.title}</div>
+        ${skills?`<div class="entry-trained">${skills}</div>`:""}
+        ${(e.materials||[]).length?`<div style="margin-bottom:20px"><span style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;display:block;margin-bottom:6px">Materialien</span><ul style="margin:0 0 0 1.2em;font-size:0.85rem;color:var(--ink-muted);line-height:1.8">${e.materials.map(m=>`<li>${m}</li>`).join("")}</ul></div>`:""}
+        <div class="court-inline">
+          <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"di")}</div>
+          <div class="court-info">${courtInfoHtml}</div>
+        </div>
+        <div class="entry-body">${e.html}</div>
+      </div>
+      <div class="court-panel">
+        <div class="court-panel-label">Court Diagramm</div>
+        <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"d")}</div>
+        <div class="court-info">${courtInfoHtml}</div>
+      </div>
+    </div>`;
+  history.pushState({ slug }, "", "#" + slug);
+  showView("entry");
+}
+
+function openCourtModal() {
+  document.getElementById("court-modal-svg").innerHTML=courtSvg(_modalDiagram,"modal");
+  document.getElementById("court-modal").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeCourtModal() {
+  document.getElementById("court-modal").classList.remove("open");
+  document.body.style.overflow="";
+}
+
+function showView(name, pushState=false) {
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+name).classList.add("active");
+  document.body.classList.toggle("entry-view", name==="entry");
+  window.scrollTo(0,0);
+  closeSidebar();
+  if(pushState && name==="list") history.pushState(null, "", location.pathname);
+}
+
+function toggleSidebar(){document.body.classList.toggle("sidebar-open")}
+function closeSidebar(){document.body.classList.remove("sidebar-open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCourtModal();closeSidebar();}})
+
+window.addEventListener("popstate", e => {
+  if(e.state?.slug) openEntry(e.state.slug);
+  else showView("list");
+});
+
+// ── Background court lines ─────────────────────────────────────────────────────
+(function(){
+  const svg=document.getElementById("bg-court-svg");
+  if(!svg) return;
+  const sportId="{{SPORT_ID}}";
+  const line=(x1,y1,x2,y2,sw)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="white" stroke-width="${sw}"/>`;
+  const rect=(W,H,sw)=>`<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="white" stroke-width="${sw}"/>`;
+  const courts={
+    pickleball:(W,H)=>rect(W,H,W*.006)+
+      line(0,H*.341,W,H*.341,W*.004)+line(0,H*.659,W,H*.659,W*.004)+
+      line(0,H*.5,W,H*.5,W*.007)+line(W*.5,H*.341,W*.5,H*.659,W*.004),
+    tennis:(W,H)=>rect(W,H,W*.006)+
+      line(W*.125,0,W*.125,H,W*.004)+line(W*.875,0,W*.875,H,W*.004)+
+      line(0,H*.5,W,H*.5,W*.008)+
+      line(W*.125,H*.269,W*.875,H*.269,W*.004)+line(W*.125,H*.731,W*.875,H*.731,W*.004)+
+      line(W*.5,H*.269,W*.5,H*.731,W*.004),
+    beachtennis:(W,H)=>rect(W,H,W*.006)+
+      line(0,H*.5,W,H*.5,W*.008)+
+      line(0,H*.3125,W,H*.3125,W*.004)+line(0,H*.6875,W,H*.6875,W*.004),
+    padel:(W,H)=>rect(W,H,W*.006)+
+      line(0,H*.5,W,H*.5,W*.008)+
+      line(0,H*.15,W,H*.15,W*.004)+line(0,H*.85,W,H*.85,W*.004)+
+      line(W*.5,H*.15,W*.5,H*.85,W*.004),
+  };
+  const draw=courts[sportId]||courts.tennis;
+  svg.innerHTML=[
+    `<g transform="translate(50,60) rotate(-9,140,308)" opacity="0.065">${draw(280,616)}</g>`,
+    `<g transform="translate(580,-80) rotate(11,90,198)" opacity="0.045">${draw(180,396)}</g>`,
+    `<g transform="translate(420,680) rotate(-5,160,352)" opacity="0.038">${draw(320,704)}</g>`,
+  ].join("");
+})();
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const r=await fetch("data.json");
+    if(!r.ok) throw new Error();
+    allEntries=await r.json();
+    buildSkillsList();
+    buildMaterialsList();
+    filterEntries();
+    const hash=location.hash.slice(1);
+    if(hash && allEntries.find(e=>e.slug===hash)) openEntry(hash);
+  } catch {
+    document.getElementById("entry-grid").innerHTML=`<div class="empty">⚠ data.json not found — run: node build.js</div>`;
+  }
+});
+</script>
+</body>
+</html>
