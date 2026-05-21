@@ -258,8 +258,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
   <div class="top-sep"></div>
   <span class="top-title">Neue Übung</span>
   <div class="top-actions">
-    <button class="btn-ghost" onclick="downloadMd()">↓ .md herunterladen</button>
+    <button id="btn-download" class="btn-primary" onclick="downloadMd()">↓ .md herunterladen</button>
     <button id="btn-save" class="btn-primary" onclick="saveMd()" style="display:none">Speichern</button>
+    <a class="btn-ghost" href="https://github.com/LuisWollenschneider/RallyRoom/blob/main/README.md" target="_blank" rel="noopener">Anleitung →</a>
   </div>
 </div>
 
@@ -1011,7 +1012,11 @@ function downloadMd() {
 
 // ── Save (preview server only) ────────────────────────────────────────────────
 const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
-if (isLocal) document.getElementById("btn-save").style.display = "";
+if (isLocal) {
+  document.getElementById("btn-save").style.display = "";
+  document.getElementById("btn-download").classList.remove("btn-primary");
+  document.getElementById("btn-download").classList.add("btn-ghost");
+}
 
 async function saveMd() {
   const title = document.getElementById("f-title").value.trim();
