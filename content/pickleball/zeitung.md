@@ -19,8 +19,8 @@ diagram:
     - { id: e7, x1: 0.499, y1: 0.998, x2: 0.501, y2: 0.197, type: ball }
   markers:
   zones:
-    - { id: e5, x: 0.386, y: 0.124, width: 0.234, height: 0.052, label: Newspaper, color: '#f5e642' }
-    - { id: e6, x: 0.377, y: 0.828, width: 0.242, height: 0.059, label: Newspaper, color: '#f5e642' }
+    - { id: e5, x: 0.386, y: 0.124, width: 0.234, height: 0.052, label: Zeitung, color: '#f5e642' }
+    - { id: e6, x: 0.377, y: 0.828, width: 0.242, height: 0.059, label: Zeitung, color: '#f5e642' }
 ---
 
 ## Aufbau
