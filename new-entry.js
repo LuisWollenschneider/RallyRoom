@@ -111,15 +111,15 @@ diagram:
   zones:
 ---
 
-Describe the drill or game mode here.
+Beschreibe die Übung hier.
 
-## Setup
+## Aufbau
 
-## Goal
+## Ziel
 
-## Coaching Cues
+## Trainer Hinweise
 
-## Progression
+## Variationen
 `;
 
     fs.mkdirSync(sportDir, { recursive: true });

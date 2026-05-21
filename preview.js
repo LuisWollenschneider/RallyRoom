@@ -50,7 +50,35 @@ watchDirs.forEach((dir) => {
     });
 });
 
+const SPORT_IDS = ["pickleball", "tennis", "beachtennis", "padel"];
+
 http.createServer((req, res) => {
+    // ── POST /api/save — write .md to content/{sport}/ ──
+    if (req.method === "POST" && req.url === "/api/save") {
+        let body = "";
+        req.on("data", chunk => (body += chunk));
+        req.on("end", () => {
+            try {
+                const { sport, filename, content } = JSON.parse(body);
+                if (!SPORT_IDS.includes(sport) || !filename || !/^[\w-]+\.md$/.test(filename)) {
+                    res.writeHead(400, { "Content-Type": "text/plain" });
+                    res.end("Invalid sport or filename");
+                    return;
+                }
+                const sportDir = path.join(CONTENT_DIR, sport);
+                fs.mkdirSync(sportDir, { recursive: true });
+                fs.writeFileSync(path.join(sportDir, filename), content);
+                console.log(`\nSaved: content/${sport}/${filename}`);
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: true }));
+            } catch (e) {
+                res.writeHead(500, { "Content-Type": "text/plain" });
+                res.end(e.message);
+            }
+        });
+        return;
+    }
+
     let urlPath = req.url.split("?")[0];
 
     // Directory index → serve index.html
@@ -74,7 +102,7 @@ http.createServer((req, res) => {
     console.log(`Tennis:       http://localhost:${PORT}/tennis/`);
     console.log(`Beach Tennis: http://localhost:${PORT}/beachtennis/`);
     console.log(`Padel:        http://localhost:${PORT}/padel/`);
-    console.log(`Editor:       open editor/index.html in your browser`);
+    console.log(`Entry Editor: http://localhost:${PORT}/editor/`);
     console.log(
         "\nWatching content/, sports/, templates/ for changes. Ctrl+C to stop.\n",
     );

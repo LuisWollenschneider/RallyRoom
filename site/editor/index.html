@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Neue Übung — Rally Room</title>
+<link rel="icon" href="../favicon.ico"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1f1a;--surface:#212621;--card:#282e28;--border:#313831;
+  --ink:#e8ede4;--ink-muted:#8a9486;--ink-faint:#4a5248;
+  --green:#4caf6e;--green-dim:#2d5c3e;
+  --red:#d45c43;--yellow:#d4a843;--blue:#4385d4;
+  --mono:'DM Mono',monospace;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+html,body{height:100%;overflow:hidden;font-size:18px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;display:flex;flex-direction:column}
+
+/* ── Top bar ── */
+#top-bar{
+  height:48px;flex-shrink:0;display:flex;align-items:center;gap:10px;
+  padding:0 14px;border-bottom:1px solid var(--border);background:var(--surface);
+}
+.back-link{
+  color:var(--ink-faint);text-decoration:none;font-size:0.68rem;font-family:var(--mono);
+  letter-spacing:0.05em;padding:4px 8px;border-radius:5px;border:1px solid transparent;
+  transition:all 0.1s;white-space:nowrap;
+}
+.back-link:hover{color:var(--ink-muted);border-color:var(--border);background:var(--card)}
+.top-sep{width:1px;height:20px;background:var(--border)}
+.top-title{font-family:var(--serif);font-size:0.95rem;font-weight:600;font-style:italic;color:var(--ink-muted)}
+.top-actions{margin-left:auto;display:flex;gap:7px;align-items:center}
+.btn-ghost{
+  padding:5px 13px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.75rem;transition:all 0.15s;
+}
+.btn-ghost:hover{color:var(--ink);border-color:var(--ink-faint)}
+.btn-primary{
+  padding:5px 13px;border-radius:6px;border:1px solid var(--green-dim);
+  background:var(--green-dim);color:var(--green);cursor:pointer;
+  font-family:var(--sans);font-size:0.75rem;transition:all 0.15s;
+}
+.btn-primary:hover{background:#3a7050}
+
+/* ── Layout ── */
+#layout{display:flex;flex:1;min-height:0;overflow:hidden}
+
+/* ── Form sidebar ── */
+#form-sidebar{
+  width:290px;flex-shrink:0;overflow-y:auto;padding:14px 12px;
+  display:flex;flex-direction:column;gap:13px;
+  border-right:1px solid var(--border);background:var(--surface);
+}
+.field-section{display:flex;flex-direction:column;gap:5px}
+.field-label{
+  font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--ink-faint);font-family:var(--mono);font-weight:500;
+}
+.field-input{
+  padding:6px 9px;background:var(--card);border:1px solid var(--border);
+  color:var(--ink);border-radius:5px;font-family:var(--sans);font-size:0.8rem;outline:none;width:100%;
+}
+.field-input:focus{border-color:var(--green-dim)}
+.field-row{display:flex;gap:5px;align-items:center}
+.field-sep{color:var(--ink-faint);font-size:0.75rem;flex-shrink:0}
+.field-hint{font-size:0.64rem;color:var(--ink-faint);line-height:1.4}
+.field-check{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;color:var(--ink-muted)}
+.field-check input{accent-color:var(--green);cursor:pointer;width:14px;height:14px}
+.chip-group{display:flex;flex-wrap:wrap;gap:4px}
+.chip-btn{
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.7rem;transition:all 0.1s;
+}
+.chip-btn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.chip-btn.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.sport-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.sport-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 4px;border-radius:7px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.6rem;text-align:center;transition:all 0.1s;
+}
+.sport-btn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.sport-btn.active{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.sport-btn img{width:28px;height:28px;object-fit:contain}
+
+/* ── Right main ── */
+#right-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* ── Tab bar ── */
+#tab-bar{
+  display:flex;border-bottom:1px solid var(--border);flex-shrink:0;
+  background:var(--surface);padding:0 14px;
+}
+.tab-btn{
+  padding:10px 16px;border:none;background:transparent;color:var(--ink-muted);
+  cursor:pointer;font-family:var(--sans);font-size:0.76rem;
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.1s,border-color 0.1s;
+}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* ── Tab content ── */
+.tab-content{display:none;flex:1;min-height:0}
+.tab-content.active{display:flex;flex-direction:column}
+#tab-preview.active{display:block;overflow-y:auto}
+
+/* ── Court tab ── */
+#tool-strip{
+  display:flex;align-items:center;gap:3px;padding:5px 10px;
+  flex-shrink:0;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;
+}
+.tool-chip{
+  padding:3px 8px;border-radius:5px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.68rem;white-space:nowrap;transition:all 0.1s;
+}
+.tool-chip:hover{border-color:var(--ink-faint);color:var(--ink)}
+.tool-chip.active{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.tool-chip.t-a{color:#4caf6e}.tool-chip.t-a.active{border-color:#4caf6e;background:rgba(76,175,110,.15)}
+.tool-chip.t-b{color:#d45c43}.tool-chip.t-b.active{border-color:#d45c43;background:rgba(212,92,67,.15)}
+.tool-chip.t-w{color:#d4a843}.tool-chip.t-w.active{border-color:#d4a843;background:rgba(212,168,67,.15)}
+.tool-chip.t-ball{color:#f5e642}.tool-chip.t-ball.active{border-color:#f5e642;background:rgba(245,230,66,.1)}
+.tool-chip.t-move{color:#7ab3f5}.tool-chip.t-move.active{border-color:#7ab3f5;background:rgba(122,179,245,.1)}
+.tool-chip.t-screen{color:#c084f5}.tool-chip.t-screen.active{border-color:#c084f5;background:rgba(192,132,245,.1)}
+.tool-chip.t-line{color:#b8c8b4}.tool-chip.t-line.active{border-color:#b8c8b4;background:rgba(184,200,180,.1)}
+.tool-chip.t-danger{color:var(--red)}
+.tool-chip.t-danger:hover{border-color:var(--red);background:rgba(212,92,67,.1)}
+.tool-strip-sep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
+#court-area{display:flex;flex:1;min-height:0;overflow:hidden}
+#court-col{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px}
+#court-container{position:relative;user-select:none;height:100%;aspect-ratio:260/540;max-width:100%}
+#court-svg{display:block;width:100%;height:100%;cursor:crosshair}
+#props-panel{
+  width:210px;flex-shrink:0;border-left:1px solid var(--border);
+  background:var(--surface);padding:12px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;
+}
+#props-panel.empty .props-filled{display:none}
+#props-panel:not(.empty) .props-empty{display:none}
+.props-empty{font-size:0.78rem;color:var(--ink-faint);font-style:italic;line-height:1.6}
+.props-filled{display:flex;flex-direction:column;gap:10px}
+.prop-label{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);font-family:var(--mono)}
+.prop-input{
+  width:100%;padding:6px 9px;background:var(--card);border:1px solid var(--border);
+  color:var(--ink);border-radius:5px;font-family:var(--mono);font-size:0.78rem;outline:none;
+}
+.prop-input:focus{border-color:var(--green-dim)}
+.prop-input[type="color"]{height:30px;padding:2px 4px;cursor:pointer}
+.prop-del{
+  width:100%;padding:6px;border-radius:5px;border:1px solid var(--border);
+  background:var(--card);color:var(--red);cursor:pointer;font-family:var(--sans);font-size:0.78rem;
+}
+.prop-del:hover{background:rgba(212,92,67,.12);border-color:var(--red)}
+.prop-type{font-size:0.7rem;color:var(--ink-faint)}
+
+/* ── Markdown tab ── */
+#f-body{
+  flex:1;padding:18px 22px;background:var(--bg);border:none;outline:none;
+  color:var(--ink);font-family:var(--mono);font-size:0.8rem;line-height:1.8;
+  resize:none;width:100%;
+}
+
+/* ── Preview tab ── */
+#preview-wrap{max-width:860px;margin:0 auto;padding:28px 24px}
+.prev-byline{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.prev-heading{font-family:var(--serif);font-size:1.8rem;font-weight:300;font-style:italic;line-height:1.2;margin-bottom:10px}
+.prev-trained{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px}
+.prev-layout{display:grid;grid-template-columns:1fr 260px;gap:32px;align-items:start}
+.prev-court-sticky{position:sticky;top:20px}
+.prev-court-label{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.prev-court-wrap{width:100%;aspect-ratio:26/54;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.prev-court-wrap svg{width:100%;height:100%}
+.prev-court-info{margin-top:9px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px}
+.prev-body{font-size:0.88rem;line-height:1.8;color:#c0c8bc}
+.prev-body h2{font-family:var(--serif);font-size:1rem;font-weight:600;margin:1.5em 0 0.4em;color:var(--ink)}
+.prev-body h3{font-family:var(--serif);font-size:0.88rem;font-style:italic;font-weight:300;margin:1.3em 0 0.35em;color:var(--ink-muted)}
+.prev-body p{margin-bottom:0.8em}
+.prev-body ul,.prev-body ol{margin:0 0 0.8em 1.3em}
+.prev-body li{margin-bottom:0.3em}
+.prev-body strong{color:var(--ink);font-weight:500}
+.prev-body code{font-family:var(--mono);font-size:0.82em;background:var(--border);padding:1px 5px;border-radius:3px}
+.prev-body a{color:var(--green);text-decoration:underline;text-underline-offset:3px}
+.info-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.72rem;border-bottom:1px solid var(--border);gap:10px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--ink-faint);font-family:var(--mono);font-size:0.62rem}
+.info-value{color:var(--ink-muted)}
+.skill-tag{font-size:0.62rem;font-family:var(--mono);background:var(--surface);color:var(--ink-faint);padding:2px 6px;border-radius:20px;border:1px solid var(--border)}
+.badge{font-size:0.56rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;padding:3px 7px;border-radius:20px;white-space:nowrap;font-family:var(--mono);display:inline-block}
+.badge-exercise{background:#1e3626;color:#4caf6e}
+.badge-drill{background:#1a2e3a;color:#4385d4}
+.badge-game{background:#3a2618;color:#d4863a}
+.badge-beginner{background:rgba(76,175,110,.15);color:#4caf6e}
+.badge-intermediate{background:rgba(212,168,67,.15);color:#d4a843}
+.badge-advanced{background:rgba(212,92,67,.15);color:#d45c43}
+.badge-all-levels{background:rgba(67,133,212,.15);color:#4385d4}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;min-width:320px;max-width:440px;width:90%;display:flex;flex-direction:column;gap:13px}
+.modal-title{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--ink)}
+.modal-body{font-size:0.84rem;color:var(--ink-muted);line-height:1.6}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end}
+.modal-cancel{padding:6px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--ink-muted);cursor:pointer;font-family:var(--sans);font-size:0.78rem}
+.modal-cancel:hover{color:var(--ink)}
+.modal-ok{padding:6px 14px;border-radius:6px;border:1px solid var(--green-dim);background:var(--green-dim);color:var(--green);cursor:pointer;font-family:var(--sans);font-size:0.78rem}
+.modal-ok.danger{border-color:var(--red);background:rgba(212,92,67,.15);color:var(--red)}
+.modal-ok.danger:hover{background:rgba(212,92,67,.25)}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  padding:7px 16px;border-radius:7px;background:var(--surface);border:1px solid var(--border);
+  font-size:0.76rem;color:var(--ink-muted);font-family:var(--mono);
+  opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:300;white-space:nowrap;
+}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <a class="back-link" href="../">← Rally Room</a>
+  <div class="top-sep"></div>
+  <span class="top-title">Neue Übung</span>
+  <div class="top-actions">
+    <button class="btn-ghost" onclick="downloadMd()">↓ .md herunterladen</button>
+    <button id="btn-save" class="btn-primary" onclick="saveMd()" style="display:none">Speichern</button>
+  </div>
+</div>
+
+<div id="layout">
+
+  <!-- ── Metadata sidebar ── -->
+  <div id="form-sidebar">
+
+    <div class="field-section">
+      <div class="field-label">Sport</div>
+      <div class="sport-grid" id="sport-picker"></div>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Titel *</div>
+      <input id="f-title" class="field-input" type="text" placeholder="Name der Übung" oninput="onFormChange()"/>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Kategorie</div>
+      <div class="chip-group" id="cat-group">
+        <button class="chip-btn active" data-val="Exercise" onclick="setCat(this)">Übung</button>
+        <button class="chip-btn" data-val="Drill" onclick="setCat(this)">Korb-Übung</button>
+        <button class="chip-btn" data-val="Game" onclick="setCat(this)">Spiel</button>
+      </div>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Niveau</div>
+      <div class="chip-group" id="skill-group">
+        <button class="chip-btn active" data-val="Beginner" onclick="setSkill(this)">Beginner</button>
+        <button class="chip-btn" data-val="Intermediate" onclick="setSkill(this)">Fortgeschritten</button>
+        <button class="chip-btn" data-val="Advanced" onclick="setSkill(this)">Experten</button>
+        <button class="chip-btn" data-val="All Levels" onclick="setSkill(this)">Alle Niveaus</button>
+      </div>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Spieler</div>
+      <input id="f-players" class="field-input" type="text" placeholder="z.B. 2–4" oninput="onFormChange()"/>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Dauer (Minuten)</div>
+      <div class="field-row">
+        <input id="f-dur-min" class="field-input" type="number" min="0" placeholder="min" oninput="onFormChange()"/>
+        <span class="field-sep">–</span>
+        <input id="f-dur-max" class="field-input" type="number" min="0" placeholder="max" oninput="onFormChange()"/>
+      </div>
+    </div>
+
+    <div class="field-section">
+      <label class="field-check">
+        <input id="f-half-court" type="checkbox" onchange="onFormChange()"/>
+        <span>Halbes Feld möglich</span>
+      </label>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Trainierte Kompetenzen</div>
+      <input id="f-skills" class="field-input" type="text" placeholder="Ballkontrolle, Beinarbeit, …" oninput="onFormChange()"/>
+      <div class="field-hint">Kommagetrennt</div>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Materialien</div>
+      <input id="f-materials" class="field-input" type="text" placeholder="Hütchen, Bälle, … (leer = keine)" oninput="onFormChange()"/>
+    </div>
+
+    <div class="field-section">
+      <div class="field-label">Kurzbeschreibung</div>
+      <input id="f-summary" class="field-input" type="text" placeholder="Einzeiler für die Übersicht" oninput="onFormChange()"/>
+    </div>
+
+  </div>
+
+  <!-- ── Right main ── -->
+  <div id="right-main">
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="court" onclick="setTab('court')">Court</button>
+      <button class="tab-btn" data-tab="markdown" onclick="setTab('markdown')">Markdown</button>
+      <button class="tab-btn" data-tab="preview" onclick="setTab('preview')">Vorschau</button>
+    </div>
+
+    <!-- Court tab -->
+    <div id="tab-court" class="tab-content active">
+      <div id="tool-strip">
+        <button class="tool-chip active" id="ts-select" onclick="setTool('select')">↖ Wählen</button>
+        <div class="tool-strip-sep"></div>
+        <button class="tool-chip t-a" id="ts-player-A" onclick="setTool('player-A')">● A</button>
+        <button class="tool-chip t-b" id="ts-player-B" onclick="setTool('player-B')">● B</button>
+        <button class="tool-chip t-w" id="ts-player-W" onclick="setTool('player-W')">● W</button>
+        <div class="tool-strip-sep"></div>
+        <button class="tool-chip t-ball" id="ts-arrow-ball" onclick="setTool('arrow-ball')">→ Ball</button>
+        <button class="tool-chip t-move" id="ts-arrow-move" onclick="setTool('arrow-move')">⇢ Bewegen</button>
+        <button class="tool-chip t-screen" id="ts-arrow-screen" onclick="setTool('arrow-screen')">⇢ Screen</button>
+        <button class="tool-chip t-line" id="ts-arrow-line" onclick="setTool('arrow-line')">╌ Linie</button>
+        <div class="tool-strip-sep"></div>
+        <button class="tool-chip" id="ts-marker-cone" onclick="setTool('marker-cone')">▲ Hütchen</button>
+        <button class="tool-chip" id="ts-marker-ball" onclick="setTool('marker-ball')">● Ball</button>
+        <div class="tool-strip-sep"></div>
+        <button class="tool-chip" id="ts-zone" onclick="setTool('zone')">□ Zone</button>
+        <div class="tool-strip-sep"></div>
+        <button class="tool-chip t-danger" onclick="openClearModal()">✕ Leeren</button>
+      </div>
+      <div id="court-area">
+        <div id="court-col">
+          <div id="court-container">
+            <svg id="court-svg" xmlns="http://www.w3.org/2000/svg" viewBox="-30 -50 260 540"></svg>
+          </div>
+        </div>
+        <div id="props-panel" class="empty">
+          <p class="props-empty">Element wählen oder Tool auswählen, um Elemente auf dem Court zu platzieren.</p>
+          <div class="props-filled">
+            <div id="props-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Markdown tab -->
+    <div id="tab-markdown" class="tab-content">
+      <textarea id="f-body" oninput="onFormChange()">Beschreibe die Übung hier.
+
+## Aufbau
+
+## Ziel
+
+## Trainer Hinweise
+
+## Variationen
+</textarea>
+    </div>
+
+    <!-- Preview tab -->
+    <div id="tab-preview" class="tab-content">
+      <div id="preview-wrap"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Clear modal -->
+<div class="modal-overlay hidden" id="clear-modal">
+  <div class="modal">
+    <div class="modal-title">Alles löschen?</div>
+    <div class="modal-body">Alle Spieler, Pfeile, Marker und Zonen werden entfernt.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('clear-modal')">Abbrechen</button>
+      <button class="modal-ok danger" onclick="confirmClear()">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="../courts.js"></script>
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────────
+const VW = 200, VH = 440, MX = 30, MY = 50;
+const AC = { ball:"#f5e642", move:"#7ab3f5", screen:"#c084f5", line:"#b8c8b4" };
+const CAT_LABEL  = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
+const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
+
+// ── App state ─────────────────────────────────────────────────────────────────
+let currentSport    = "pickleball";
+let currentCategory = "Exercise";
+let currentSkillReq = "Beginner";
+let currentTab      = "court";
+let TC = getTCFor("pickleball");
+
+function getTCFor(id) {
+  const s = SPORT_MAP[id];
+  return { A: s.teamA, B: s.teamB, W: s.teamW };
+}
+
+// ── Court editor state ────────────────────────────────────────────────────────
+const state = {
+  tool: "select",
+  players: [], arrows: [], markers: [], zones: [],
+  selected: null, dragging: null, drawing: null, drawingZone: null,
+  nextId: 1,
+};
+const svg = document.getElementById("court-svg");
+function genId() { return "e" + (state.nextId++); }
+
+// ── Sport picker ──────────────────────────────────────────────────────────────
+(function buildPicker() {
+  const picker = document.getElementById("sport-picker");
+  SPORT_COURTS.forEach(s => {
+    const btn = document.createElement("button");
+    btn.dataset.sport = s.id;
+    btn.className = "sport-btn" + (s.id === currentSport ? " active" : "");
+    btn.onclick = () => setSport(s.id);
+    btn.innerHTML = `<img src="../logos/${s.id}.png" alt=""/><span>${s.name}</span>`;
+    picker.appendChild(btn);
+  });
+})();
+
+function setSport(id) {
+  currentSport = id;
+  TC = getTCFor(id);
+  document.querySelectorAll(".sport-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.sport === id));
+  render();
+  if (currentTab === "preview") renderPreview();
+}
+
+// ── Category / Skill ──────────────────────────────────────────────────────────
+function setCat(btn) {
+  currentCategory = btn.dataset.val;
+  document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b === btn));
+  if (currentTab === "preview") renderPreview();
+}
+function setSkill(btn) {
+  currentSkillReq = btn.dataset.val;
+  document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b === btn));
+  if (currentTab === "preview") renderPreview();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tab-content").forEach(el => { el.style.display = "none"; el.classList.remove("active"); });
+  const el = document.getElementById("tab-" + tab);
+  el.style.display = "";
+  el.classList.add("active");
+  if (tab === "preview") renderPreview();
+  if (tab === "court") render();
+}
+
+// ── Form change ───────────────────────────────────────────────────────────────
+function onFormChange() {
+  if (currentTab === "preview") renderPreview();
+}
+
+// ── Tool switching ────────────────────────────────────────────────────────────
+function setTool(t) {
+  state.tool = t;
+  state.selected = null;
+  state.drawing = null;
+  state.drawingZone = null;
+  document.querySelectorAll(".tool-chip").forEach(b =>
+    b.classList.toggle("active", b.id === "ts-" + t));
+  render();
+}
+
+// ── SVG coords ────────────────────────────────────────────────────────────────
+function svgCoords(evt) {
+  const rect = svg.getBoundingClientRect();
+  const touch = evt.touches ? evt.touches[0] : evt;
+  return {
+    x: (touch.clientX - rect.left) / rect.width  * (VW + 2*MX) / VW - MX/VW,
+    y: (touch.clientY - rect.top)  / rect.height * (VH + 2*MY) / VH - MY/VH,
+  };
+}
+
+function clamp(v)  { return Math.max(-MX/VW, Math.min(1+MX/VW, v)); }
+function clampY(v) { return Math.max(-MY/VH, Math.min(1+MY/VH, v)); }
+
+// ── Object lookup ─────────────────────────────────────────────────────────────
+function findObj(id, kind) {
+  if (kind === "player") return state.players.find(p => p.id === id);
+  if (kind === "marker") return state.markers.find(m => m.id === id);
+  if (kind === "arrow")  return state.arrows.find(a => a.id === id);
+  if (kind === "zone")   return state.zones.find(z => z.id === id);
+}
+function getKind(obj) {
+  if (state.players.includes(obj)) return "player";
+  if (state.markers.includes(obj)) return "marker";
+  if (state.arrows.includes(obj))  return "arrow";
+  if (state.zones.includes(obj))   return "zone";
+}
+
+// ── Render canvas ─────────────────────────────────────────────────────────────
+function courtDefs(sfx) {
+  sfx = sfx || "";
+  return `<defs>
+    <marker id="ab${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
+    <marker id="am${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
+    <marker id="as${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+    <marker id="abr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
+    <marker id="amr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
+    <marker id="asr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+  </defs>`;
+}
+
+function renderCanvas() {
+  const sport = SPORT_MAP[currentSport];
+  let s = courtDefs("e") + sport.courtBase(VW, VH);
+
+  state.zones.forEach(z => {
+    const zx=z.x*VW, zy=z.y*VH, zw=z.width*VW, zh=z.height*VH;
+    const col=z.color||"#f5e642", sel=state.selected?.id===z.id;
+    s += `<rect data-id="${z.id}" data-kind="zone" x="${zx}" y="${zy}" width="${zw}" height="${zh}"
+      fill="${col}" fill-opacity="${sel?.35:.18}" stroke="${sel?"#fff":col}" stroke-width="${sel?2:1.5}"
+      stroke-dasharray="5,3" style="cursor:pointer"/>`;
+    if (z.label) s += `<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle"
+      fill="${col}" font-size="${VW*.04}" font-family="DM Mono,monospace" style="pointer-events:none">${z.label}</text>`;
+  });
+
+  if (state.drawingZone) {
+    const z = state.drawingZone;
+    const x=Math.min(z.x1,z.x2)*VW, y=Math.min(z.y1,z.y2)*VH;
+    const w=Math.abs(z.x2-z.x1)*VW, h=Math.abs(z.y2-z.y1)*VH;
+    s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#f5e642" fill-opacity=".12" stroke="#f5e642" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  }
+
+  state.arrows.forEach(a => {
+    const x1=a.x1*VW,y1=a.y1*VH,x2=a.x2*VW,y2=a.y2*VH;
+    const col=AC[a.type]||AC.ball, sel=state.selected?.id===a.id;
+    const isLine=a.type==="line";
+    const mid=isLine?"":a.type==="move"?"ame":a.type==="screen"?"ase":"abe";
+    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amre":a.type==="screen"?"asre":"abre"):"";
+    const dash=isLine?"8,5":a.type==="move"?"6,4":"";
+    s += `<line data-id="${a.id}" data-kind="arrow" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="${sel?"#fff":col}" stroke-width="${sel?4:3}" ${dash?`stroke-dasharray="${dash}"`:""}
+      ${mid?`marker-end="url(#${mid})"`:""}
+      ${midStart?`marker-start="url(#${midStart})"`:""}
+      opacity="${sel?1:.85}" style="cursor:pointer"/>`;
+    s += `<line data-id="${a.id}" data-kind="arrow" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="transparent" stroke-width="14" style="cursor:pointer"/>`;
+  });
+
+  if (state.drawing) {
+    const a = state.drawing;
+    const col=AC[a.type]||AC.ball, isLine=a.type==="line";
+    const mid=isLine?"":a.type==="move"?"ame":a.type==="screen"?"ase":"abe";
+    s += `<line x1="${a.x1*VW}" y1="${a.y1*VH}" x2="${a.x2*VW}" y2="${a.y2*VH}"
+      stroke="${col}" stroke-width="2.5" stroke-dasharray="${isLine?"8,5":"4,3"}" opacity=".7"
+      ${mid?`marker-end="url(#${mid})"`:""}/>`;
+  }
+
+  state.markers.forEach(m => {
+    const mx=m.x*VW, my=m.y*VH, r=8, sel=state.selected?.id===m.id;
+    if (m.type==="cone") {
+      const cc=m.color||"#f5a542";
+      s += `<polygon data-id="${m.id}" data-kind="marker"
+        points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}"
+        fill="${cc}" stroke="${sel?"#fff":"rgba(0,0,0,0.35)"}" stroke-width="${sel?2:1.2}" style="cursor:pointer"/>`;
+    } else if (m.type==="ball") {
+      const maskId = "bm" + m.id + "e";
+      s += sport.renderBall(mx, my, r, maskId);
+      if (sel) s += `<circle cx="${mx}" cy="${my}" r="${r*.72}" fill="none" stroke="#fff" stroke-width="1.5" style="pointer-events:none"/>`;
+      s += `<circle data-id="${m.id}" data-kind="marker" cx="${mx}" cy="${my}" r="${r*.72}" fill="transparent" style="cursor:pointer"/>`;
+    }
+  });
+
+  state.players.forEach(p => {
+    const px=p.x*VW, py=p.y*VH, r=10;
+    const col=TC[p.team]||TC.A, sel=state.selected?.id===p.id;
+    if (p.image) {
+      s += `<clipPath id="cp${p.id}e"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>
+        <image data-id="${p.id}" data-kind="player" href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}"
+          clip-path="url(#cp${p.id}e)" preserveAspectRatio="xMidYMid slice" style="cursor:grab"/>
+        <circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="${sel?"#fff":col}" stroke-width="${sel?2.5:2}" style="pointer-events:none"/>`;
+    } else {
+      s += `<circle data-id="${p.id}" data-kind="player" cx="${px}" cy="${py}" r="${r}"
+        fill="${col}" stroke="${sel?"#fff":"#111"}" stroke-width="${sel?2.5:1.5}" style="cursor:grab" opacity=".95"/>
+        <text data-id="${p.id}" data-kind="player" x="${px}" y="${py}" text-anchor="middle" dominant-baseline="central"
+          fill="#fff" font-size="7" font-family="DM Mono,monospace" font-weight="500"
+          style="cursor:grab;pointer-events:none">${p.label||p.team}</text>`;
+    }
+  });
+
+  svg.innerHTML = s;
+  bindSvgEvents();
+}
+
+function updateProps() {
+  const panel = document.getElementById("props-panel");
+  const body  = document.getElementById("props-body");
+  const sel   = state.selected;
+  if (!sel) { panel.classList.add("empty"); return; }
+  panel.classList.remove("empty");
+  const kind = getKind(sel);
+  let html = "";
+
+  if (kind === "player") {
+    html += propField("Label", "label", sel.label||"", "text");
+    html += propField("Bild-URL", "image", sel.image||"", "text", "https://…");
+    html += `<div class="prop-type">Team: <strong style="color:${TC[sel.team]||'inherit'}">${sel.team}</strong></div>`;
+  } else if (kind === "marker") {
+    if (sel.type === "cone") html += propColor("Farbe", sel.color||"#f5a542");
+    html += `<div class="prop-type">Typ: ${sel.type}</div>`;
+  } else if (kind === "zone") {
+    html += propField("Label", "label", sel.label||"", "text");
+    html += propColor("Farbe", sel.color||"#f5e642");
+  } else if (kind === "arrow") {
+    html += `<div class="prop-type">Typ: ${sel.type}</div>`;
+    if (sel.type !== "line") {
+      html += `<label style="display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ink-muted);cursor:pointer">
+        <input type="checkbox" ${sel.bidir?"checked":""} onchange="updateProp('bidir',this.checked)" style="accent-color:var(--green);cursor:pointer"/>
+        Bidirektional</label>`;
+    }
+  }
+  html += `<button class="prop-del" onclick="deleteSelected()">Löschen</button>`;
+  body.innerHTML = html;
+}
+
+function propField(label, key, value, type, placeholder) {
+  return `<div>
+    <div class="prop-label">${label}</div>
+    <input class="prop-input" type="${type}" value="${String(value).replace(/"/g,"&quot;")}"
+      ${placeholder?`placeholder="${placeholder}"`:""}
+      oninput="updateProp('${key}',this.value)"/>
+  </div>`;
+}
+function propColor(label, value) {
+  return `<div>
+    <div class="prop-label">${label}</div>
+    <input class="prop-input" type="color" value="${value}" oninput="updateProp('color',this.value)"/>
+  </div>`;
+}
+function updateProp(key, value) {
+  if (state.selected) { state.selected[key] = value; renderCanvas(); }
+}
+
+function render() { renderCanvas(); updateProps(); }
+
+// ── SVG event handling ────────────────────────────────────────────────────────
+function bindSvgEvents() {
+  svg.addEventListener("mousedown",  onDown, { once: true });
+  svg.addEventListener("touchstart", onDown, { once: true, passive: false });
+}
+
+function onDown(evt) {
+  evt.preventDefault();
+  const c = svgCoords(evt);
+  const id   = evt.target.dataset?.id;
+  const kind = evt.target.dataset?.kind;
+
+  if (state.tool === "select") {
+    const obj = id ? findObj(id, kind) : null;
+    state.selected = obj || null;
+    if (obj) {
+      if (kind === "arrow") {
+        state.dragging = { obj, kind, ox: c.x, oy: c.y };
+      } else {
+        state.dragging = { obj, kind, ox: c.x - obj.x, oy: c.y - obj.y };
+      }
+    }
+    render(); return;
+  }
+  if (state.tool.startsWith("player-")) {
+    const team = state.tool.split("-")[1];
+    const n = state.players.filter(p => p.team === team).length + 1;
+    state.players.push({ id: genId(), team, x: c.x, y: c.y, label: team + n });
+    render(); return;
+  }
+  if (state.tool.startsWith("marker-")) {
+    state.markers.push({ id: genId(), type: state.tool.split("-")[1], x: c.x, y: c.y });
+    render(); return;
+  }
+  if (state.tool.startsWith("arrow-")) {
+    state.drawing = { x1: c.x, y1: c.y, x2: c.x, y2: c.y, type: state.tool.split("-")[1] };
+    return;
+  }
+  if (state.tool === "zone") {
+    state.drawingZone = { x1: c.x, y1: c.y, x2: c.x, y2: c.y };
+    return;
+  }
+}
+
+function onMove(evt) {
+  if (evt.touches) evt.preventDefault();
+  const c = svgCoords(evt);
+  if (state.dragging) {
+    const { obj, kind } = state.dragging;
+    if (kind === "arrow") {
+      const dx = c.x - state.dragging.ox, dy = c.y - state.dragging.oy;
+      obj.x1 = clamp(obj.x1+dx); obj.y1 = clampY(obj.y1+dy);
+      obj.x2 = clamp(obj.x2+dx); obj.y2 = clampY(obj.y2+dy);
+      state.dragging.ox = c.x; state.dragging.oy = c.y;
+    } else if (kind === "zone") {
+      obj.x = Math.max(-MX/VW, Math.min(1-obj.width+MX/VW, c.x - state.dragging.ox));
+      obj.y = clampY(c.y - state.dragging.oy);
+    } else {
+      obj.x = clamp(c.x - state.dragging.ox);
+      obj.y = clampY(c.y - state.dragging.oy);
+    }
+    render(); return;
+  }
+  if (state.drawing) {
+    state.drawing.x2 = clamp(c.x); state.drawing.y2 = clampY(c.y);
+    render(); return;
+  }
+  if (state.drawingZone) {
+    state.drawingZone.x2 = clamp(c.x); state.drawingZone.y2 = clampY(c.y);
+    render();
+  }
+}
+
+function onUp() {
+  if (state.dragging) { state.dragging = null; render(); return; }
+  if (state.drawing) {
+    const a = state.drawing;
+    const dx = a.x2-a.x1, dy = a.y2-a.y1;
+    if (Math.sqrt(dx*dx+dy*dy) > 0.04) state.arrows.push({ id: genId(), ...a });
+    state.drawing = null; render(); return;
+  }
+  if (state.drawingZone) {
+    const z = state.drawingZone;
+    const x=Math.min(z.x1,z.x2), y=Math.min(z.y1,z.y2);
+    const w=Math.abs(z.x2-z.x1), h=Math.abs(z.y2-z.y1);
+    if (w > 0.03 && h > 0.03) state.zones.push({ id: genId(), x, y, width:w, height:h, label:"", color:"#f5e642" });
+    state.drawingZone = null; render();
+  }
+}
+
+document.addEventListener("mousemove", onMove);
+document.addEventListener("mouseup",   onUp);
+document.addEventListener("touchmove", onMove, { passive: false });
+document.addEventListener("touchend",  onUp);
+
+function deleteSelected() {
+  if (!state.selected) return;
+  const id = state.selected.id;
+  state.players = state.players.filter(p => p.id !== id);
+  state.arrows  = state.arrows.filter(a => a.id !== id);
+  state.markers = state.markers.filter(m => m.id !== id);
+  state.zones   = state.zones.filter(z => z.id !== id);
+  state.selected = null;
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal("clear-modal"); return; }
+  if ((e.key === "Backspace" || e.key === "Delete") && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+    e.preventDefault(); deleteSelected();
+  }
+});
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+function openClearModal() { document.getElementById("clear-modal").classList.remove("hidden"); }
+function closeModal(id)   { document.getElementById(id).classList.add("hidden"); }
+function confirmClear() {
+  closeModal("clear-modal");
+  state.players=[]; state.arrows=[]; state.markers=[]; state.zones=[];
+  state.selected=null; state.drawing=null; state.drawingZone=null;
+  render();
+}
+
+// ── Markdown → HTML (mirrors build.js) ───────────────────────────────────────
+function mdToHtml(md) {
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return md
+    .replace(/```[\w]*\n([\s\S]*?)```/g, (_,c) => `<pre><code>${esc(c.trim())}</code></pre>`)
+    .replace(/`([^`]+)`/g, (_,c) => `<code>${esc(c)}</code>`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/\_(.+?)\_/g, "<em>$1</em>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>[\s\S]*?<\/li>)\n(?!<li>)/g, m => `<ul>${m}</ul>`)
+    .split(/\n{2,}/)
+    .map(b => { b=b.trim(); return (!b||/^<[huop]/.test(b)) ? b : `<p>${b.replace(/\n/g," ")}</p>`; })
+    .join("\n");
+}
+
+// ── Preview court SVG ─────────────────────────────────────────────────────────
+function previewCourtSvg() {
+  const sport = SPORT_MAP[currentSport];
+  const W = 200, H = 440;
+  const TC_p = getTCFor(currentSport);
+  let s = sport.courtBase(W, H);
+
+  state.zones.forEach(z => {
+    const zx=z.x*W, zy=z.y*H, zw=(z.width||.15)*W, zh=(z.height||.15)*H, c=z.color||"#f5e642";
+    s += `<rect x="${zx}" y="${zy}" width="${zw}" height="${zh}" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+    if (z.label) s += `<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle" fill="${c}" font-size="${W*.04}" font-family="DM Mono,monospace">${z.label}</text>`;
+  });
+  state.arrows.forEach(a => {
+    const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H, col=AC[a.type]||AC.ball;
+    const isLine=a.type==="line";
+    const mid=isLine?"":a.type==="move"?"amp":a.type==="screen"?"asp":"abp";
+    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amrp":a.type==="screen"?"asrp":"abrp"):"";
+    const dash=isLine?"8,5":a.type==="move"?"6,4":"";
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${W*.012}"
+      ${dash?`stroke-dasharray="${dash}"`:""}
+      ${mid?`marker-end="url(#${mid})"`:""}
+      ${midStart?`marker-start="url(#${midStart})"`:""}
+      opacity="0.9"/>`;
+  });
+  state.markers.forEach(m => {
+    const mx=m.x*W, my=m.y*H, r=W*.04;
+    if (m.type==="cone") {
+      const cc=m.color||"#f5a542";
+      s += `<polygon points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}" fill="${cc}" stroke="rgba(0,0,0,0.35)" stroke-width="1.2" opacity="0.9"/>`;
+    } else if (m.type==="ball") {
+      s += sport.renderBall(mx, my, r, "pvb" + m.id);
+    }
+  });
+  state.players.forEach(p => {
+    const px=p.x*W, py=p.y*H, r=W*.055, col=TC_p[p.team]||TC_p.A;
+    if (p.image) {
+      s += `<clipPath id="pvcp${p.id}"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>
+        <image href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" clip-path="url(#pvcp${p.id})" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+    } else {
+      s += `<circle cx="${px}" cy="${py}" r="${r}" fill="${col}" stroke="#111" stroke-width="1.5" opacity=".95"/>
+        <text x="${px}" y="${py}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${r*.85}" font-family="DM Mono,monospace" font-weight="500">${p.label||p.team}</text>`;
+    }
+  });
+
+  const defs = courtDefs("p");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-MX} ${-MY} ${W+2*MX} ${H+2*MY}" style="width:100%;height:100%">${defs}${s}</svg>`;
+}
+
+// ── Preview renderer ──────────────────────────────────────────────────────────
+function renderPreview() {
+  const title    = document.getElementById("f-title").value.trim() || "(Kein Titel)";
+  const players  = document.getElementById("f-players").value.trim();
+  const durMin   = document.getElementById("f-dur-min").value.trim();
+  const durMax   = document.getElementById("f-dur-max").value.trim();
+  const halfC    = document.getElementById("f-half-court").checked;
+  const skillsV  = document.getElementById("f-skills").value;
+  const matsV    = document.getElementById("f-materials").value;
+  const summary  = document.getElementById("f-summary").value.trim();
+  const bodyMd   = document.getElementById("f-body").value.trim();
+
+  const trainList = skillsV.split(",").map(s=>s.trim()).filter(Boolean);
+  const matList   = matsV.split(",").map(s=>s.trim()).filter(Boolean);
+  const durStr    = durMin && durMax ? (durMin===durMax?`${durMin} min`:`${durMin}–${durMax} min`) : (durMin?`${durMin}+ min`:"");
+
+  const catCls  = currentCategory.toLowerCase();
+  const skillCls = currentSkillReq.toLowerCase().replace(/ /g, "-");
+  const catBadge   = `<span class="badge badge-${catCls}">${CAT_LABEL[currentCategory]||currentCategory}</span>`;
+  const skillBadge = `<span class="badge badge-${skillCls}">${SKILL_LABEL[currentSkillReq]||currentSkillReq}</span>`;
+
+  const trainedHtml = trainList.map(s=>`<span class="skill-tag">${s}</span>`).join("");
+  const matsHtml = matList.length
+    ? `<div style="margin-bottom:18px"><span style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;display:block;margin-bottom:5px">Materialien</span>
+       <ul style="margin:0 0 0 1.1em;font-size:0.84rem;color:var(--ink-muted);line-height:1.8">${matList.map(m=>`<li>${m}</li>`).join("")}</ul></div>` : "";
+
+  const infoRows = [
+    players  ? `<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${players}</span></div>` : "",
+    durStr   ? `<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${durStr}</span></div>` : "",
+    halfC    ? `<div class="info-row"><span class="info-label">Halbes Feld</span><span class="info-value">✓</span></div>` : "",
+    currentSkillReq ? `<div class="info-row"><span class="info-label">Niveau</span><span class="info-value">${SKILL_LABEL[currentSkillReq]||currentSkillReq}</span></div>` : "",
+  ].join("");
+
+  document.getElementById("preview-wrap").innerHTML = `
+    <div class="prev-layout">
+      <div>
+        <div class="prev-byline">${catBadge}${skillBadge}</div>
+        <div class="prev-heading">${title}</div>
+        ${trainedHtml ? `<div class="prev-trained">${trainedHtml}</div>` : ""}
+        ${matsHtml}
+        ${summary ? `<p style="font-size:0.86rem;color:var(--ink-muted);margin-bottom:18px;line-height:1.6">${summary}</p>` : ""}
+        <div class="prev-body">${mdToHtml(bodyMd)}</div>
+      </div>
+      <div class="prev-court-sticky">
+        <div class="prev-court-label">Court Diagramm</div>
+        <div class="prev-court-wrap">${previewCourtSvg()}</div>
+        <div class="prev-court-info">${infoRows}</div>
+      </div>
+    </div>`;
+}
+
+// ── Diagram YAML ──────────────────────────────────────────────────────────────
+function diagramYaml() {
+  const fmt = v => typeof v === "number" ? +v.toFixed(3) : v;
+  const lines = [];
+  lines.push("  players:");
+  state.players.forEach(p => {
+    const img = p.image ? `, image: '${p.image}'` : "";
+    lines.push(`    - { id: ${p.id}, team: ${p.team}, x: ${fmt(p.x)}, y: ${fmt(p.y)}, label: ${p.label||p.team}${img} }`);
+  });
+  lines.push("  arrows:");
+  state.arrows.forEach(a => {
+    const bidir = a.bidir ? ", bidir: true" : "";
+    lines.push(`    - { id: ${a.id}, x1: ${fmt(a.x1)}, y1: ${fmt(a.y1)}, x2: ${fmt(a.x2)}, y2: ${fmt(a.y2)}, type: ${a.type}${bidir} }`);
+  });
+  lines.push("  markers:");
+  state.markers.forEach(m => {
+    const img = m.image ? `, image: '${m.image}'` : "";
+    const col = m.color ? `, color: '${m.color}'` : "";
+    lines.push(`    - { id: ${m.id}, type: ${m.type}, x: ${fmt(m.x)}, y: ${fmt(m.y)}${img}${col} }`);
+  });
+  lines.push("  zones:");
+  state.zones.forEach(z => {
+    const lbl = z.label ? `, label: ${z.label}` : "";
+    lines.push(`    - { id: ${z.id}, x: ${fmt(z.x)}, y: ${fmt(z.y)}, width: ${fmt(z.width)}, height: ${fmt(z.height)}${lbl}, color: '${z.color||"#f5e642"}' }`);
+  });
+  return lines.join("\n");
+}
+
+// ── .md generation ────────────────────────────────────────────────────────────
+const slugify = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function generateMd() {
+  const title   = document.getElementById("f-title").value.trim() || "Neue Übung";
+  const players = document.getElementById("f-players").value.trim();
+  const durMin  = document.getElementById("f-dur-min").value.trim() || "0";
+  const durMax  = document.getElementById("f-dur-max").value.trim() || durMin;
+  const halfC   = document.getElementById("f-half-court").checked;
+  const summary = document.getElementById("f-summary").value.trim();
+  const body    = document.getElementById("f-body").value.trim();
+
+  const trainList = document.getElementById("f-skills").value.split(",").map(s=>s.trim()).filter(Boolean);
+  const matList   = document.getElementById("f-materials").value.split(",").map(s=>s.trim()).filter(Boolean);
+
+  const trainYaml = trainList.map(t=>`  - ${t}`).join("\n");
+  const matYaml   = matList.map(m=>`  - ${m}`).join("\n");
+
+  return `---
+title: ${title}
+category: ${currentCategory}
+skill_requirement: ${currentSkillReq}
+skills_trained:
+${trainYaml}
+half_court: ${halfC}
+players: ${players}
+duration: {min: ${durMin}, max: ${durMax}}
+materials:
+${matYaml}
+summary: ${summary}
+diagram:
+${diagramYaml()}
+---
+
+${body || "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen"}
+`;
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+function downloadMd() {
+  const title = document.getElementById("f-title").value.trim();
+  const filename = (slugify(title) || "neue-uebung") + ".md";
+  const blob = new Blob([generateMd()], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Save (preview server only) ────────────────────────────────────────────────
+const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+if (isLocal) document.getElementById("btn-save").style.display = "";
+
+async function saveMd() {
+  const title = document.getElementById("f-title").value.trim();
+  if (!title) { showToast("⚠ Titel erforderlich"); return; }
+  const filename = slugify(title) + ".md";
+  try {
+    const res = await fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sport: currentSport, filename, content: generateMd() }),
+    });
+    if (res.ok) showToast("✓ Gespeichert — rebuild läuft…");
+    else showToast("✗ " + await res.text());
+  } catch(e) { showToast("✗ " + e.message); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

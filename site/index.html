@@ -29,6 +29,13 @@ body>*:not(.bg-courts){position:relative;z-index:1}
 }
 .logo-img{width:32px;height:32px;object-fit:contain}
 .site-title{font-family:var(--serif);font-size:1.4rem;font-weight:600;font-style:italic;color:var(--ink)}
+.new-entry-btn{
+  margin-left:auto;padding:5px 13px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-faint);text-decoration:none;
+  font-family:var(--mono);font-size:0.62rem;letter-spacing:0.05em;
+  transition:all 0.15s;
+}
+.new-entry-btn:hover{color:var(--ink);border-color:var(--ink-faint);background:var(--surface)}
 
 /* ── Hero ── */
 .hero{
@@ -166,6 +173,7 @@ body>*:not(.bg-courts){position:relative;z-index:1}
   <div>
     <div class="site-title">Rally Room</div>
   </div>
+  <a class="new-entry-btn" href="editor/">+ Neue Übung</a>
 </header>
 
 <section class="hero">
