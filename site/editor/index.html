@@ -858,7 +858,6 @@ window.addEventListener("blur", () => {
 function openResetModal() { document.getElementById("reset-modal").classList.remove("hidden"); }
 function confirmReset() {
   closeModal("reset-modal");
-  setSport("pickleball");
   currentCategory = "Exercise"; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Exercise"));
   currentSkillReq = "Beginner"; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Beginner"));
   ["f-title","f-players","f-dur-min","f-dur-max","f-skills","f-materials","f-summary"].forEach(id => document.getElementById(id).value = "");
