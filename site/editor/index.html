@@ -891,7 +891,7 @@ function mdToHtml(md) {
     .replace(/^## (.+)$/gm, "<h2>$1</h2>")
     .replace(/^# (.+)$/gm, "<h1>$1</h1>")
     .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>[\s\S]*?<\/li>)\n(?!<li>)/g, m => `<ul>${m}</ul>`)
+    .replace(/(<li>[^\n]*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
     .split(/\n{2,}/)
     .map(b => { b=b.trim(); return (!b||/^<[huop]/.test(b)) ? b : `<p>${b.replace(/\n/g," ")}</p>`; })
     .join("\n");
