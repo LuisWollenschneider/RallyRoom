@@ -705,7 +705,7 @@ function updateProps() {
     if (sel.type === "text") {
       html += propField("Text", "text", sel.text||"Text", "text");
       html += propColor("Farbe", sel.color||"#e8ede4");
-      html += propField("Größe", "size", sel.size||0.06, "number");
+      html += propField("Größe", "size", sel.size||11, "number");
       html += propField("Rotation (°)", "rotation", sel.rotation||0, "number");
       html += `<div style="display:flex;gap:6px">
         <button onclick="updateProp('bold',!state.selected?.bold);render()" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border);background:${sel.bold?"var(--green-dim)":"var(--card)"};color:${sel.bold?"var(--green)":"var(--ink-muted)"};cursor:pointer;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:0.85rem">B</button>
@@ -991,7 +991,7 @@ function previewCourtSvg() {
     } else if (m.type==="ball") {
       s += sport.renderBall(mx, my, r, "pvb" + m.id);
     } else if (m.type==="text") {
-      const fs=(m.size||0.06)*W, col=m.color||"#e8ede4", rot=m.rotation||0;
+      const fs=(m.size||11)/11/16*W, col=m.color||"#e8ede4", rot=m.rotation||0;
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
       const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
       s += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text||"Text"}</text>`;

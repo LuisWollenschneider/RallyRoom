@@ -420,7 +420,7 @@ function renderDiagram(d, W, H, sfx) {
       const maskId=`bm${m.id||mx}${sfx}`;
       s+=renderBall(mx, my, r, maskId);
     } else if(m.type==="text"){
-      const fs=(m.size||0.06)*W, col=m.color||"#e8ede4", rot=m.rotation||0;
+      const fs=(m.size||11)/11/16*W, col=m.color||"#e8ede4", rot=m.rotation||0;
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
       const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
       s+=`<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text||"Text"}</text>`;
