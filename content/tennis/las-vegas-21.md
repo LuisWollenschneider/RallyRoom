@@ -1,0 +1,41 @@
+---
+sport: tennis
+title: Las Vegas 21
+category: Game
+skill_requirement: All Levels
+skills_trained:
+  - Taktik
+  - Punkte
+half_court: true
+players: 
+duration: {min: 0, max: 0}
+materials:
+
+summary: Wer wagt, gewinnt!
+diagram:
+  players:
+    - { id: e7, team: A, x: 0.502, y: -0.027, label: A1 }
+    - { id: e8, team: B, x: 0.502, y: 1.035, label: B1 }
+  arrows:
+  markers:
+    - { id: e11, type: text, x: 0.482, y: 0.139, color: '#e8ede4', text: '1', size: 38, bold: true }
+    - { id: e12, type: text, x: 0.496, y: 0.863, color: '#e8ede4', text: '1', size: 38, bold: true }
+  zones:
+---
+
+## Aufbau
+Das Spiel beginnt mit den Punktestand 1:1.
+Spieler müssen vor jedem Punkt eine bestimmte Anzahl ihrer Punkte wetten. Wenn sie den Punkt gewinnen, werden die gesetzten Punkte verdoppelt. Wenn sie verlieren, verlieren sie die gesetzten Punkte.
+
+Gesetzt werden kann immer nur maximal, was der Spieler an Punkten aktuell hat.
+
+_Wenn ein Spieler 0 Punkte hat, kann er immer 1 Punkt setzen, um neu ins Spiel zu kommen. Negative Punkte sind nicht möglich._
+
+## Beispiel
+Steht es 4:2 und Spieler A setzt 3 Punkte, und Spieler B 1 Punkt, und Spieler A gewinnt, steht es danach 7:1.
+
+## Ziel
+Gespielt wird bis 21.
+
+## Variationen
+Das ganze kann als Einzel oder aus als Doppel gespielt werden.
