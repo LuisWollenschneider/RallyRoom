@@ -616,16 +616,32 @@ function getKind(obj) {
   if (state.zones.includes(obj))   return "zone";
 }
 
+// ── Arrow helpers ─────────────────────────────────────────────────────────────
+function arrowPathD(a, W, H) {
+  const x1=a.x1*W, y1=a.y1*H, x2=a.x2*W, y2=a.y2*H;
+  if (!a.midTouched) return `M ${x1} ${y1} L ${x2} ${y2}`;
+  const cx=a.cx*W, cy=a.cy*H;
+  return a.mode==="angled"
+    ? `M ${x1} ${y1} L ${cx} ${cy} L ${x2} ${y2}`
+    : `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+}
+function arrowToggle(key) { if (state.selected) { state.selected[key]=!state.selected[key]; render(); } }
+function arrowSetMode(m)  { if (state.selected) { state.selected.mode=m; render(); } }
+function arrowResetMid()  {
+  const a=state.selected; if (!a) return;
+  a.cx=(a.x1+a.x2)/2; a.cy=(a.y1+a.y2)/2; a.midTouched=false; render();
+}
+
 // ── Render canvas ─────────────────────────────────────────────────────────────
 function courtDefs(sfx) {
   sfx = sfx || "";
   return `<defs>
-    <marker id="ab${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
-    <marker id="am${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
-    <marker id="as${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
-    <marker id="abr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
-    <marker id="amr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
-    <marker id="asr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+    <marker id="ab${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
+    <marker id="am${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
+    <marker id="as${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
+    <marker id="abr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
+    <marker id="amr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
+    <marker id="asr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
   </defs>`;
 }
 
@@ -654,25 +670,38 @@ function renderCanvas() {
     const x1=a.x1*VW,y1=a.y1*VH,x2=a.x2*VW,y2=a.y2*VH;
     const col=AC[a.type]||AC.ball, sel=state.selected?.id===a.id;
     const isLine=a.type==="line";
-    const mid=isLine?"":a.type==="move"?"ame":a.type==="screen"?"ase":"abe";
-    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amre":a.type==="screen"?"asre":"abre"):"";
+    const headEnd   = isLine ? (a.headEnd??false)  : (a.headEnd??true);
+    const headStart = a.headStart||a.bidir||false;
+    const pfx = a.type==="move"?"am":a.type==="screen"?"as":"ab";
+    const mEnd   = headEnd   ? `marker-end="url(#${pfx}e)"`   : "";
+    const mStart = headStart ? `marker-start="url(#${pfx}re)"`: "";
     const dash=isLine?"8,5":a.type==="move"?"6,4":"";
-    s += `<line data-id="${a.id}" data-kind="arrow" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
-      stroke="${sel?"#fff":col}" stroke-width="${sel?4:3}" ${dash?`stroke-dasharray="${dash}"`:""}
-      ${mid?`marker-end="url(#${mid})"`:""}
-      ${midStart?`marker-start="url(#${midStart})"`:""}
+    const d = arrowPathD(a, VW, VH);
+    s += `<path data-id="${a.id}" data-kind="arrow" d="${d}"
+      stroke="${sel?"#fff":col}" stroke-width="${sel?4:3}" fill="none"
+      ${dash?`stroke-dasharray="${dash}"`:""}
+      ${mEnd} ${mStart}
       opacity="${sel?1:.85}" style="cursor:pointer"/>`;
-    s += `<line data-id="${a.id}" data-kind="arrow" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
-      stroke="transparent" stroke-width="14" style="cursor:pointer"/>`;
+    s += `<path data-id="${a.id}" data-kind="arrow" d="${d}" stroke="transparent" stroke-width="14" fill="none" style="cursor:pointer"/>`;
+    if (sel) {
+      const cxp=(a.midTouched?a.cx:(a.x1+a.x2)/2)*VW, cyp=(a.midTouched?a.cy:(a.y1+a.y2)/2)*VH;
+      if (a.midTouched && a.mode!=="angled") {
+        s += `<line x1="${x1}" y1="${y1}" x2="${cxp}" y2="${cyp}" stroke="rgba(255,255,255,.18)" stroke-width="1" stroke-dasharray="3,3" style="pointer-events:none"/>`;
+        s += `<line x1="${x2}" y1="${y2}" x2="${cxp}" y2="${cyp}" stroke="rgba(255,255,255,.18)" stroke-width="1" stroke-dasharray="3,3" style="pointer-events:none"/>`;
+      }
+      s += `<circle data-id="${a.id}" data-kind="arrow-pt" data-pt="start" cx="${x1}" cy="${y1}" r="5" fill="rgba(255,255,255,.85)" stroke="${col}" stroke-width="1.5" style="cursor:move"/>`;
+      s += `<circle data-id="${a.id}" data-kind="arrow-pt" data-pt="mid"   cx="${cxp}" cy="${cyp}" r="${a.midTouched?4.5:3.5}" fill="${a.midTouched?"rgba(255,255,255,.85)":"rgba(255,255,255,.35)"}" stroke="${col}" stroke-width="1.5" ${a.midTouched?"":`stroke-dasharray="2,1"`} style="cursor:move"/>`;
+      s += `<circle data-id="${a.id}" data-kind="arrow-pt" data-pt="end"   cx="${x2}" cy="${y2}" r="5" fill="rgba(255,255,255,.85)" stroke="${col}" stroke-width="1.5" style="cursor:move"/>`;
+    }
   });
 
   if (state.drawing) {
     const a = state.drawing;
     const col=AC[a.type]||AC.ball, isLine=a.type==="line";
-    const mid=isLine?"":a.type==="move"?"ame":a.type==="screen"?"ase":"abe";
+    const pfx=a.type==="move"?"am":a.type==="screen"?"as":"ab";
     s += `<line x1="${a.x1*VW}" y1="${a.y1*VH}" x2="${a.x2*VW}" y2="${a.y2*VH}"
       stroke="${col}" stroke-width="2.5" stroke-dasharray="${isLine?"8,5":"4,3"}" opacity=".7"
-      ${mid?`marker-end="url(#${mid})"`:""}/>`;
+      ${!isLine?`marker-end="url(#${pfx}e)"`:""}`+`/>`;
   }
 
   state.markers.forEach(m => {
@@ -752,12 +781,22 @@ function updateProps() {
     html += propField("Label", "label", sel.label||"", "text");
     html += propColor("Farbe", sel.color||"#f5e642");
   } else if (kind === "arrow") {
+    const headEnd   = sel.type==="line" ? (sel.headEnd??false)  : (sel.headEnd??true);
+    const headStart = sel.headStart||sel.bidir||false;
+    const mode = sel.mode||"curved";
+    const tb = (label,active,fn) => `<button onclick="${fn}" style="flex:1;padding:4px;border-radius:5px;border:1px solid var(--border);background:${active?"var(--green-dim)":"var(--card)"};color:${active?"var(--green)":"var(--ink-muted)"};cursor:pointer;font-size:0.72rem;font-family:var(--sans)">${label}</button>`;
+    html += `<div class="prop-label">Pfeilspitzen</div>
+      <div style="display:flex;gap:5px">
+        ${tb("← Start", headStart, "arrowToggle('headStart')")}
+        ${tb("Ende →",  headEnd,   "arrowToggle('headEnd')")}
+      </div>`;
+    html += `<div class="prop-label">Kurvenform</div>
+      <div style="display:flex;gap:5px">
+        ${tb("∿ Kurve",  mode==="curved",  "arrowSetMode('curved')")}
+        ${tb("∟ Winkel", mode==="angled",  "arrowSetMode('angled')")}
+      </div>`;
+    if (sel.midTouched) html += `<button onclick="arrowResetMid()" style="width:100%;padding:4px;border-radius:5px;border:1px solid var(--border);background:var(--card);color:var(--ink-muted);cursor:pointer;font-size:0.72rem;font-family:var(--sans)">⟲ Gerade</button>`;
     html += `<div class="prop-type">Typ: ${sel.type}</div>`;
-    if (sel.type !== "line") {
-      html += `<label style="display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ink-muted);cursor:pointer">
-        <input type="checkbox" ${sel.bidir?"checked":""} onchange="updateProp('bidir',this.checked)" style="accent-color:var(--green);cursor:pointer"/>
-        Bidirektional</label>`;
-    }
   }
   html += `<button class="prop-del" onclick="deleteSelected()">Löschen</button>`;
   body.innerHTML = html;
@@ -796,6 +835,12 @@ function onDown(evt) {
   const kind = evt.target.dataset?.kind;
 
   if (state.tool === "select") {
+    if (kind === "arrow-pt") {
+      const obj = findObj(id, "arrow");
+      state.selected = obj;
+      state.dragging = { obj, kind: "arrow-pt", pt: evt.target.dataset.pt, ox: c.x, oy: c.y };
+      render(); return;
+    }
     const obj = id ? findObj(id, kind) : null;
     state.selected = obj || null;
     if (obj) {
@@ -836,10 +881,18 @@ function onMove(evt) {
   const c = svgCoords(evt);
   if (state.dragging) {
     const { obj, kind } = state.dragging;
-    if (kind === "arrow") {
+    if (kind === "arrow-pt") {
+      const pt = state.dragging.pt;
+      if (pt === "start")     { obj.x1=clamp(c.x); obj.y1=clampY(c.y); }
+      else if (pt === "end")  { obj.x2=clamp(c.x); obj.y2=clampY(c.y); }
+      else if (pt === "mid")  { obj.cx=clamp(c.x); obj.cy=clampY(c.y); obj.midTouched=true; }
+      if (!obj.midTouched) { obj.cx=(obj.x1+obj.x2)/2; obj.cy=(obj.y1+obj.y2)/2; }
+    } else if (kind === "arrow") {
       const dx = c.x - state.dragging.ox, dy = c.y - state.dragging.oy;
       obj.x1 = clamp(obj.x1+dx); obj.y1 = clampY(obj.y1+dy);
       obj.x2 = clamp(obj.x2+dx); obj.y2 = clampY(obj.y2+dy);
+      if (obj.midTouched) { obj.cx=clamp(obj.cx+dx); obj.cy=clampY(obj.cy+dy); }
+      else { obj.cx=(obj.x1+obj.x2)/2; obj.cy=(obj.y1+obj.y2)/2; }
       state.dragging.ox = c.x; state.dragging.oy = c.y;
     } else if (kind === "zone") {
       obj.x = Math.max(-MX/VW, Math.min(1-obj.width+MX/VW, c.x - state.dragging.ox));
@@ -865,7 +918,11 @@ function onUp() {
   if (state.drawing) {
     const a = state.drawing;
     const dx = a.x2-a.x1, dy = a.y2-a.y1;
-    if (Math.sqrt(dx*dx+dy*dy) > 0.04) state.arrows.push({ id: genId(), ...a });
+    if (Math.sqrt(dx*dx+dy*dy) > 0.04) state.arrows.push({
+      id: genId(), ...a,
+      cx: (a.x1+a.x2)/2, cy: (a.y1+a.y2)/2, midTouched: false, mode: "curved",
+      headEnd: a.type!=="line", headStart: false,
+    });
     state.drawing = null; render(); return;
   }
   if (state.drawingZone) {
@@ -1007,16 +1064,17 @@ function previewCourtSvg() {
     if (z.label) s += `<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle" fill="${c}" font-size="${W*.04}" font-family="DM Mono,monospace">${z.label}</text>`;
   });
   state.arrows.forEach(a => {
-    const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H, col=AC[a.type]||AC.ball;
-    const isLine=a.type==="line";
-    const mid=isLine?"":a.type==="move"?"amp":a.type==="screen"?"asp":"abp";
-    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amrp":a.type==="screen"?"asrp":"abrp"):"";
+    const col=AC[a.type]||AC.ball, isLine=a.type==="line";
+    const headEnd   = isLine ? (a.headEnd??false)  : (a.headEnd??true);
+    const headStart = a.headStart||a.bidir||false;
+    const pfx=a.type==="move"?"amp":a.type==="screen"?"asp":"abp";
+    const mEnd  = headEnd   ? `marker-end="url(#${pfx})"`   : "";
+    const mStart= headStart ? `marker-start="url(#${pfx}r)"`  : "";
     const dash=isLine?"8,5":a.type==="move"?"6,4":"";
-    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${W*.012}"
+    const d = arrowPathD(a, W, H);
+    s += `<path d="${d}" stroke="${col}" stroke-width="${W*.012}" fill="none"
       ${dash?`stroke-dasharray="${dash}"`:""}
-      ${mid?`marker-end="url(#${mid})"`:""}
-      ${midStart?`marker-start="url(#${midStart})"`:""}
-      opacity="0.9"/>`;
+      ${mEnd} ${mStart} opacity="0.9"/>`;
   });
   state.markers.forEach(m => {
     const mx=m.x*W, my=m.y*H, r=W*.04;
@@ -1118,8 +1176,13 @@ function diagramYaml() {
   });
   lines.push("  arrows:");
   state.arrows.forEach(a => {
-    const bidir = a.bidir ? ", bidir: true" : "";
-    lines.push(`    - { id: ${a.id}, x1: ${fmt(a.x1)}, y1: ${fmt(a.y1)}, x2: ${fmt(a.x2)}, y2: ${fmt(a.y2)}, type: ${a.type}${bidir} }`);
+    const headEnd   = a.type==="line" ? (a.headEnd??false)  : (a.headEnd??true);
+    const headStart = a.headStart||a.bidir||false;
+    const hs  = headStart            ? ", headStart: true"        : "";
+    const he  = !headEnd             ? ", headEnd: false"         : "";
+    const md  = (a.mode&&a.mode!=="curved") ? `, mode: ${a.mode}`: "";
+    const ctrl= a.midTouched ? `, cx: ${fmt(a.cx)}, cy: ${fmt(a.cy)}, midTouched: true` : "";
+    lines.push(`    - { id: ${a.id}, x1: ${fmt(a.x1)}, y1: ${fmt(a.y1)}, x2: ${fmt(a.x2)}, y2: ${fmt(a.y2)}, type: ${a.type}${hs}${he}${md}${ctrl} }`);
   });
   lines.push("  markers:");
   state.markers.forEach(m => {

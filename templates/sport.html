@@ -376,12 +376,12 @@ const CMX=30, CMY=50;
 
 function courtDefs(sfx) {
   return `<defs>
-    <marker id="ab${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
-    <marker id="am${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
-    <marker id="as${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
-    <marker id="abr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.ball}"/></marker>
-    <marker id="amr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.move}"/></marker>
-    <marker id="asr${sfx}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="${AC.screen}"/></marker>
+    <marker id="ab${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
+    <marker id="am${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
+    <marker id="as${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
+    <marker id="abr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
+    <marker id="amr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
+    <marker id="asr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
   </defs>`;
 }
 
@@ -397,16 +397,19 @@ function renderDiagram(d, W, H, sfx) {
   });
 
   (d.arrows||[]).forEach(a => {
-    const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H;
-    const col=AC[a.type]||AC.ball;
-    const isLine=a.type==="line";
-    const mid=isLine?"":a.type==="move"?"am":a.type==="screen"?"as":"ab";
-    const midStart=(!isLine&&a.bidir)?(a.type==="move"?"amr":a.type==="screen"?"asr":"abr"):"";
+    const col=AC[a.type]||AC.ball, isLine=a.type==="line";
+    const headEnd   = isLine ? (a.headEnd??false)  : (a.headEnd??true);
+    const headStart = a.headStart||a.bidir||false;
+    const pfx=a.type==="move"?"am":a.type==="screen"?"as":"ab";
+    const mEnd  = headEnd   ? `marker-end="url(#${pfx}${sfx})"`    : "";
+    const mStart= headStart ? `marker-start="url(#${pfx}r${sfx})"` : "";
     const dash=isLine?"8,5":a.type==="move"?"6,4":"";
-    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${W*.012}" ${dash?`stroke-dasharray="${dash}"`:""}
-      ${mid?`marker-end="url(#${mid}${sfx})"`:""}
-      ${midStart?`marker-start="url(#${midStart}${sfx})"`:""}
-      opacity="0.9"/>`;
+    const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H;
+    let d;
+    if (!a.midTouched) { d=`M ${x1} ${y1} L ${x2} ${y2}`; }
+    else { const cx=a.cx*W,cy=a.cy*H; d=a.mode==="angled"?`M ${x1} ${y1} L ${cx} ${cy} L ${x2} ${y2}`:`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`; }
+    s+=`<path d="${d}" stroke="${col}" stroke-width="${W*.012}" fill="none" ${dash?`stroke-dasharray="${dash}"`:""}
+      ${mEnd} ${mStart} opacity="0.9"/>`;
   });
 
   (d.markers||[]).forEach(m => {

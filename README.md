@@ -8,6 +8,11 @@ Site available at: https://luiswollenschneider.github.io/RallyRoom/
 
 ## Workflow
 
+Submission via [https://formspree.io](https://formspree.io) available.
+
+OR
+
+Contribute to the repository directly via GitHub:
 1. Clone this repository: `git clone https://github.com/LuisWollenschneider/RallyRoom.git`
 2. Create a new entry on https://luiswollenschneider.github.io/RallyRoom/editor/
 **OR** run the editor locally with `node preview.js` and open `http://localhost:3000` in your browser
