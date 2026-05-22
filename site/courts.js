@@ -21,7 +21,7 @@
             description: "",
             accent: "#d4763a",
             accentDim: "#6b3010",
-            teamA: "#d4763a",
+            teamA: "#0c902b",
             teamB: "#4385d4",
             teamW: "#d4a843",
 
