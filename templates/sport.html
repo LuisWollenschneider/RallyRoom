@@ -634,8 +634,9 @@ function openEntry(slug) {
   _modalDiagram=e.diagram;
   const date=e.date?new Date(e.date+"T12:00:00").toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"";
   const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
+  const hasPlayers = typeof(e.players) !== "object";
   const courtInfoHtml=`
-    ${e.players?`<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${e.players}</span></div>`:""}
+    ${hasPlayers?`<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${e.players}</span></div>`:""}
     ${e.duration?`<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${fmtDuration(e.duration)}</span></div>`:""}
     ${e.skill_requirement?`<div class="info-row"><span class="info-label">Skill</span><span class="info-value">${SKILL_LABEL[e.skill_requirement]||e.skill_requirement}</span></div>`:""}
     <div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value ${e.half_court?"":"danger"}">${e.half_court?"Ja":"Nein"}</span></div>`;
