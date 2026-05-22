@@ -8,7 +8,7 @@ skills_trained:
   - Punkte
 half_court: true
 players: 
-duration: {min: 0, max: 0}
+duration: {min: 4, max: 10}
 materials:
 
 summary: Wer wagt, gewinnt!

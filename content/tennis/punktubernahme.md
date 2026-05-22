@@ -4,7 +4,7 @@ title: Punktübernahme
 category: Game
 skill_requirement: All Levels
 skills_trained:
-
+  - Punkte
 half_court: true
 players: je 3
 duration: {min: 4, max: 6}
