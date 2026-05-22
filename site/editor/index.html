@@ -61,7 +61,7 @@ a.btn-ghost{text-decoration:none}
 .field-section{display:flex;flex-direction:column;gap:5px}
 .field-label{
   font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--ink-faint);font-family:var(--mono);font-weight:500;
+  color:var(--ink-muted);font-family:var(--mono);font-weight:500;
 }
 .field-input{
   padding:6px 9px;background:var(--card);border:1px solid var(--border);
@@ -158,8 +158,9 @@ a.btn-ghost{text-decoration:none}
 #props-panel.empty .props-filled{display:none}
 #props-panel:not(.empty) .props-empty{display:none}
 .props-empty{font-size:0.78rem;color:var(--ink-faint);font-style:italic;line-height:1.6}
+#props-body{display:flex;flex-direction:column;gap:12px}
 .props-filled{display:flex;flex-direction:column;gap:10px}
-.prop-label{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);font-family:var(--mono)}
+.prop-label{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);font-family:var(--mono);padding-bottom: 3px;}
 .prop-input{
   width:100%;padding:6px 9px;background:var(--card);border:1px solid var(--border);
   color:var(--ink);border-radius:5px;font-family:var(--mono);font-size:0.78rem;outline:none;
@@ -368,6 +369,7 @@ a.btn-ghost{text-decoration:none}
         <div class="tool-strip-sep"></div>
         <button class="tool-chip" id="ts-marker-cone" onclick="setTool('marker-cone')">▲ Hütchen</button>
         <button class="tool-chip" id="ts-marker-ball" onclick="setTool('marker-ball')">● Ball</button>
+        <button class="tool-chip" id="ts-marker-text" onclick="setTool('marker-text')">T Text</button>
         <div class="tool-strip-sep"></div>
         <button class="tool-chip" id="ts-zone" onclick="setTool('zone')">□ Zone</button>
         <div class="tool-strip-sep"></div>
@@ -650,6 +652,17 @@ function renderCanvas() {
       s += sport.renderBall(mx, my, r, maskId);
       if (sel) s += `<circle cx="${mx}" cy="${my}" r="${r*.72}" fill="none" stroke="#fff" stroke-width="1.5" style="pointer-events:none"/>`;
       s += `<circle data-id="${m.id}" data-kind="marker" cx="${mx}" cy="${my}" r="${r*.72}" fill="transparent" style="cursor:pointer"/>`;
+    } else if (m.type==="text") {
+      const fs = (m.size||11)/11/16*VW, col = m.color||"#e8ede4", txt = m.text||"Text", rot = m.rotation||0;
+      const tf = rot ? `rotate(${rot},${mx},${my})` : "";
+      const fw = m.bold ? "600" : "300", fi = m.italic ? "italic" : "normal";
+      s += `<text data-id="${m.id}" data-kind="marker" x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle"
+        fill="${sel?"#fff":col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}"
+        transform="${tf}" style="cursor:pointer;user-select:none">${txt}</text>`;
+      if (sel) {
+        const hw = txt.length*fs*0.32, hh = fs*0.6;
+        s += `<rect x="${mx-hw}" y="${my-hh}" width="${hw*2}" height="${hh*2}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-dasharray="3,2" transform="${tf}" style="pointer-events:none"/>`;
+      }
     }
   });
 
@@ -689,6 +702,16 @@ function updateProps() {
     html += `<div class="prop-type">Team: <strong style="color:${TC[sel.team]||'inherit'}">${sel.team}</strong></div>`;
   } else if (kind === "marker") {
     if (sel.type === "cone") html += propColor("Farbe", sel.color||"#f5a542");
+    if (sel.type === "text") {
+      html += propField("Text", "text", sel.text||"Text", "text");
+      html += propColor("Farbe", sel.color||"#e8ede4");
+      html += propField("Größe", "size", sel.size||0.06, "number");
+      html += propField("Rotation (°)", "rotation", sel.rotation||0, "number");
+      html += `<div style="display:flex;gap:6px">
+        <button onclick="updateProp('bold',!state.selected?.bold);render()" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border);background:${sel.bold?"var(--green-dim)":"var(--card)"};color:${sel.bold?"var(--green)":"var(--ink-muted)"};cursor:pointer;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:0.85rem">B</button>
+        <button onclick="updateProp('italic',!state.selected?.italic);render()" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border);background:${sel.italic?"var(--green-dim)":"var(--card)"};color:${sel.italic?"var(--green)":"var(--ink-muted)"};cursor:pointer;font-family:Fraunces,Georgia,serif;font-style:italic;font-size:0.85rem">I</button>
+      </div>`;
+    }
     html += `<div class="prop-type">Typ: ${sel.type}</div>`;
   } else if (kind === "zone") {
     html += propField("Label", "label", sel.label||"", "text");
@@ -756,7 +779,11 @@ function onDown(evt) {
     render(); return;
   }
   if (state.tool.startsWith("marker-")) {
-    state.markers.push({ id: genId(), type: state.tool.split("-")[1], x: c.x, y: c.y });
+    const type = state.tool.split("-")[1];
+    const m = { id: genId(), type, x: c.x, y: c.y };
+    if (type === "text") { m.text = "Text"; m.color = "#e8ede4"; m.size = 11; }
+    state.markers.push(m);
+    if (type === "text") { state.selected = m; setTool("select"); }
     render(); return;
   }
   if (state.tool.startsWith("arrow-")) {
@@ -820,6 +847,20 @@ document.addEventListener("mouseup",   onUp);
 document.addEventListener("touchmove", onMove, { passive: false });
 document.addEventListener("touchend",  onUp);
 
+svg.addEventListener("dblclick", e => {
+  e.preventDefault();
+  const id = e.target.dataset?.id, kind = e.target.dataset?.kind;
+  if (!id || !kind) return;
+  const obj = findObj(id, kind);
+  if (!obj) return;
+  if (kind === "zone" || (kind === "marker" && obj.type === "text")) {
+    state.selected = obj;
+    render(); // updateProps() is synchronous — input exists in DOM immediately after
+    const inp = document.querySelector("#props-body input[type='text']");
+    if (inp) { inp.focus(); inp.select(); }
+  }
+});
+
 function deleteSelected() {
   if (!state.selected) return;
   const id = state.selected.id;
@@ -832,9 +873,30 @@ function deleteSelected() {
 }
 
 let _preShiftTool = null;
+let _clipboard = null;
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); return; }
+  const tag = document.activeElement?.tagName;
+  if ((e.metaKey || e.ctrlKey) && e.key === "c" && state.selected && tag !== "INPUT" && tag !== "TEXTAREA") {
+    _clipboard = JSON.parse(JSON.stringify(state.selected));
+    showToast("Kopiert");
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === "v" && _clipboard && tag !== "INPUT" && tag !== "TEXTAREA") {
+    e.preventDefault();
+    const clone = JSON.parse(JSON.stringify(_clipboard));
+    clone.id = genId();
+    const offset = 0.05;
+    if ("x1" in clone) { clone.x1+=offset; clone.y1+=offset; clone.x2+=offset; clone.y2+=offset; }
+    else { clone.x = Math.min(1, clone.x+offset); clone.y = Math.min(1, clone.y+offset); }
+    if (state.players.some(p => p.id === _clipboard.id)) state.players.push(clone);
+    else if (state.arrows.some(a => a.id === _clipboard.id)) state.arrows.push(clone);
+    else if (state.markers.some(m => m.id === _clipboard.id)) state.markers.push(clone);
+    else if (state.zones.some(z => z.id === _clipboard.id)) state.zones.push(clone);
+    state.selected = clone;
+    render(); return;
+  }
   if (e.key === "Shift" && !e.repeat) {
     const tag = document.activeElement?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA") return;
@@ -928,6 +990,11 @@ function previewCourtSvg() {
       s += `<polygon points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}" fill="${cc}" stroke="rgba(0,0,0,0.35)" stroke-width="1.2" opacity="0.9"/>`;
     } else if (m.type==="ball") {
       s += sport.renderBall(mx, my, r, "pvb" + m.id);
+    } else if (m.type==="text") {
+      const fs=(m.size||0.06)*W, col=m.color||"#e8ede4", rot=m.rotation||0;
+      const tf=rot?`rotate(${rot},${mx},${my})`:"";
+      const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
+      s += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text||"Text"}</text>`;
     }
   });
   state.players.forEach(p => {
@@ -1023,7 +1090,12 @@ function diagramYaml() {
   state.markers.forEach(m => {
     const img = m.image ? `, image: '${m.image}'` : "";
     const col = m.color ? `, color: '${m.color}'` : "";
-    lines.push(`    - { id: ${m.id}, type: ${m.type}, x: ${fmt(m.x)}, y: ${fmt(m.y)}${img}${col} }`);
+    const txt  = m.text     ? `, text: '${m.text.replace(/'/g,"\\\'")}'` : "";
+    const sz   = m.size     ? `, size: ${fmt(m.size)}`         : "";
+    const rot  = m.rotation ? `, rotation: ${fmt(m.rotation)}` : "";
+    const bold = m.bold     ? `, bold: true`                   : "";
+    const ital = m.italic   ? `, italic: true`                 : "";
+    lines.push(`    - { id: ${m.id}, type: ${m.type}, x: ${fmt(m.x)}, y: ${fmt(m.y)}${img}${col}${txt}${sz}${rot}${bold}${ital} }`);
   });
   lines.push("  zones:");
   state.zones.forEach(z => {
