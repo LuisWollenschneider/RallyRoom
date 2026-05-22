@@ -47,6 +47,8 @@ a.btn-ghost{text-decoration:none}
 }
 .btn-primary:hover{background:#3a7050}
 
+.tob-sep{width:1px;height:20px;background:var(--border)}
+
 /* ── Layout ── */
 #layout{display:flex;flex:1;min-height:0;overflow:hidden}
 
@@ -259,6 +261,8 @@ a.btn-ghost{text-decoration:none}
   <div class="top-sep"></div>
   <span class="top-title">Neue Übung</span>
   <div class="top-actions">
+    <button class="btn-ghost" style="color:var(--red)" onclick="openResetModal()">✕ Zurücksetzen</button>
+    <div class="top-sep"></div>
     <input type="file" id="upload-input" accept=".md" style="display:none" onchange="handleUpload(event)"/>
     <button class="btn-ghost" onclick="document.getElementById('upload-input').click()">↑ Öffnen</button>
     <button id="btn-download" class="btn-primary" onclick="downloadMd()">↓ .md herunterladen</button>
@@ -406,7 +410,36 @@ a.btn-ghost{text-decoration:none}
   </div>
 </div>
 
-<!-- Clear modal -->
+<!-- Overwrite conflict modal -->
+<div class="modal-overlay hidden" id="overwrite-modal">
+  <div class="modal">
+    <div class="modal-title">Datei existiert bereits</div>
+    <div class="modal-body"><code id="overwrite-name"></code> existiert bereits. Neuen Slug eingeben oder überschreiben:</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+      <input id="overwrite-slug" class="prop-input" type="text" style="flex:1;font-size:0.78rem"/>
+      <span style="font-size:0.75rem;color:var(--ink-faint);flex-shrink:0">.md</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('overwrite-modal')">Abbrechen</button>
+      <button class="modal-ok danger" onclick="saveWithSlug(true)">Überschreiben</button>
+      <button class="modal-ok" onclick="saveWithSlug(false)">Neu speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset all modal -->
+<div class="modal-overlay hidden" id="reset-modal">
+  <div class="modal">
+    <div class="modal-title">Alles zurücksetzen?</div>
+    <div class="modal-body">Alle Felder, Court-Elemente und gespeicherter Zustand werden gelöscht.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('reset-modal')">Abbrechen</button>
+      <button class="modal-ok danger" onclick="confirmReset()">Zurücksetzen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clear court modal -->
 <div class="modal-overlay hidden" id="clear-modal">
   <div class="modal">
     <div class="modal-title">Alles löschen?</div>
@@ -801,7 +834,7 @@ function deleteSelected() {
 let _preShiftTool = null;
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal("clear-modal"); return; }
+  if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); return; }
   if (e.key === "Shift" && !e.repeat) {
     const tag = document.activeElement?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA") return;
@@ -822,6 +855,20 @@ window.addEventListener("blur", () => {
 });
 
 // ── Modals ────────────────────────────────────────────────────────────────────
+function openResetModal() { document.getElementById("reset-modal").classList.remove("hidden"); }
+function confirmReset() {
+  closeModal("reset-modal");
+  setSport("pickleball");
+  currentCategory = "Exercise"; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Exercise"));
+  currentSkillReq = "Beginner"; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Beginner"));
+  ["f-title","f-players","f-dur-min","f-dur-max","f-skills","f-materials","f-summary"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f-half-court").checked = false;
+  document.getElementById("f-body").value = "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen";
+  state.players=[]; state.arrows=[]; state.markers=[]; state.zones=[];
+  state.selected=null; state.drawing=null; state.drawingZone=null; state.nextId=1;
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+  render();
+}
 function openClearModal() { document.getElementById("clear-modal").classList.remove("hidden"); }
 function closeModal(id)   { document.getElementById(id).classList.add("hidden"); }
 function confirmClear() {
@@ -1041,11 +1088,10 @@ function downloadMd() {
 const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
 if (isLocal) {
   document.getElementById("btn-save").style.display = "";
-  document.getElementById("btn-download").classList.remove("btn-primary");
-  document.getElementById("btn-download").classList.add("btn-ghost");
+  document.getElementById("btn-download").style.display = "none";
 }
 
-async function saveMd() {
+async function saveMd(overwrite = false) {
   const title = document.getElementById("f-title").value.trim();
   if (!title) { showToast("⚠ Titel erforderlich"); return; }
   const filename = slugify(title) + ".md";
@@ -1053,10 +1099,41 @@ async function saveMd() {
     const res = await fetch("/api/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sport: currentSport, filename, content: generateMd() }),
+      body: JSON.stringify({ sport: currentSport, filename, content: generateMd(), overwrite }),
     });
-    if (res.ok) showToast("✓ Gespeichert — rebuild läuft…");
-    else showToast("✗ " + await res.text());
+    if (res.ok) { showToast("✓ Gespeichert — rebuild läuft…"); return; }
+    if (res.status === 409) {
+      const slug = filename.replace(/\.md$/, "");
+      document.getElementById("overwrite-slug").value = slug;
+      document.getElementById("overwrite-name").textContent = filename;
+      document.getElementById("overwrite-modal").classList.remove("hidden");
+      setTimeout(() => { const inp = document.getElementById("overwrite-slug"); inp.focus(); inp.select(); }, 50);
+      return;
+    }
+    showToast("✗ " + await res.text());
+  } catch(e) { showToast("✗ " + e.message); }
+}
+
+async function saveWithSlug(overwrite) {
+  closeModal("overwrite-modal");
+  const slug = document.getElementById("overwrite-slug").value.trim();
+  if (!slug) { showToast("⚠ Slug erforderlich"); return; }
+  const filename = slug.endsWith(".md") ? slug : slug + ".md";
+  try {
+    const res = await fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sport: currentSport, filename, content: generateMd(), overwrite }),
+    });
+    if (res.ok) { showToast("✓ Gespeichert als " + filename); return; }
+    if (res.status === 409) {
+      document.getElementById("overwrite-slug").value = slug;
+      document.getElementById("overwrite-name").textContent = filename;
+      document.getElementById("overwrite-modal").classList.remove("hidden");
+      setTimeout(() => { const inp = document.getElementById("overwrite-slug"); inp.focus(); inp.select(); }, 50);
+      return;
+    }
+    showToast("✗ " + await res.text());
   } catch(e) { showToast("✗ " + e.message); }
 }
 

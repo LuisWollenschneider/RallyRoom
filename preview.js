@@ -59,15 +59,21 @@ http.createServer((req, res) => {
         req.on("data", chunk => (body += chunk));
         req.on("end", () => {
             try {
-                const { sport, filename, content } = JSON.parse(body);
+                const { sport, filename, content, overwrite } = JSON.parse(body);
                 if (!SPORT_IDS.includes(sport) || !filename || !/^[\w-]+\.md$/.test(filename)) {
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end("Invalid sport or filename");
                     return;
                 }
                 const sportDir = path.join(CONTENT_DIR, sport);
+                const filePath = path.join(sportDir, filename);
+                if (!overwrite && fs.existsSync(filePath)) {
+                    res.writeHead(409, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ conflict: true, filename }));
+                    return;
+                }
                 fs.mkdirSync(sportDir, { recursive: true });
-                fs.writeFileSync(path.join(sportDir, filename), content);
+                fs.writeFileSync(filePath, content);
                 console.log(`\nSaved: content/${sport}/${filename}`);
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ ok: true }));
