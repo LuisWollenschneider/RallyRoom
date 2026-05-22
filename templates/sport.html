@@ -376,12 +376,14 @@ const CMX=30, CMY=50;
 
 function courtDefs(sfx) {
   return `<defs>
-    <marker id="ab${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
-    <marker id="am${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
-    <marker id="as${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
+    <marker id="ab${sfx}"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
+    <marker id="am${sfx}"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
+    <marker id="as${sfx}"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
+    <marker id="al${sfx}"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="${AC.line}"/></marker>
     <marker id="abr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.ball}"/></marker>
     <marker id="amr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.move}"/></marker>
     <marker id="asr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.screen}"/></marker>
+    <marker id="alr${sfx}" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="${AC.line}"/></marker>
   </defs>`;
 }
 
@@ -400,7 +402,7 @@ function renderDiagram(d, W, H, sfx) {
     const col=AC[a.type]||AC.ball, isLine=a.type==="line";
     const headEnd   = isLine ? (a.headEnd??false)  : (a.headEnd??true);
     const headStart = a.headStart||a.bidir||false;
-    const pfx=a.type==="move"?"am":a.type==="screen"?"as":"ab";
+    const pfx=a.type==="move"?"am":a.type==="screen"?"as":a.type==="line"?"al":"ab";
     const mEnd  = headEnd   ? `marker-end="url(#${pfx}${sfx})"`    : "";
     const mStart= headStart ? `marker-start="url(#${pfx}r${sfx})"` : "";
     const dash=isLine?"8,5":a.type==="move"?"6,4":"";
