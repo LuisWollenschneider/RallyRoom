@@ -46,6 +46,12 @@ a.btn-ghost{text-decoration:none}
   font-family:var(--sans);font-size:0.75rem;transition:all 0.15s;
 }
 .btn-primary:hover{background:#3a7050}
+.btn-submit{
+  padding:5px 13px;border-radius:6px;border:1px solid #7a5010;
+  background:rgba(232,168,48,.15);color:#e8a830;cursor:pointer;
+  font-family:var(--sans);font-size:0.75rem;transition:all 0.15s;
+}
+.btn-submit:hover{background:rgba(232,168,48,.25);border-color:#e8a830}
 
 .tob-sep{width:1px;height:20px;background:var(--border)}
 
@@ -63,6 +69,7 @@ a.btn-ghost{text-decoration:none}
   font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--ink-muted);font-family:var(--mono);font-weight:500;
 }
+.req{color:var(--red);margin-left:2px;font-size:0.75rem;font-style:normal}
 .field-input{
   padding:6px 9px;background:var(--card);border:1px solid var(--border);
   color:var(--ink);border-radius:5px;font-family:var(--sans);font-size:0.8rem;outline:none;width:100%;
@@ -247,6 +254,8 @@ a.btn-ghost{text-decoration:none}
   opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:300;white-space:nowrap;
 }
 #toast.show{opacity:1}
+#toast.toast-error  {background:rgba(212,92,67,.60);border-color:var(--red);color:#f0a090}
+#toast.toast-success{background:rgba(76,175,110,.60);border-color:var(--green);color:#90d4a8}
 </style>
 </head>
 <body>
@@ -268,7 +277,7 @@ a.btn-ghost{text-decoration:none}
     <button class="btn-ghost" onclick="document.getElementById('upload-input').click()">↑ Öffnen</button>
     <button id="btn-download" class="btn-primary" onclick="downloadMd()">↓ .md herunterladen</button>
     <button id="btn-save" class="btn-primary" onclick="saveMd()" style="display:none">Speichern</button>
-    <a class="btn-ghost" href="https://github.com/LuisWollenschneider/RallyRoom/blob/main/README.md" target="_blank" rel="noopener">Anleitung →</a>
+    <button class="btn-submit" onclick="openSubmitModal()">Einreichen ↗</button>
   </div>
 </div>
 
@@ -283,17 +292,17 @@ a.btn-ghost{text-decoration:none}
     </div>
 
     <div class="field-section">
-      <div class="field-label">Titel *</div>
+      <div class="field-label">Titel<span class="req">*</span></div>
       <input id="f-title" class="field-input" type="text" placeholder="Name der Übung" oninput="onFormChange()"/>
     </div>
 
     <div class="field-section">
-      <div class="field-label">Kurzbeschreibung</div>
+      <div class="field-label">Kurzbeschreibung<span class="req">*</span></div>
       <input id="f-summary" class="field-input" type="text" placeholder="Einzeiler für die Übersicht" oninput="onFormChange()"/>
     </div>
 
     <div class="field-section">
-      <div class="field-label">Kategorie</div>
+      <div class="field-label">Kategorie<span class="req">*</span></div>
       <div class="chip-group" id="cat-group">
         <button class="chip-btn active" data-val="Exercise" onclick="setCat(this)">Übung</button>
         <button class="chip-btn" data-val="Drill" onclick="setCat(this)">Korb-Übung</button>
@@ -302,7 +311,7 @@ a.btn-ghost{text-decoration:none}
     </div>
 
     <div class="field-section">
-      <div class="field-label">Niveau</div>
+      <div class="field-label">Niveau<span class="req">*</span></div>
       <div class="chip-group" id="skill-group">
         <button class="chip-btn active" data-val="Beginner" onclick="setSkill(this)">Beginner</button>
         <button class="chip-btn" data-val="Intermediate" onclick="setSkill(this)">Fortgeschritten</button>
@@ -425,6 +434,32 @@ a.btn-ghost{text-decoration:none}
       <button class="modal-cancel" onclick="closeModal('overwrite-modal')">Abbrechen</button>
       <button class="modal-ok danger" onclick="saveWithSlug(true)">Überschreiben</button>
       <button class="modal-ok" onclick="saveWithSlug(false)">Neu speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay hidden" id="submit-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">Übung einreichen</div>
+    <div id="submit-summary" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:0.76rem;line-height:1.8;color:var(--ink-muted);font-family:var(--mono)"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div>
+        <div class="prop-label" style="margin-bottom:4px">Dein Name</div>
+        <input id="submit-name" class="prop-input" type="text" placeholder="Optional"/>
+      </div>
+      <div>
+        <div class="prop-label" style="margin-bottom:4px">Deine E-Mail<span class="req">*</span></div>
+        <input id="submit-email" class="prop-input" type="email" placeholder="Optional — für Rückfragen"/>
+      </div>
+      <div>
+        <div class="prop-label" style="margin-bottom:4px">Anmerkungen</div>
+        <textarea id="submit-note" class="prop-input" rows="3" style="resize:vertical;font-family:var(--sans);line-height:1.5" placeholder="Optional — Hinweise für den Reviewer"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('submit-modal')">Abbrechen</button>
+      <button class="modal-ok" style="border-color:#7a5010;background:rgba(232,168,48,.15);color:#e8a830" onclick="submitToFormspree()">Einreichen →</button>
     </div>
   </div>
 </div>
@@ -876,7 +911,7 @@ let _preShiftTool = null;
 let _clipboard = null;
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); return; }
+  if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); closeModal("submit-modal"); return; }
   const tag = document.activeElement?.tagName;
   if ((e.metaKey || e.ctrlKey) && e.key === "c" && state.selected && tag !== "INPUT" && tag !== "TEXTAREA") {
     _clipboard = JSON.parse(JSON.stringify(state.selected));
@@ -1208,11 +1243,101 @@ async function saveWithSlug(overwrite) {
   } catch(e) { showToast("✗ " + e.message); }
 }
 
-function showToast(msg) {
+function showToast(msg, type) {
   const t = document.getElementById("toast");
   t.textContent = msg;
+  t.classList.remove("toast-error", "toast-success");
+  if (!type) type = msg.startsWith("✓") ? "success" : msg.startsWith("✗") || msg.startsWith("⚠") ? "error" : "";
+  if (type) t.classList.add("toast-" + type);
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2600);
+  // Remove "show" after delay, then remove color classes only after fade transition completes
+  setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.classList.remove("toast-error", "toast-success"), 220);
+  }, 2600);
+}
+
+// ── Formspree config — replace with your form ID from formspree.io ────────────
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xlgvnwwl";
+
+// ── Submit to Formspree ───────────────────────────────────────────────────────
+const DEFAULT_BODY = "Beschreibe die Übung hier.";
+
+function openSubmitModal() {
+  const errors = [];
+  const title   = document.getElementById("f-title").value.trim();
+  const summary = document.getElementById("f-summary").value.trim();
+  const body    = document.getElementById("f-body").value.trim();
+
+  if (!title)   errors.push("Titel fehlt");
+  if (!summary) errors.push("Kurzbeschreibung fehlt");
+  if (!currentCategory)  errors.push("Kategorie fehlt");
+  if (!currentSkillReq)  errors.push("Niveau fehlt");
+
+  const totalElements = state.players.length + state.arrows.length + state.markers.length + state.zones.length;
+  if (totalElements === 0) errors.push("Court-Diagramm ist leer");
+
+  const hasRealContent = body.split("\n").some(l => {
+    const t = l.trim();
+    return t && !t.startsWith("#") && t !== DEFAULT_BODY;
+  });
+  if (!hasRealContent) errors.push("Markdown-Inhalt enthält nur die Vorlage");
+
+  if (errors.length) {
+    showToast("⚠ " + errors.join(" · ")); return;
+  }
+
+  // Build summary
+  const durMin = document.getElementById("f-dur-min").value.trim();
+  const durMax = document.getElementById("f-dur-max").value.trim();
+  const durStr = durMin ? (durMax && durMax !== durMin ? `${durMin}–${durMax} min` : `${durMin} min`) : "–";
+  const skills = document.getElementById("f-skills").value.trim();
+  const players = document.getElementById("f-players").value.trim();
+  const rows = [
+    ["Sport",      SPORT_MAP[currentSport]?.name || currentSport],
+    ["Kategorie",  CAT_LABEL[currentCategory] || currentCategory],
+    ["Niveau",     SKILL_LABEL[currentSkillReq] || currentSkillReq],
+    ["Spieler",    players || "–"],
+    ["Dauer",      durStr],
+    ["Diagramm",   `${state.players.length} Spieler · ${state.arrows.length} Pfeile · ${state.markers.length} Marker · ${state.zones.length} Zonen`],
+    ["Kompetenzen",skills || "–"],
+  ];
+  document.getElementById("submit-summary").innerHTML =
+    rows.map(([k,v]) => `<span style="color:var(--ink-faint)">${k}:</span> <span style="color:var(--ink)">${v}</span>`).join("<br/>");
+
+  document.getElementById("submit-modal").classList.remove("hidden");
+}
+
+async function submitToFormspree() {
+  if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")) {
+    showToast("⚠ Kein Formspree-Endpunkt konfiguriert"); return;
+  }
+  const title   = document.getElementById("f-title").value.trim();
+  const name    = document.getElementById("submit-name").value.trim();
+  const email   = document.getElementById("submit-email").value.trim();
+  const note    = document.getElementById("submit-note").value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast("⚠ Gültige E-Mail erforderlich"); return;
+  }
+  const content = generateMd();
+  closeModal("submit-modal");
+  try {
+    const res = await fetch(FORMSPREE_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        _subject:  `Neue Übung: ${title}`,
+        _replyto:  email || undefined,
+        name:      name  || "(anonym)",
+        sport:     currentSport,
+        title,
+        note:      note  || "",
+        markdown:  content,
+      }),
+    });
+    if (res.ok) showToast("✓ Eingereicht — danke!");
+    else        showToast("✗ Fehler beim Einreichen");
+  } catch(e) { showToast("✗ " + e.message); }
 }
 
 // ── LocalStorage ─────────────────────────────────────────────────────────────
