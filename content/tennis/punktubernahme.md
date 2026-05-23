@@ -6,6 +6,8 @@ skill_requirement: All Levels
 skills_trained:
   - Punkte
 half_court: true
+stages: []
+diagram_stage: yellow
 players: je 3
 duration: {min: 4, max: 6}
 materials:
@@ -18,7 +20,7 @@ diagram:
     - { id: e3, team: W, x: -0.071, y: 0.395, label: W }
   arrows:
     - { id: e6, x1: 0.449, y1: -0.018, x2: -0.074, y2: 0.356, type: move, cx: -0.042, cy: 0.071, midTouched: true }
-    - { id: e7, x1: -0.025, y1: 0.359, x2: 0.475, y2: 0.008, type: move, cx: 0.112, cy: 0.077, midTouched: true }
+    - { id: e7, x1: -0.025, y1: 0.359, x2: 0.475, y2: 0.008, type: move, cx: 0.001, cy: 0.09, midTouched: true }
     - { id: e8, x1: 0.41, y1: 0.852, x2: 0.531, y2: 0.852, type: line }
   markers:
     - { id: e4, type: text, x: 0.489, y: 0.133, color: '#e8ede4', text: '5', size: 35, bold: true }
