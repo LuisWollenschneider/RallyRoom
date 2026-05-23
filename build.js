@@ -42,7 +42,10 @@ function renderLists(text) {
                 i++;
             }
             out.push(buildNestedList(items));
-        } else { out.push(lines[i]); i++; }
+        } else {
+            out.push(lines[i]);
+            i++;
+        }
     }
     return out.join("\n");
 }
@@ -51,14 +54,20 @@ function mdToHtml(md, diagram, sport) {
     const esc = (s) =>
         s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const players = (diagram && diagram.players) || [];
-    const zones   = (diagram && diagram.zones)   || [];
+    const zones = (diagram && diagram.zones) || [];
     const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW } : {};
     let s = md;
     s = s.replace(/^(#{1,3} .+)$/gm, "$1\n");
-    s = s.replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`);
+    s = s.replace(
+        /```[\w]*\n([\s\S]*?)```/g,
+        (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`,
+    );
     s = s.replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`);
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, url) =>
-        `<a href="${url}"${/^https?:\/\//.test(url) ? ' target="_blank" rel="noopener"' : ''}>${t}</a>`);
+    s = s.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        (_, t, url) =>
+            `<a href="${url}"${/^https?:\/\//.test(url) ? ' target="_blank" rel="noopener"' : ""}>${t}</a>`,
+    );
     s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
     s = s.replace(/\_(.+?)\_/g, "<em>$1</em>");
@@ -68,20 +77,25 @@ function mdToHtml(md, diagram, sport) {
     s = renderLists(s);
     s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
     s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
-        const p = players.find(pl => (pl.label || pl.team) === label);
-        const col = p ? (TC[p.team] || "#888") : "#888";
+        const p = players.find((pl) => (pl.label || pl.team) === label);
+        const col = p ? TC[p.team] || "#888" : "#888";
         return `<span class="md-player" style="background:${col}">${esc(label)}</span>`;
     });
-    s = s.replace(/<#([0-9a-fA-F]{3,6})>/g, (_, hex) =>
-        `<span class="md-cone" style="color:#${hex}">▲</span>`);
-    s = s.replace(/\(#([0-9a-fA-F]{3,6})\)/g, (_, hex) =>
-        `<span class="md-dot" style="background:#${hex}"></span>`);
+    s = s.replace(
+        /<#([0-9a-fA-F]{3,6})>/g,
+        (_, hex) => `<span class="md-cone" style="color:#${hex}">▲</span>`,
+    );
+    s = s.replace(
+        /\(#([0-9a-fA-F]{3,6})\)/g,
+        (_, hex) => `<span class="md-dot" style="background:#${hex}"></span>`,
+    );
     s = s.replace(/\[([^\]\n]+)\](?!\()/g, (_, label) => {
-        const z = zones.find(zn => zn.label === label);
-        const col = z ? (z.color || "#f5e642") : "#f5e642";
+        const z = zones.find((zn) => zn.label === label);
+        const col = z ? z.color || "#f5e642" : "#f5e642";
         return `<span class="md-zone" style="color:${col}">${esc(label)}</span>`;
     });
-    return s.split(/\n{2,}/)
+    return s
+        .split(/\n{2,}/)
         .map((b) => {
             b = b.trim();
             if (!b || /^<[huop]/.test(b)) return b;
@@ -299,7 +313,7 @@ function buildSportHtml(sport) {
         sport.renderBallByStage
             ? sport.renderBallByStage.toString()
             : "function renderBallByStage(stage,mx,my,r,mid){return null;}",
-        `const SPORT_STAGES=${JSON.stringify(sport.stages||[])};`,
+        `const SPORT_STAGES=${JSON.stringify(sport.stages || [])};`,
     ].join("\n");
 
     const sportCss = `--accent:${sport.accent};--accent-dim:${sport.accentDim};`;
@@ -326,7 +340,8 @@ function buildSport(sport) {
         const files = fs
             .readdirSync(contentDir)
             .filter((f) => f.endsWith(".md"))
-            .sort();
+            .sort()
+            .reverse();
         for (const file of files) {
             const raw = fs.readFileSync(path.join(contentDir, file), "utf8");
             const { meta, body } = parseFrontmatter(raw);
@@ -346,8 +361,13 @@ function buildSport(sport) {
                     ? meta.materials
                     : [],
                 summary: meta.summary || "",
-                half_court: meta.half_court === true || meta.half_court === "true",
-                stages: Array.isArray(meta.stages) ? meta.stages : (meta.stage ? [meta.stage] : []),
+                half_court:
+                    meta.half_court === true || meta.half_court === "true",
+                stages: Array.isArray(meta.stages)
+                    ? meta.stages
+                    : meta.stage
+                      ? [meta.stage]
+                      : [],
                 diagram_stage: meta.diagram_stage || meta.stage || "",
                 diagram: meta.diagram || null,
                 html: mdToHtml(body, meta.diagram, sport),
