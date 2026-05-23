@@ -54,9 +54,11 @@ function mdToHtml(md, diagram, sport) {
     const zones   = (diagram && diagram.zones)   || [];
     const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW } : {};
     let s = md;
+    s = s.replace(/^(#{1,3} .+)$/gm, "$1\n");
     s = s.replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`);
     s = s.replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`);
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, url) =>
+        `<a href="${url}"${/^https?:\/\//.test(url) ? ' target="_blank" rel="noopener"' : ''}>${t}</a>`);
     s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
     s = s.replace(/\_(.+?)\_/g, "<em>$1</em>");
