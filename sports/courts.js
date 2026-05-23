@@ -63,6 +63,89 @@
     <text x="${sl * W + W * 0.04}" y="${(net - svc * net * 0.5) * H}" fill="#b0603a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle"></text>
     <text x="${sl * W + W * 0.04}" y="${(net + svc * net * 0.5) * H}" fill="#b0603a" font-size="${W * 0.038}" font-family="DM Mono,monospace" dominant-baseline="middle"></text>`;
             },
+
+            stages: [
+                { id: "red",    label: "Rot",    color: "#e63946" },
+                { id: "orange", label: "Orange",  color: "#e87040" },
+                { id: "green",  label: "Grün",    color: "#4caf6e" },
+                { id: "yellow", label: "Gelb",    color: "#d4a843" },
+            ],
+
+            // Returns court SVG for a given stage; null means use courtBase (yellow/default)
+            courtBaseByStage: function courtBaseByStage(stage, W, H) {
+                if (!stage || stage === "yellow") return null;
+                if (stage === "red") {
+                    const cw = W * (6 / 10.97), ch = H * (10.97 / 23.77);
+                    const ox = (W - cw) / 2, oy = (H - ch) / 2;
+                    const netY = oy + ch / 2;
+                    const svc = 4.11 / 10.97;
+                    const sly1 = netY - ch * svc, sly2 = netY + ch * svc;
+                    const clipId = "rc";
+                    return `
+    <rect x="${-CMX}" y="${-CMY}" width="${W+2*CMX}" height="${H+2*CMY}" fill="#1a110a"/>
+    <rect x="${ox}" y="${oy}" width="${cw}" height="${ch}" fill="#a03020" stroke="#c04030" stroke-width="2"/>
+    <!-- Service lines -->
+    <line x1="${ox}" y1="${sly1}" x2="${ox+cw}" y2="${sly1}" stroke="#c04030" stroke-width="1.5"/>
+    <line x1="${ox}" y1="${sly2}" x2="${ox+cw}" y2="${sly2}" stroke="#c04030" stroke-width="1.5"/>
+    <!-- T middle -->
+    <line x1="${ox+cw/2}" y1="${sly1}" x2="${ox+cw/2}" y2="${sly2}" stroke="#c04030" stroke-width="1"/>
+    <!-- Net -->
+    <line x1="${ox-10}" y1="${netY}" x2="${ox+cw+10}" y2="${netY}" stroke="#e8e0c8" stroke-width="2.5" stroke-dasharray="5,4"/>`;
+                }
+                if (stage === "orange") {
+                    const cw = W * (8.23 / 10.97), ch = H * (18 / 23.77);
+                    const corW = W * (0.914 / 10.97);
+                    const ox = (W - cw) / 2, oy = (H - ch) / 2;
+                    const netY = oy + ch / 2;
+                    const svc = 5.5 / 18;
+                    const sly1 = netY - ch * svc, sly2 = netY + ch * svc;
+                    return `
+    <rect x="${-CMX}" y="${-CMY}" width="${W+2*CMX}" height="${H+2*CMY}" fill="#1a110a"/>
+    <rect x="${ox}" y="${oy}" width="${cw}" height="${ch}" fill="#b05020" stroke="#d07040" stroke-width="2"/>
+    <!-- Service lines -->
+    <line x1="${ox+corW}" y1="${sly1}" x2="${ox+cw-corW}" y2="${sly1}" stroke="#d07040" stroke-width="1.5"/>
+    <line x1="${ox+corW}" y1="${sly2}" x2="${ox+cw-corW}" y2="${sly2}" stroke="#d07040" stroke-width="1.5"/>
+    <!-- T middle -->
+    <line x1="${ox+cw/2}" y1="${sly1}" x2="${ox+cw/2}" y2="${sly2}" stroke="#d07040" stroke-width="1"/>
+    <!-- Corridor -->
+    <line x1="${ox+corW}" y1="${oy}" x2="${ox+corW}" y2="${oy+ch}" stroke="#d07040" stroke-width="1"/>
+    <line x1="${ox+cw-corW}" y1="${oy}" x2="${ox+cw-corW}" y2="${oy+ch}" stroke="#d07040" stroke-width="1"/>
+    <!-- Net -->
+    <line x1="${ox-10}" y1="${netY}" x2="${ox+cw+10}" y2="${netY}" stroke="#e8e0c8" stroke-width="2.5" stroke-dasharray="5,4"/>`;
+                }
+                return null;
+            },
+
+            // Returns ball SVG for a given stage; null means use renderBall (yellow/default)
+            renderBallByStage: function renderBallByStage(stage, mx, my, r, maskId) {
+                if (!stage || stage === "yellow") return null;
+                const br = r * 0.7, sw = br * 0.14;
+                const clipId = maskId + "_sc";
+                const clip = `<defs><clipPath id="${clipId}"><circle cx="${mx}" cy="${my}" r="${br}"/></clipPath></defs>`;
+                const leftRegion = `L ${mx - br * 0.2} ${my + br} L ${mx - br * 2} ${my + br} L ${mx - br * 2} ${my - br} Z`;
+                if (stage === "red") {
+                    const seam = `M ${mx} ${my-br} C ${mx+br*.5} ${my-br*.3} ${mx-br*.5} ${my+br*.3} ${mx} ${my+br}`;
+                    return clip +
+                        `<circle cx="${mx}" cy="${my}" r="${br}" fill="#ccdf20" opacity="0.95"/>` +
+                        `<path d="${seam} ${leftRegion}" fill="#d42020" clip-path="url(#${clipId})"/>` +
+                        `<path d="${seam}" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="${sw}" stroke-linecap="round" clip-path="url(#${clipId})"/>`;
+                }
+                if (stage === "orange") {
+                    const seam = `M ${mx-br*.2} ${my-br} C ${mx+br*.6} ${my-br*.3} ${mx-br*.6} ${my+br*.3} ${mx+br*.2} ${my+br}`;
+                    return clip +
+                        `<circle cx="${mx}" cy="${my}" r="${br}" fill="#ccdf20" opacity="0.95"/>` +
+                        `<path d="${seam} ${leftRegion}" fill="#e85520" clip-path="url(#${clipId})"/>` +
+                        `<path d="${seam}" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="${sw}" stroke-linecap="round" clip-path="url(#${clipId})"/>`;
+                }
+                if (stage === "green") {
+                    const seam = `M ${mx-br*.2} ${my-br} C ${mx+br*.6} ${my-br*.3} ${mx-br*.6} ${my+br*.3} ${mx+br*.2} ${my+br}`;
+                    return clip +
+                        `<circle cx="${mx}" cy="${my}" r="${br}" fill="#ccdf20" opacity="0.95"/>` +
+                        `<path d="${seam} ${leftRegion}" fill="rgba(80,200,80,0.85)" clip-path="url(#${clipId})"/>` +
+                        `<path d="${seam}" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="${sw}" stroke-linecap="round" clip-path="url(#${clipId})"/>`;
+                }
+                return null;
+            },
         },
 
         {

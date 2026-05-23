@@ -8,6 +8,8 @@ skills_trained:
   - Volley
   - Winner
 half_court: false
+stages: [green, yellow]
+diagram_stage: yellow
 players: 6+
 duration: {min: 8, max: 8}
 materials:

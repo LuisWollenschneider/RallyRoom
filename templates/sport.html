@@ -94,6 +94,15 @@ a[target="_blank"]:hover::after{margin-left:6px}
 .chip.danger:hover{border-color:var(--red);color:#ddd;background:var(--red)}
 .chip.danger.active{background:rgba(212,92,67,0.15);border-color:#d45c43;color:#d45c43}
 
+.chip.stage-red.active    {background:rgba(230,57,70,.15);border-color:#e63946;color:#e63946}
+.chip.stage-orange.active {background:rgba(232,112,64,.15);border-color:#e87040;color:#e87040}
+.chip.stage-green.active  {background:rgba(76,175,110,.15);border-color:#4caf6e;color:#4caf6e}
+.chip.stage-yellow.active {background:rgba(212,168,67,.15);border-color:#d4a843;color:#d4a843}
+.badge-stage-red    {background:rgba(230,57,70,.15);color:#e63946}
+.badge-stage-orange {background:rgba(232,112,64,.15);color:#e87040}
+.badge-stage-green  {background:rgba(76,175,110,.15);color:#4caf6e}
+.badge-stage-yellow {background:rgba(212,168,67,.15);color:#d4a843}
+
 #skills-list{display:flex;flex-wrap:wrap;gap:4px}
 
 .sb-count{font-size:0.7rem;color:var(--ink-faint);font-family:var(--mono);margin-bottom:0}
@@ -325,6 +334,11 @@ body.entry-view #menu-btn{display:none}
     </div>
   </div>
 
+  <div class="sb-section" id="stage-section" style="display:none">
+    <span class="sb-label">Stufe</span>
+    <div class="chips" id="stage-chips"></div>
+  </div>
+
   <div class="sb-section">
     <span class="sb-label">Kompetenzen</span>
     <div class="chips" id="skills-list"></div>
@@ -387,8 +401,9 @@ function courtDefs(sfx) {
   </defs>`;
 }
 
-function renderDiagram(d, W, H, sfx) {
+function renderDiagram(d, W, H, sfx, rb) {
   if (!d) return "";
+  rb = rb || renderBall;
   let s = "";
 
   (d.zones||[]).forEach(z => {
@@ -423,7 +438,7 @@ function renderDiagram(d, W, H, sfx) {
       s+=`<polygon points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}" fill="${cc}" stroke="rgba(0,0,0,0.35)" stroke-width="1.2" opacity="0.9"/>`;
     } else if(m.type==="ball"){
       const maskId=`bm${m.id||mx}${sfx}`;
-      s+=renderBall(mx, my, r, maskId);
+      s+=rb(mx, my, r, maskId);
     } else if(m.type==="text"){
       const fs=(m.size||11)/11/16*W, col=m.color||"#e8ede4", rot=m.rotation||0;
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
@@ -450,15 +465,28 @@ function renderDiagram(d, W, H, sfx) {
   return s;
 }
 
-function courtSvg(diagram, sfx) {
+function courtSvg(diagram, sfx, stage) {
   const W=200, H=440;
   const hasDiagram = diagram && ((diagram.players||[]).length+(diagram.arrows||[]).length+(diagram.markers||[]).length+(diagram.zones||[]).length>0);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-CMX} ${-CMY} ${W+2*CMX} ${H+2*CMY}" style="width:100%;height:100%">${courtDefs(sfx)}${courtBase(W,H)}${hasDiagram?renderDiagram(diagram,W,H,sfx):""}</svg>`;
+  const stageHtml = (stage && stage!=="yellow") ? courtBaseByStage(stage,W,H) : null;
+  const cb = stageHtml || courtBase(W,H);
+  const rb = (stage && stage!=="yellow") ? (mx,my,r,mid)=>{const r2=renderBallByStage(stage,mx,my,r,mid);return r2!==null?r2:renderBall(mx,my,r,mid);} : renderBall;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-CMX} ${-CMY} ${W+2*CMX} ${H+2*CMY}" style="width:100%;height:100%">${courtDefs(sfx)}${cb}${hasDiagram?renderDiagram(diagram,W,H,sfx,rb):""}</svg>`;
 }
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
 const CAT_LABEL = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
 const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
+const STAGE_LABEL = { red:"Rot", orange:"Orange", green:"Grün", yellow:"Gelb" };
+const STAGE_META  = Object.fromEntries(SPORT_STAGES.map(s=>[s.id,s]));
+const STAGE_ORDER = SPORT_STAGES.map(s=>s.id);
+function sortStages(stages) { return (stages||[]).slice().sort((a,b)=>STAGE_ORDER.indexOf(a)-STAGE_ORDER.indexOf(b)); }
+function stageDots(stages) {
+  return sortStages(stages).map(id=>{const m=STAGE_META[id];return m?`<span title="${m.label}" style="width:8px;height:8px;border-radius:50%;background:${m.color};display:inline-block;flex-shrink:0"></span>`:""}).join("");
+}
+function stageColoredText(stages) {
+  return sortStages(stages).map(id=>{const m=STAGE_META[id];return m?`<span style="color:${m.color}">${m.label}</span>`:id}).join(" ");
+}
 
 function catBadge(c) {
   if(!c) return "";
@@ -469,12 +497,17 @@ function skillBadge(s) {
   const cls=s.toLowerCase().replace(/ /g,"-");
   return `<span class="badge badge-${cls}">${SKILL_LABEL[s]||s}</span>`;
 }
+function stageBadge(s) {
+  if(!s) return "";
+  return `<span class="badge badge-stage-${s}">${STAGE_LABEL[s]||s}</span>`;
+}
 
 // ── State ──────────────────────────────────────────────────────────────────────
 let allEntries=[], activeCat="", activeSkill="", activeTrains=new Set();
 let durationMin=null, durationMax=null;
 let activeMaterials=null;
 let filterHalfCourt=false;
+let activeStage="";
 
 function fmtDuration(d) {
   if(!d||typeof d!=="object") return "";
@@ -492,6 +525,7 @@ function getFiltered() {
     if(activeTrains.size>0 && ![...activeTrains].every(s=>(e.skills_trained||[]).includes(s))) return false;
     if(activeMaterials!==null && !(e.materials||[]).every(m=>activeMaterials.has(m))) return false;
     if(filterHalfCourt && !e.half_court) return false;
+    if(activeStage && (e.stages||[]).length && !(e.stages||[]).includes(activeStage)) return false;
     if(durationMin!==null||durationMax!==null){
       const d=e.duration;
       if(!d||typeof d!=="object") return false;
@@ -523,6 +557,13 @@ function toggleHalfCourt(btn) {
   filterHalfCourt=!filterHalfCourt;
   btn.classList.toggle("active",filterHalfCourt);
   filterEntries();
+}
+function setStage(stg) {
+  activeStage=stg;
+  document.querySelectorAll("#stage-chips .chip").forEach(b=>b.classList.toggle("active",b.dataset.stage===stg));
+  filterEntries();
+  if(document.getElementById("view-entry").classList.contains("active")) showView("list",true);
+  else closeSidebar();
 }
 function toggleTrain(skill,btn) {
   activeTrains.has(skill)?activeTrains.delete(skill):activeTrains.add(skill);
@@ -607,7 +648,7 @@ function renderList(entries) {
   if(!entries.length){grid.innerHTML="";empty.style.display="block";return;}
   empty.style.display="none";
   grid.innerHTML=entries.map(e=>{
-    const thumb=e.diagram?`<div class="court-thumb">${courtSvg(e.diagram,"t"+e.slug.replace(/-/g,""))}</div>`:"";
+    const thumb=e.diagram?`<div class="court-thumb">${courtSvg(e.diagram,"t"+e.slug.replace(/-/g,""),e.diagram_stage)}</div>`:"";
     const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
     const hasPlayers = typeof(e.players) !== "object";
     const playerIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.03 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>`;
@@ -625,18 +666,20 @@ function renderList(entries) {
       <div class="card-meta">
         ${hasPlayers?`<span style="display:inline-flex;align-items:center;gap:4px">${playerIcon}${e.players}</span>`:""}
         ${e.duration?`<span style="display:inline-flex;align-items:center;gap:4px">${clockIcon}${fmtDuration(e.duration)}</span>`:""}
+        ${(e.stages||[]).length?`<span style="display:inline-flex;align-items:center;gap:3px;margin-left:2px">${stageDots(e.stages)}</span>`:""}
       </div>
     </div>`;
   }).join("");
 }
 
 // ── Detail view ────────────────────────────────────────────────────────────────
-let _modalDiagram=null;
+let _modalDiagram=null, _modalStage=null;
 
 function openEntry(slug) {
   const e=allEntries.find(x=>x.slug===slug);
   if(!e) return;
   _modalDiagram=e.diagram;
+  _modalStage=e.diagram_stage||null;
   const date=e.date?new Date(e.date+"T12:00:00").toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"";
   const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
   const hasPlayers = typeof(e.players) !== "object";
@@ -644,7 +687,8 @@ function openEntry(slug) {
     ${hasPlayers?`<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${e.players}</span></div>`:""}
     ${e.duration?`<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${fmtDuration(e.duration)}</span></div>`:""}
     ${e.skill_requirement?`<div class="info-row"><span class="info-label">Skill</span><span class="info-value">${SKILL_LABEL[e.skill_requirement]||e.skill_requirement}</span></div>`:""}
-    <div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value ${e.half_court?"":"danger"}">${e.half_court?"Ja":"Nein"}</span></div>`;
+    <div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value ${e.half_court?"":"danger"}">${e.half_court?"Ja":"Nein"}</span></div>
+    ${(e.stages||[]).length?`<div class="info-row"><span class="info-label">Stufen</span><span class="info-value" style="display:inline-flex;gap:8px;flex-wrap:wrap">${sortStages(e.stages).map(stageBadge).join("")}</span></div>`:""}` ;
   document.getElementById("entry-content").innerHTML=`
     <div class="entry-layout">
       <div>
@@ -653,14 +697,14 @@ function openEntry(slug) {
         ${skills?`<div class="entry-trained">${skills}</div>`:""}
         ${(e.materials||[]).length?`<div style="margin-bottom:20px"><span style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;display:block;margin-bottom:6px">Materialien</span><ul style="margin:0 0 0 1.2em;font-size:0.85rem;color:var(--ink-muted);line-height:1.8">${e.materials.map(m=>`<li>${m}</li>`).join("")}</ul></div>`:""}
         <div class="court-inline">
-          <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"di")}</div>
+          <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"di",e.diagram_stage)}</div>
           <div class="court-info">${courtInfoHtml}</div>
         </div>
         <div class="entry-body">${e.html}</div>
       </div>
       <div class="court-panel">
         <div class="court-panel-label">Court Diagramm</div>
-        <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"d")}</div>
+        <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"d",e.diagram_stage)}</div>
         <div class="court-info">${courtInfoHtml}</div>
       </div>
     </div>`;
@@ -669,7 +713,7 @@ function openEntry(slug) {
 }
 
 function openCourtModal() {
-  document.getElementById("court-modal-svg").innerHTML=courtSvg(_modalDiagram,"modal");
+  document.getElementById("court-modal-svg").innerHTML=courtSvg(_modalDiagram,"modal",_modalStage);
   document.getElementById("court-modal").classList.add("open");
   document.body.style.overflow="hidden";
 }
@@ -729,6 +773,15 @@ window.addEventListener("popstate", e => {
 })();
 
 // ── Init ───────────────────────────────────────────────────────────────────────
+(function buildStageFilter() {
+  if(!SPORT_STAGES.length) return;
+  const sec=document.getElementById("stage-section");
+  const chips=document.getElementById("stage-chips");
+  sec.style.display="";
+  chips.innerHTML=`<button class="chip active" data-stage="" onclick="setStage('')">Alle</button>`+
+    SPORT_STAGES.map(s=>`<button class="chip stage-${s.id}" data-stage="${s.id}" onclick="setStage('${s.id}')" style="--sc:${s.color}">${s.label}</button>`).join("");
+})();
+
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const r=await fetch("data.json");

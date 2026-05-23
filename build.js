@@ -241,6 +241,13 @@ function buildSportHtml(sport) {
         `const TC = { A:"${sport.teamA}", B:"${sport.teamB}", W:"${sport.teamW}" };`,
         sport.courtBase.toString(),
         sport.renderBall.toString(),
+        sport.courtBaseByStage
+            ? sport.courtBaseByStage.toString()
+            : "function courtBaseByStage(stage,W,H){return null;}",
+        sport.renderBallByStage
+            ? sport.renderBallByStage.toString()
+            : "function renderBallByStage(stage,mx,my,r,mid){return null;}",
+        `const SPORT_STAGES=${JSON.stringify(sport.stages||[])};`,
     ].join("\n");
 
     const sportCss = `--accent:${sport.accent};--accent-dim:${sport.accentDim};`;
@@ -288,6 +295,8 @@ function buildSport(sport) {
                     : [],
                 summary: meta.summary || "",
                 half_court: meta.half_court === true || meta.half_court === "true",
+                stages: Array.isArray(meta.stages) ? meta.stages : (meta.stage ? [meta.stage] : []),
+                diagram_stage: meta.diagram_stage || meta.stage || "",
                 diagram: meta.diagram || null,
                 html: mdToHtml(body),
             });

@@ -96,6 +96,9 @@ a.btn-ghost{text-decoration:none}
 .chip-btn[data-val="Intermediate"].active{border-color:#d4a843;background:rgba(212,168,67,.13);color:#d4a843}
 .chip-btn[data-val="Advanced"].active   {border-color:#d45c43;background:rgba(212,92,67,.13);color:#d45c43}
 .chip-btn[data-val="All Levels"].active {border-color:#4385d4;background:rgba(67,133,212,.13);color:#4385d4}
+/* stufe */
+.stufe-btn[data-stage=""].active{border-color:var(--ink-faint);background:rgba(138,148,134,.13);color:var(--ink-muted)}
+.stufe-btn[data-stage]:not([data-stage=""]).active{border-color:var(--stage-c,var(--ink-faint));background:color-mix(in srgb,var(--stage-c,transparent) 13%,transparent);color:var(--stage-c,var(--ink-muted))}
 .sport-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
 .sport-btn{
   display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -212,6 +215,7 @@ a.btn-ghost{text-decoration:none}
 .info-row:last-child{border-bottom:none}
 .info-label{color:var(--ink-faint);font-family:var(--mono);font-size:0.62rem}
 .info-value{color:var(--ink-muted)}
+.info-value.danger{color:var(--red)}
 .skill-tag{font-size:0.62rem;font-family:var(--mono);background:var(--surface);color:var(--ink-faint);padding:2px 6px;border-radius:20px;border:1px solid var(--border)}
 .badge{font-size:0.56rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;padding:3px 7px;border-radius:20px;white-space:nowrap;font-family:var(--mono);display:inline-block}
 .badge-exercise{background:#1e3626;color:#4caf6e}
@@ -221,6 +225,10 @@ a.btn-ghost{text-decoration:none}
 .badge-intermediate{background:rgba(212,168,67,.15);color:#d4a843}
 .badge-advanced{background:rgba(212,92,67,.15);color:#d45c43}
 .badge-all-levels{background:rgba(67,133,212,.15);color:#4385d4}
+.badge-stage-red    {background:rgba(230,57,70,.15);color:#e63946}
+.badge-stage-orange {background:rgba(232,112,64,.15);color:#e87040}
+.badge-stage-green  {background:rgba(76,175,110,.15);color:#4caf6e}
+.badge-stage-yellow {background:rgba(212,168,67,.15);color:#d4a843}
 
 /* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:200}
@@ -289,6 +297,13 @@ a.btn-ghost{text-decoration:none}
     <div class="field-section">
       <div class="field-label">Sport</div>
       <div class="sport-grid" id="sport-picker"></div>
+    </div>
+
+    <div class="field-section" id="stufe-section">
+      <div class="field-label">Gilt für Stufen</div>
+      <div class="chip-group" id="stufe-applies-group"></div>
+      <div class="field-label" style="margin-top:8px">Diagram-Stufe<span class="req">*</span></div>
+      <div class="chip-group" id="stufe-diagram-group"></div>
     </div>
 
     <div class="field-section">
@@ -497,11 +512,16 @@ const VW = 200, VH = 440, MX = 30, MY = 50;
 const AC = { ball:"#f5e642", move:"#7ab3f5", screen:"#c084f5", line:"#b8c8b4" };
 const CAT_LABEL  = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
 const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
+const STAGE_META_E = Object.fromEntries((SPORT_MAP["tennis"]?.stages||[]).map(s=>[s.id,s]));
+function stageBadgeE(id){const m=STAGE_META_E[id];return m?`<span class="badge badge-stage-${id}">${m.label}</span>`:"";}
+function stageDotsE(ids){return (ids||[]).map(id=>{const m=STAGE_META_E[id];return m?`<span title="${m.label}" style="width:8px;height:8px;border-radius:50%;background:${m.color};display:inline-block;flex-shrink:0"></span>`:""}).join("");}
 
 // ── App state ─────────────────────────────────────────────────────────────────
 let currentSport    = "tennis";
 let currentCategory = "Exercise";
 let currentSkillReq = "Beginner";
+let currentStages       = [];
+let currentDiagramStage = "yellow";
 let currentTab      = "court";
 let TC = getTCFor("tennis");
 
@@ -533,11 +553,55 @@ function genId() { return "e" + (state.nextId++); }
   });
 })();
 
+// ── Stufe picker (tennis only) ────────────────────────────────────────────────
+(function buildStufePicker() {
+  const stages = SPORT_MAP["tennis"]?.stages || [];
+  if (!stages.length) return;
+  const chips = s => `<button class="chip-btn stufe-btn" data-stage="${s.id}" style="--stage-c:${s.color}">${s.label}</button>`;
+  document.getElementById("stufe-applies-group").innerHTML = stages.map(chips).join("");
+  document.getElementById("stufe-diagram-group").innerHTML = stages.map(chips).join("");
+  document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b => {
+    b.onclick = () => setDiagramStage(b);
+    b.classList.toggle("active", b.dataset.stage === "yellow");
+  });
+  document.querySelectorAll("#stufe-applies-group .stufe-btn").forEach(b => {
+    b.onclick = () => toggleAppliesStage(b);
+  });
+  document.getElementById("stufe-section").style.display = "";
+})();
+
+function setDiagramStage(btn) {
+  currentDiagramStage = btn.dataset.stage;
+  document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b => b.classList.toggle("active", b.dataset.stage === currentDiagramStage));
+  render();
+  saveToStorage();
+  if (currentTab === "preview") renderPreview();
+}
+const STAGE_ORDER = ["red", "orange", "green", "yellow"];
+function toggleAppliesStage(btn) {
+  const id = btn.dataset.stage;
+  if (currentStages.includes(id)) currentStages = currentStages.filter(s => s !== id);
+  else currentStages = [...currentStages, id];
+  currentStages.sort((a, b) => STAGE_ORDER.indexOf(a) - STAGE_ORDER.indexOf(b));
+  btn.classList.toggle("active", currentStages.includes(id));
+  saveToStorage();
+  if (currentTab === "preview") renderPreview();
+}
+
 function setSport(id) {
   currentSport = id;
   TC = getTCFor(id);
   document.querySelectorAll(".sport-btn").forEach(b =>
     b.classList.toggle("active", b.dataset.sport === id));
+  const hasSt = !!(SPORT_MAP[id]?.stages?.length);
+  document.getElementById("stufe-section").style.display = hasSt ? "" : "none";
+  if (!hasSt) {
+    currentStages = []; currentDiagramStage = "";
+    document.querySelectorAll(".stufe-btn").forEach(b=>b.classList.remove("active"));
+  } else if (!currentDiagramStage) {
+    currentDiagramStage = "yellow";
+    document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b=>b.classList.toggle("active",b.dataset.stage==="yellow"));
+  }
   render();
   if (currentTab === "preview") renderPreview();
 }
@@ -649,7 +713,9 @@ function courtDefs(sfx) {
 
 function renderCanvas() {
   const sport = SPORT_MAP[currentSport];
-  let s = courtDefs("e") + sport.courtBase(VW, VH);
+  const stageHtml = (currentDiagramStage && currentDiagramStage !== "yellow" && sport.courtBaseByStage)
+    ? sport.courtBaseByStage(currentDiagramStage, VW, VH) : null;
+  let s = courtDefs("e") + (stageHtml || sport.courtBase(VW, VH));
 
   state.zones.forEach(z => {
     const zx=z.x*VW, zy=z.y*VH, zw=z.width*VW, zh=z.height*VH;
@@ -715,7 +781,9 @@ function renderCanvas() {
         fill="${cc}" stroke="${sel?"#fff":"rgba(0,0,0,0.35)"}" stroke-width="${sel?2:1.2}" style="cursor:pointer"/>`;
     } else if (m.type==="ball") {
       const maskId = "bm" + m.id + "e";
-      s += sport.renderBall(mx, my, r, maskId);
+      const stageBall = (currentDiagramStage && currentDiagramStage !== "yellow" && sport.renderBallByStage)
+        ? sport.renderBallByStage(currentDiagramStage, mx, my, r, maskId) : null;
+      s += stageBall !== null ? stageBall : sport.renderBall(mx, my, r, maskId);
       if (sel) s += `<circle cx="${mx}" cy="${my}" r="${r*.72}" fill="none" stroke="#fff" stroke-width="1.5" style="pointer-events:none"/>`;
       s += `<circle data-id="${m.id}" data-kind="marker" cx="${mx}" cy="${my}" r="${r*.72}" fill="transparent" style="cursor:pointer"/>`;
     } else if (m.type==="text") {
@@ -1016,6 +1084,8 @@ function confirmReset() {
   closeModal("reset-modal");
   currentCategory = "Exercise"; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Exercise"));
   currentSkillReq = "Beginner"; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === "Beginner"));
+  currentStages = []; document.querySelectorAll("#stufe-applies-group .stufe-btn").forEach(b=>b.classList.remove("active"));
+  currentDiagramStage = "yellow"; document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b=>b.classList.toggle("active",b.dataset.stage==="yellow"));
   ["f-title","f-players","f-dur-min","f-dur-max","f-skills","f-materials","f-summary"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("f-half-court").checked = false;
   document.getElementById("f-body").value = "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen";
@@ -1058,7 +1128,9 @@ function previewCourtSvg() {
   const sport = SPORT_MAP[currentSport];
   const W = 200, H = 440;
   const TC_p = getTCFor(currentSport);
-  let s = sport.courtBase(W, H);
+  const stageHtml = (currentDiagramStage && currentDiagramStage !== "yellow" && sport.courtBaseByStage)
+    ? sport.courtBaseByStage(currentDiagramStage, W, H) : null;
+  let s = stageHtml || sport.courtBase(W, H);
 
   state.zones.forEach(z => {
     const zx=z.x*W, zy=z.y*H, zw=(z.width||.15)*W, zh=(z.height||.15)*H, c=z.color||"#f5e642";
@@ -1084,7 +1156,10 @@ function previewCourtSvg() {
       const cc=m.color||"#f5a542";
       s += `<polygon points="${mx},${my-r} ${mx-r*.8},${my+r*.6} ${mx+r*.8},${my+r*.6}" fill="${cc}" stroke="rgba(0,0,0,0.35)" stroke-width="1.2" opacity="0.9"/>`;
     } else if (m.type==="ball") {
-      s += sport.renderBall(mx, my, r, "pvb" + m.id);
+      const _mid = "pvb" + m.id;
+      const _sb = (currentDiagramStage && currentDiagramStage !== "yellow" && sport.renderBallByStage)
+        ? sport.renderBallByStage(currentDiagramStage, mx, my, r, _mid) : null;
+      s += _sb !== null ? _sb : sport.renderBall(mx, my, r, _mid);
     } else if (m.type==="text") {
       const fs=(m.size||11)/11/16*W, col=m.color||"#e8ede4", rot=m.rotation||0;
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
@@ -1145,8 +1220,9 @@ function renderPreview() {
   const infoRows = [
     players  ? `<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${players}</span></div>` : "",
     durStr   ? `<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${durStr}</span></div>` : "",
-    halfC    ? `<div class="info-row"><span class="info-label">Halbes Feld</span><span class="info-value">✓</span></div>` : "",
     currentSkillReq ? `<div class="info-row"><span class="info-label">Niveau</span><span class="info-value">${SKILL_LABEL[currentSkillReq]||currentSkillReq}</span></div>` : "",
+    `<div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value${halfC?"":" danger"}">${halfC?"Ja":"Nein"}</span></div>`,
+    currentStages.length ? `<div class="info-row"><span class="info-label">Stufen</span><span class="info-value" style="display:inline-flex;gap:5px;flex-wrap:wrap">${currentStages.map(stageBadgeE).join("")}</span></div>` : "",
   ].join("");
 
   document.getElementById("preview-wrap").innerHTML = `
@@ -1223,6 +1299,8 @@ function generateMd() {
   const trainYaml = trainList.map(t=>`  - ${t}`).join("\n");
   const matYaml   = matList.map(m=>`  - ${m}`).join("\n");
 
+  const stageLine = currentSport === "tennis"
+    ? `\nstages: [${currentStages.join(", ")}]\ndiagram_stage: ${currentDiagramStage}` : "";
   return `---
 sport: ${currentSport}
 title: ${title}
@@ -1230,7 +1308,7 @@ category: ${currentCategory}
 skill_requirement: ${currentSkillReq}
 skills_trained:
 ${trainYaml}
-half_court: ${halfC}
+half_court: ${halfC}${stageLine}
 players: ${players}
 duration: {min: ${durMin}, max: ${durMax}}
 materials:
@@ -1338,6 +1416,7 @@ function openSubmitModal() {
   if (!summary) errors.push("Kurzbeschreibung fehlt");
   if (!currentCategory)  errors.push("Kategorie fehlt");
   if (!currentSkillReq)  errors.push("Niveau fehlt");
+  if (SPORT_MAP[currentSport]?.stages?.length && !currentDiagramStage) errors.push("Diagram-Stufe fehlt");
 
   const totalElements = state.players.length + state.arrows.length + state.markers.length + state.zones.length;
   if (totalElements === 0) errors.push("Court-Diagramm ist leer");
@@ -1411,7 +1490,7 @@ const LS_KEY = "rally-room-editor";
 function saveToStorage() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
-      sport: currentSport, category: currentCategory, skillReq: currentSkillReq,
+      sport: currentSport, category: currentCategory, skillReq: currentSkillReq, stages: currentStages, diagramStage: currentDiagramStage,
       title:     document.getElementById("f-title").value,
       players:   document.getElementById("f-players").value,
       durMin:    document.getElementById("f-dur-min").value,
@@ -1431,9 +1510,14 @@ function loadFromStorage() {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return false;
     const d = JSON.parse(raw);
-    if (d.sport && SPORT_MAP[d.sport]) { currentSport = d.sport; TC = getTCFor(d.sport); document.querySelectorAll(".sport-btn").forEach(b => b.classList.toggle("active", b.dataset.sport === d.sport)); }
+    if (d.sport && SPORT_MAP[d.sport]) { currentSport = d.sport; TC = getTCFor(d.sport); document.querySelectorAll(".sport-btn").forEach(b => b.classList.toggle("active", b.dataset.sport === d.sport)); const hasSt=!!(SPORT_MAP[d.sport]?.stages?.length); document.getElementById("stufe-section").style.display=hasSt?"":"none"; }
     if (d.category) { currentCategory = d.category; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.category)); }
     if (d.skillReq) { currentSkillReq = d.skillReq; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.skillReq)); }
+    { const hasSt2=!!(SPORT_MAP[d.sport||currentSport]?.stages?.length);
+      currentStages=(Array.isArray(d.stages)?d.stages:[]).sort((a,b)=>STAGE_ORDER.indexOf(a)-STAGE_ORDER.indexOf(b));
+      document.querySelectorAll("#stufe-applies-group .stufe-btn").forEach(b=>b.classList.toggle("active",currentStages.includes(b.dataset.stage)));
+      currentDiagramStage=d.diagramStage||(hasSt2?"yellow":"");
+      document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b=>b.classList.toggle("active",b.dataset.stage===currentDiagramStage)); }
     document.getElementById("f-title").value     = d.title     || "";
     document.getElementById("f-players").value   = d.players   || "";
     document.getElementById("f-dur-min").value   = d.durMin    || "";
@@ -1496,6 +1580,13 @@ function parseFrontmatter(fm) {
 
 function populateFromParsed(meta, body, rawFm) {
   if (meta.sport && SPORT_MAP[meta.sport]) setSport(meta.sport);
+  {
+    const hasStageSport = !!(SPORT_MAP[meta.sport || currentSport]?.stages?.length);
+    currentStages = (Array.isArray(meta.stages) ? meta.stages : (meta.stage ? [meta.stage] : [])).sort((a,b)=>STAGE_ORDER.indexOf(a)-STAGE_ORDER.indexOf(b));
+    document.querySelectorAll("#stufe-applies-group .stufe-btn").forEach(b => b.classList.toggle("active", currentStages.includes(b.dataset.stage)));
+    currentDiagramStage = meta.diagram_stage || meta.stage || (hasStageSport ? "yellow" : "");
+    document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b => b.classList.toggle("active", b.dataset.stage === currentDiagramStage));
+  }
   if (meta.category)          { currentCategory = meta.category; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === meta.category)); }
   if (meta.skill_requirement) { currentSkillReq = meta.skill_requirement; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === meta.skill_requirement)); }
   document.getElementById("f-title").value     = meta.title   || "";
