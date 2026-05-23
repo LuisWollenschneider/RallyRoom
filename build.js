@@ -11,25 +11,75 @@ const SITE_DIR = path.join(__dirname, "site");
 const TEMPLATE = path.join(__dirname, "templates", "sport.html");
 
 // ── Markdown → HTML ───────────────────────────────────────────────────────────
-function mdToHtml(md) {
+function buildNestedList(items) {
+    let pos = 0;
+    function parseAt(minIndent) {
+        let html = "<ul>";
+        while (pos < items.length && items[pos].indent >= minIndent) {
+            const { indent, text } = items[pos++];
+            html += "<li>" + text;
+            if (pos < items.length && items[pos].indent > indent)
+                html += parseAt(items[pos].indent);
+            html += "</li>";
+        }
+        return html + "</ul>";
+    }
+    return parseAt(items[0].indent);
+}
+
+function renderLists(text) {
+    const lines = text.split("\n");
+    const out = [];
+    let i = 0;
+    while (i < lines.length) {
+        const m = lines[i].match(/^( *)[-*] (.+)$/);
+        if (m) {
+            const items = [];
+            while (i < lines.length) {
+                const lm = lines[i].match(/^( *)[-*] (.+)$/);
+                if (!lm) break;
+                items.push({ indent: lm[1].length, text: lm[2] });
+                i++;
+            }
+            out.push(buildNestedList(items));
+        } else { out.push(lines[i]); i++; }
+    }
+    return out.join("\n");
+}
+
+function mdToHtml(md, diagram, sport) {
     const esc = (s) =>
         s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return md
-        .replace(
-            /```[\w]*\n([\s\S]*?)```/g,
-            (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`,
-        )
-        .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-        .replace(/\_(.+?)\_/g, "<em>$1</em>")
-        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-        .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-        .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-        .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
-        .replace(/(<li>[^\n]*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-        .split(/\n{2,}/)
+    const players = (diagram && diagram.players) || [];
+    const zones   = (diagram && diagram.zones)   || [];
+    const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW } : {};
+    let s = md;
+    s = s.replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) => `<pre><code>${esc(c.trim())}</code></pre>`);
+    s = s.replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`);
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
+    s = s.replace(/\_(.+?)\_/g, "<em>$1</em>");
+    s = s.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+    s = s.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+    s = s.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+    s = renderLists(s);
+    s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
+    s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
+        const p = players.find(pl => (pl.label || pl.team) === label);
+        const col = p ? (TC[p.team] || "#888") : "#888";
+        return `<span class="md-player" style="background:${col}">${esc(label)}</span>`;
+    });
+    s = s.replace(/<#([0-9a-fA-F]{3,6})>/g, (_, hex) =>
+        `<span class="md-cone" style="color:#${hex}">▲</span>`);
+    s = s.replace(/\(#([0-9a-fA-F]{3,6})\)/g, (_, hex) =>
+        `<span class="md-dot" style="background:#${hex}"></span>`);
+    s = s.replace(/\[([^\]\n]+)\](?!\()/g, (_, label) => {
+        const z = zones.find(zn => zn.label === label);
+        const col = z ? (z.color || "#f5e642") : "#f5e642";
+        return `<span class="md-zone" style="color:${col}">${esc(label)}</span>`;
+    });
+    return s.split(/\n{2,}/)
         .map((b) => {
             b = b.trim();
             if (!b || /^<[huop]/.test(b)) return b;
@@ -298,7 +348,7 @@ function buildSport(sport) {
                 stages: Array.isArray(meta.stages) ? meta.stages : (meta.stage ? [meta.stage] : []),
                 diagram_stage: meta.diagram_stage || meta.stage || "",
                 diagram: meta.diagram || null,
-                html: mdToHtml(body),
+                html: mdToHtml(body, meta.diagram, sport),
             });
         }
     }

@@ -14,6 +14,7 @@
   --ink:#e8ede4;--ink-muted:#8a9486;--ink-faint:#4a5248;
   --green:#4caf6e;--green-dim:#2d5c3e;
   --red:#d45c43;--yellow:#d4a843;--blue:#4385d4;
+  --accent:#d4763a;
   --mono:'DM Mono',monospace;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
 }
 html,body{height:100%;overflow:hidden;font-size:18px}
@@ -185,11 +186,64 @@ a.btn-ghost{text-decoration:none}
 .prop-type{font-size:0.7rem;color:var(--ink-faint)}
 
 /* ── Markdown tab ── */
-#f-body{
-  flex:1;padding:18px 22px;background:var(--bg);border:none;outline:none;
-  color:var(--ink);font-family:var(--mono);font-size:0.8rem;line-height:1.8;
-  resize:none;width:100%;
+#md-body{flex:1;display:flex;min-height:0;overflow:hidden}
+#md-toolbar{
+  display:flex;align-items:center;gap:2px;padding:5px 10px;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;
 }
+.md-tb-btn{
+  background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;
+  color:var(--ink-muted);font-family:var(--sans);font-size:0.72rem;padding:3px 7px;
+  line-height:1.4;transition:background 0.1s;white-space:nowrap;
+}
+.md-tb-btn:hover{background:var(--card);border-color:var(--border);color:var(--ink)}
+.md-tb-sep{width:1px;height:14px;background:var(--border);margin:0 3px;flex-shrink:0}
+.md-tb-accent{color:var(--accent) !important;font-family:var(--serif);font-style:italic}
+#md-editor-wrap{flex:1;position:relative;overflow:hidden}
+#md-overlay{
+  position:absolute;inset:0;padding:18px 22px;
+  font-family:var(--mono);font-size:0.8rem;line-height:1.8;
+  color:var(--ink);white-space:pre-wrap;word-break:break-word;overflow-y:auto;
+  pointer-events:none;scrollbar-width:none;-ms-overflow-style:none;
+}
+#md-overlay::-webkit-scrollbar{display:none}
+#f-body{
+  position:absolute;inset:0;padding:18px 22px;background:transparent;border:none;outline:none;
+  color:transparent;caret-color:var(--ink);font-family:var(--mono);font-size:0.8rem;line-height:1.8;
+  resize:none;width:100%;overflow-y:auto;
+}
+#f-body:focus{color:var(--ink)}
+#md-editor-wrap:focus-within #md-overlay{opacity:0}
+#md-sidebar{
+  width:176px;flex-shrink:0;border-left:1px solid var(--border);
+  background:var(--surface);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:10px;
+}
+.md-sb-section{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:500;margin-bottom:3px}
+.md-sb-chips{display:flex;flex-wrap:wrap;gap:3px}
+.md-sb-chip{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 7px;
+  border:1px solid var(--border);border-radius:20px;cursor:pointer;
+  font-size:0.65rem;font-family:var(--mono);color:var(--ink-muted);
+  background:var(--card);transition:background 0.1s;user-select:none;white-space:nowrap;
+}
+.md-sb-chip:hover{background:var(--border);color:var(--ink)}
+/* inline elements rendered by mdToHtml */
+.md-player{display:inline-flex;align-items:center;justify-content:center;
+  height:1.5em;min-width:1.5em;padding:0 0.35em;border-radius:999px;
+  vertical-align:middle;margin:0 2px;font-size:0.78em;
+  color:#fff;font-weight:500;font-family:var(--mono);line-height:1;white-space:nowrap}
+.md-zone{display:inline-flex;align-items:center;padding:0 5px;border-radius:3px;
+  border:1.5px dashed currentColor;height:1.5em;
+  font-size:0.78em;vertical-align:middle;margin:0 2px;font-family:var(--mono);font-weight:500}
+.md-cone{display:inline-flex;align-items:center;vertical-align:middle;
+  font-size:1.32em;margin:0 2px;line-height:1}
+.md-dot{display:inline-flex;align-items:center;width:0.85em;height:0.85em;border-radius:50%;
+  vertical-align:middle;margin:0 2px}
+.md-accent{font-family:var(--serif);color:var(--accent);font-style:italic}
+/* overlay tag styling */
+.ov-tag{color:var(--ink-faint)}
+.ov-accent{font-family:var(--serif);color:var(--accent);font-style:italic}
 
 /* ── Preview tab ── */
 #preview-wrap{max-width:860px;margin:0 auto;padding:28px 24px}
@@ -416,7 +470,25 @@ a.btn-ghost{text-decoration:none}
 
     <!-- Markdown tab -->
     <div id="tab-markdown" class="tab-content">
-      <textarea id="f-body" oninput="onFormChange()">Beschreibe die Übung hier.
+      <div id="md-toolbar">
+        <button class="md-tb-btn" title="Fett (Strg+B)" onclick="wrapMdSel('**','**')"><b>B</b></button>
+        <button class="md-tb-btn" title="Kursiv (Strg+I)" onclick="wrapMdSel('*','*')"><i>I</i></button>
+        <button class="md-tb-btn" title="Mono" onclick="wrapMdSel('`','`')" style="font-family:var(--mono)">⌥M</button>
+        <div class="md-tb-sep"></div>
+        <button class="md-tb-btn" title="Überschrift 2" onclick="prefixMdLine('## ')">H2</button>
+        <button class="md-tb-btn" title="Überschrift 3" onclick="prefixMdLine('### ')">H3</button>
+        <div class="md-tb-sep"></div>
+        <button class="md-tb-btn" title="Aufzählung" onclick="prefixMdLine('- ')">― Liste</button>
+        <div class="md-tb-sep"></div>
+        <button class="md-tb-btn md-tb-accent" title="Akzent-Stil: $text$" onclick="wrapMdSel('$','$')">$ Akzent</button>
+      </div>
+      <div id="md-body">
+        <div id="md-editor-wrap">
+          <div id="md-overlay" aria-hidden="true"></div>
+          <textarea id="f-body" spellcheck="true"
+            oninput="onFormChange();renderMdOverlay()"
+            onscroll="document.getElementById('md-overlay').scrollTop=this.scrollTop"
+            onkeydown="mdKeydown(event)">Beschreibe die Übung hier.
 
 ## Aufbau
 
@@ -426,6 +498,9 @@ a.btn-ghost{text-decoration:none}
 
 ## Variationen
 </textarea>
+        </div>
+        <div id="md-sidebar"></div>
+      </div>
     </div>
 
     <!-- Preview tab -->
@@ -591,6 +666,8 @@ function toggleAppliesStage(btn) {
 function setSport(id) {
   currentSport = id;
   TC = getTCFor(id);
+  const accent = SPORT_MAP[id]?.accent || "#d4763a";
+  document.documentElement.style.setProperty("--accent", accent);
   document.querySelectorAll(".sport-btn").forEach(b =>
     b.classList.toggle("active", b.dataset.sport === id));
   const hasSt = !!(SPORT_MAP[id]?.stages?.length);
@@ -634,6 +711,7 @@ function setTab(tab, { pushState = true } = {}) {
   if (pushState) history.replaceState(null, "", TAB_HASH[tab] || "#court");
   if (tab === "preview") renderPreview();
   if (tab === "court") render();
+  if (tab === "markdown") { buildMdSidebar(); renderMdOverlay(); }
 }
 
 // ── Form change ───────────────────────────────────────────────────────────────
@@ -887,10 +965,36 @@ function propColor(label, value) {
   </div>`;
 }
 function updateProp(key, value) {
-  if (state.selected) { state.selected[key] = value; renderCanvas(); }
+  if (!state.selected) return;
+  const sel = state.selected;
+  if (key === "label") {
+    const kind = getKind(sel);
+    if (kind === "player") {
+      const oldLabel = sel.label || sel.team;
+      sel.label = value;
+      renameMdRef(`{${oldLabel}}`, `{${value}}`);
+    } else if (kind === "zone" && sel.label) {
+      const oldLabel = sel.label;
+      sel.label = value;
+      renameMdRef(`[${oldLabel}]`, `[${value}]`);
+    } else {
+      sel[key] = value;
+    }
+  } else {
+    sel[key] = value;
+  }
+  renderCanvas();
 }
 
-function render() { renderCanvas(); updateProps(); saveToStorage(); }
+function renameMdRef(from, to) {
+  const ta = document.getElementById("f-body");
+  if (!ta) return;
+  ta.value = ta.value.split(from).join(to);
+  renderMdOverlay();
+  saveToStorage();
+}
+
+function render() { renderCanvas(); updateProps(); buildMdSidebar(); saveToStorage(); }
 
 // ── SVG event handling ────────────────────────────────────────────────────────
 function bindSvgEvents() {
@@ -1104,23 +1208,237 @@ function confirmClear() {
 }
 
 // ── Markdown → HTML (mirrors build.js) ───────────────────────────────────────
+function buildNestedList(items) {
+  let pos = 0;
+  function parseAt(minIndent) {
+    let html = "<ul>";
+    while (pos < items.length && items[pos].indent >= minIndent) {
+      const {indent, text} = items[pos++];
+      html += "<li>" + text;
+      if (pos < items.length && items[pos].indent > indent)
+        html += parseAt(items[pos].indent);
+      html += "</li>";
+    }
+    return html + "</ul>";
+  }
+  return parseAt(items[0].indent);
+}
+
+function renderLists(text) {
+  const lines = text.split("\n");
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const m = lines[i].match(/^( *)[-*] (.+)$/);
+    if (m) {
+      const items = [];
+      while (i < lines.length) {
+        const lm = lines[i].match(/^( *)[-*] (.+)$/);
+        if (!lm) break;
+        items.push({ indent: lm[1].length, text: lm[2] });
+        i++;
+      }
+      out.push(buildNestedList(items));
+    } else { out.push(lines[i]); i++; }
+  }
+  return out.join("\n");
+}
+
 function mdToHtml(md) {
   const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  return md
-    .replace(/```[\w]*\n([\s\S]*?)```/g, (_,c) => `<pre><code>${esc(c.trim())}</code></pre>`)
-    .replace(/`([^`]+)`/g, (_,c) => `<code>${esc(c)}</code>`)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\_(.+?)\_/g, "<em>$1</em>")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>[^\n]*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
-    .split(/\n{2,}/)
+  let s = md;
+  s = s.replace(/```[\w]*\n([\s\S]*?)```/g, (_,c) => `<pre><code>${esc(c.trim())}</code></pre>`);
+  s = s.replace(/`([^`]+)`/g, (_,c) => `<code>${esc(c)}</code>`);
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  s = s.replace(/\_(.+?)\_/g, "<em>$1</em>");
+  s = s.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+  s = s.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+  s = s.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+  s = renderLists(s);
+  s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
+  s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
+    const p = state.players.find(pl => (pl.label||pl.team) === label);
+    const col = p ? (TC[p.team]||'#888') : '#888';
+    return `<span class="md-player" style="background:${col}">${label}</span>`;
+  });
+  s = s.replace(/<#([0-9a-fA-F]{3,6})>/g, (_, hex) =>
+    `<span class="md-cone" style="color:#${hex}">▲</span>`);
+  s = s.replace(/\(#([0-9a-fA-F]{3,6})\)/g, (_, hex) =>
+    `<span class="md-dot" style="background:#${hex}"></span>`);
+  s = s.replace(/\[([^\]\n]+)\](?!\()/g, (_, label) => {
+    const z = state.zones.find(zn => zn.label === label);
+    const col = z ? (z.color||'#f5e642') : '#f5e642';
+    return `<span class="md-zone" style="color:${col}">${label}</span>`;
+  });
+  return s.split(/\n{2,}/)
     .map(b => { b=b.trim(); return (!b||/^<[huop]/.test(b)) ? b : `<p>${b.replace(/\n/g," ")}</p>`; })
     .join("\n");
+}
+
+// ── Markdown editor helpers ───────────────────────────────────────────────────
+function getMdTa() { return document.getElementById("f-body"); }
+
+function wrapMdSel(before, after) {
+  const ta = getMdTa(); if (!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s, e) || "Text";
+  ta.setRangeText(before + sel + after, s, e, "select");
+  ta.selectionStart = s + before.length;
+  ta.selectionEnd   = s + before.length + sel.length;
+  ta.focus(); onFormChange(); renderMdOverlay();
+}
+
+function prefixMdLine(prefix) {
+  const ta = getMdTa(); if (!ta) return;
+  const s = ta.selectionStart;
+  const lineStart = ta.value.lastIndexOf("\n", s - 1) + 1;
+  const cur = ta.value.slice(lineStart, lineStart + prefix.length);
+  if (cur === prefix) {
+    ta.setRangeText("", lineStart, lineStart + prefix.length, "end");
+  } else {
+    ta.setRangeText(prefix, lineStart, lineStart, "end");
+  }
+  ta.focus(); onFormChange(); renderMdOverlay();
+}
+
+function insertMdTag(tag) {
+  const ta = getMdTa(); if (!ta) return;
+  const s = ta.selectionStart;
+  ta.setRangeText(tag, s, ta.selectionEnd, "end");
+  ta.focus(); onFormChange(); renderMdOverlay();
+}
+
+function mdKeydown(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); wrapMdSel("**","**"); }
+  if ((e.ctrlKey || e.metaKey) && e.key === "i") { e.preventDefault(); wrapMdSel("*","*"); }
+}
+
+// ── Inline overlay rendering ───────────────────────────────────────────────────
+const MD_TAG_PAT = /(\$[^$\n]+\$|\{[^}\n]+\}|\[[^\]\n]+\](?!\()|\(<#[0-9a-fA-F]{3,6}>|<#[0-9a-fA-F]{3,6}>|\(#[0-9a-fA-F]{3,6}\))/g;
+
+function renderMdOverlay() {
+  const ta  = document.getElementById("f-body");
+  const ov  = document.getElementById("md-overlay");
+  if (!ta || !ov) return;
+  const text = ta.value;
+  const esc  = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  let out = "", last = 0;
+  MD_TAG_PAT.lastIndex = 0;
+  let m;
+  while ((m = MD_TAG_PAT.exec(text)) !== null) {
+    out += esc(text.slice(last, m.index));
+    out += overlayTag(m[0]);
+    last = MD_TAG_PAT.lastIndex;
+  }
+  out += esc(text.slice(last));
+  ov.innerHTML = out;
+  ov.scrollTop = ta.scrollTop;
+}
+
+function overlayTag(tag) {
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // $accent$
+  if (tag.startsWith("$") && tag.endsWith("$")) {
+    return `<span class="ov-accent">${esc(tag)}</span>`;
+  }
+  // {Player}
+  if (tag.startsWith("{") && tag.endsWith("}")) {
+    const label = tag.slice(1,-1);
+    const pl = state.players.find(p => (p.label||p.team) === label);
+    const col = pl ? (TC[pl.team]||"#888") : "#888";
+    return `<span class="ov-tag">${esc(tag)}</span><span class="md-player" style="background:${col}">${esc(label)}</span>`;
+  }
+  // [Zone]
+  if (tag.startsWith("[") && tag.endsWith("]")) {
+    const label = tag.slice(1,-1);
+    const z = state.zones.find(zn => zn.label === label);
+    const col = z ? (z.color||"#f5e642") : "#f5e642";
+    return `<span class="ov-tag">${esc(tag)}</span><span class="md-zone" style="color:${col}">${esc(label)}</span>`;
+  }
+  // <#hex>
+  const coneM = tag.match(/^<#([0-9a-fA-F]{3,6})>$/);
+  if (coneM) {
+    return `<span class="ov-tag">${esc(tag)}</span><span class="md-cone" style="color:#${coneM[1]}">▲</span>`;
+  }
+  // (#hex)
+  const dotM = tag.match(/^\(#([0-9a-fA-F]{3,6})\)$/);
+  if (dotM) {
+    return `<span class="ov-tag">${esc(tag)}</span><span class="md-dot" style="background:#${dotM[1]}"></span>`;
+  }
+  return tag;
+}
+
+// ── Markdown sidebar ──────────────────────────────────────────────────────────
+function buildMdSidebar() {
+  const sb = document.getElementById("md-sidebar");
+  if (!sb) return;
+  let html = "";
+
+  // Players
+  const players = state.players;
+  if (players.length) {
+    html += `<div><div class="md-sb-section">Spieler</div><div class="md-sb-chips">`;
+    players.forEach(p => {
+      const label = p.label || p.team;
+      const col = TC[p.team] || "#888";
+      html += `<span class="md-sb-chip" onclick="insertMdTag('{${label}}')" title="Spieler ${label} einfügen">
+        <span class="md-player" style="background:${col}"></span>${label}
+      </span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Zones (deduplicated by label+color)
+  const zonesSeen = new Set();
+  const zones = state.zones.filter(z => {
+    if (!z.label) return false;
+    const key = z.label + "|" + (z.color||"#f5e642");
+    if (zonesSeen.has(key)) return false;
+    zonesSeen.add(key); return true;
+  });
+  if (zones.length) {
+    html += `<div><div class="md-sb-section">Zonen</div><div class="md-sb-chips">`;
+    zones.forEach(z => {
+      const col = z.color || "#f5e642";
+      html += `<span class="md-sb-chip" onclick="insertMdTag('[${z.label}]')" title="Zone einfügen">
+        <span class="md-zone" style="color:${col}">${z.label}</span>
+      </span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Cones by unique color
+  const cones = state.markers.filter(m => m.type === "cone");
+  const coneColors = [...new Set(cones.map(m => (m.color||"#f5a542").replace("#","")))];
+  if (coneColors.length) {
+    html += `<div><div class="md-sb-section">Hütchen</div><div class="md-sb-chips">`;
+    coneColors.forEach(hex => {
+      html += `<span class="md-sb-chip" onclick="insertMdTag('<#${hex}>')" title="Hütchen einfügen">
+        <span class="md-cone" style="color:#${hex}">▲</span>#${hex}
+      </span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // All used colors (zones + cones + arrow lines + team colors)
+  const allColors = new Set();
+  state.zones.forEach(z => allColors.add((z.color||"#f5e642").replace("#","")));
+  cones.forEach(m => allColors.add((m.color||"#f5a542").replace("#","")));
+  Object.values(AC).forEach(c => allColors.add(c.replace("#","")));
+  Object.values(TC).forEach(c => allColors.add(c.replace("#","")));
+  if (allColors.size) {
+    html += `<div><div class="md-sb-section">Farb-Punkte</div><div class="md-sb-chips">`;
+    [...allColors].forEach(hex => {
+      html += `<span class="md-sb-chip" onclick="insertMdTag('(#${hex})')" title="Farbpunkt einfügen">
+        <span class="md-dot" style="background:#${hex}"></span>#${hex}
+      </span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  sb.innerHTML = html || `<div class="md-sb-section" style="font-style:italic;color:var(--ink-faint);font-size:0.7rem;margin-top:6px">Elemente auf dem Court platzieren</div>`;
 }
 
 // ── Preview court SVG ─────────────────────────────────────────────────────────
@@ -1621,6 +1939,8 @@ function populateFromParsed(meta, body, rawFm) {
   state.nextId = nums.length ? Math.max(...nums) + 1 : 1;
   state.selected = null;
   render();
+  renderMdOverlay();
+  buildMdSidebar();
   saveToStorage();
 }
 
