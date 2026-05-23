@@ -21,7 +21,7 @@ diagram:
   arrows:
     - { id: e6, x1: 0.449, y1: -0.018, x2: -0.074, y2: 0.356, type: move, cx: -0.042, cy: 0.071, midTouched: true }
     - { id: e7, x1: -0.025, y1: 0.359, x2: 0.475, y2: 0.008, type: move, cx: 0.001, cy: 0.09, midTouched: true }
-    - { id: e8, x1: 0.41, y1: 0.852, x2: 0.531, y2: 0.852, type: line }
+    - { id: e8, x1: 0.41, y1: 0.852, x2: 0.531, y2: 0.852, type: line, headEnd: true }
   markers:
     - { id: e4, type: text, x: 0.489, y: 0.133, color: '#e8ede4', text: '5', size: 35, bold: true }
     - { id: e5, type: text, x: 0.332, y: 0.863, color: '#e8ede4', text: '7', size: 35, bold: true }

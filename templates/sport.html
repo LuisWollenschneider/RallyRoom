@@ -266,6 +266,19 @@ body.entry-view #menu-btn{display:none}
 </head>
 <body>
 
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ab"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#f5e642"/></marker>
+    <marker id="am"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#7ab3f5"/></marker>
+    <marker id="as"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#c084f5"/></marker>
+    <marker id="al"  markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#b8c8b4"/></marker>
+    <marker id="abr" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="#f5e642"/></marker>
+    <marker id="amr" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="#7ab3f5"/></marker>
+    <marker id="asr" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="#c084f5"/></marker>
+    <marker id="alr" markerWidth="4" markerHeight="4" refX="3.5" refY="2" orient="auto-start-reverse"><path d="M0,0 L0,4 L4,2 z" fill="#b8c8b4"/></marker>
+  </defs>
+</svg>
+
 <div class="bg-sport-court" aria-hidden="true">
   <svg id="bg-court-svg" viewBox="0 0 900 1100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"></svg>
 </div>
@@ -418,8 +431,8 @@ function renderDiagram(d, W, H, sfx, rb) {
     const headEnd   = isLine ? (a.headEnd??false)  : (a.headEnd??true);
     const headStart = a.headStart||a.bidir||false;
     const pfx=a.type==="move"?"am":a.type==="screen"?"as":a.type==="line"?"al":"ab";
-    const mEnd  = headEnd   ? `marker-end="url(#${pfx}${sfx})"`    : "";
-    const mStart= headStart ? `marker-start="url(#${pfx}r${sfx})"` : "";
+    const mEnd  = headEnd   ? `marker-end="url(#${pfx})"`    : "";
+    const mStart= headStart ? `marker-start="url(#${pfx}r)"` : "";
     const dash=isLine?"8,5":a.type==="move"?"6,4":"";
     const x1=a.x1*W,y1=a.y1*H,x2=a.x2*W,y2=a.y2*H;
     let d;

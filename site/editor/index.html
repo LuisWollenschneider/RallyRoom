@@ -1256,8 +1256,9 @@ function diagramYaml() {
   state.arrows.forEach(a => {
     const headEnd   = a.type==="line" ? (a.headEnd??false)  : (a.headEnd??true);
     const headStart = a.headStart||a.bidir||false;
-    const hs  = headStart            ? ", headStart: true"        : "";
-    const he  = !headEnd             ? ", headEnd: false"         : "";
+    const hs  = headStart                          ? ", headStart: true"  : "";
+    const he  = a.type==="line" ? (headEnd         ? ", headEnd: true"   : "")
+                                : (!headEnd        ? ", headEnd: false"  : "");
     const md  = (a.mode&&a.mode!=="curved") ? `, mode: ${a.mode}`: "";
     const ctrl= a.midTouched ? `, cx: ${fmt(a.cx)}, cy: ${fmt(a.cy)}, midTouched: true` : "";
     lines.push(`    - { id: ${a.id}, x1: ${fmt(a.x1)}, y1: ${fmt(a.y1)}, x2: ${fmt(a.x2)}, y2: ${fmt(a.y2)}, type: ${a.type}${hs}${he}${md}${ctrl} }`);
