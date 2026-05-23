@@ -787,7 +787,7 @@ function renderCanvas() {
       if (sel) s += `<circle cx="${mx}" cy="${my}" r="${r*.72}" fill="none" stroke="#fff" stroke-width="1.5" style="pointer-events:none"/>`;
       s += `<circle data-id="${m.id}" data-kind="marker" cx="${mx}" cy="${my}" r="${r*.72}" fill="transparent" style="cursor:pointer"/>`;
     } else if (m.type==="text") {
-      const fs = (m.size||11)/11/16*VW, col = m.color||"#e8ede4", txt = m.text||"Text", rot = m.rotation||0;
+      const fs = (m.size||11)/11/16*VW, col = m.color||"#e8ede4", txt = m.text??"Text", rot = m.rotation||0;
       const tf = rot ? `rotate(${rot},${mx},${my})` : "";
       const fw = m.bold ? "600" : "300", fi = m.italic ? "italic" : "normal";
       s += `<text data-id="${m.id}" data-kind="marker" x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle"
@@ -837,7 +837,7 @@ function updateProps() {
   } else if (kind === "marker") {
     if (sel.type === "cone") html += propColor("Farbe", sel.color||"#f5a542");
     if (sel.type === "text") {
-      html += propField("Text", "text", sel.text||"Text", "text");
+      html += propField("Text", "text", sel.text??"Text", "text");
       html += propColor("Farbe", sel.color||"#e8ede4");
       html += propField("Größe", "size", sel.size||11, "number");
       html += propField("Rotation (°)", "rotation", sel.rotation||0, "number");
@@ -1164,7 +1164,7 @@ function previewCourtSvg() {
       const fs=(m.size||11)/11/16*W, col=m.color||"#e8ede4", rot=m.rotation||0;
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
       const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
-      s += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text||"Text"}</text>`;
+      s += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text??"Text"}</text>`;
     }
   });
   state.players.forEach(p => {
@@ -1266,7 +1266,7 @@ function diagramYaml() {
   state.markers.forEach(m => {
     const img = m.image ? `, image: '${m.image}'` : "";
     const col = m.color ? `, color: '${m.color}'` : "";
-    const txt  = m.text     ? `, text: '${m.text.replace(/'/g,"\\\'")}'` : "";
+    const txt  = m.text!=null ? `, text: '${String(m.text).replace(/'/g,"\\\'")}'` : "";
     const sz   = m.size     ? `, size: ${fmt(m.size)}`         : "";
     const rot  = m.rotation ? `, rotation: ${fmt(m.rotation)}` : "";
     const bold = m.bold     ? `, bold: true`                   : "";
@@ -1537,6 +1537,18 @@ function loadFromStorage() {
 }
 
 // ── .md upload + parsing ──────────────────────────────────────────────────────
+function splitInlineObj(str) {
+  const parts = []; let cur = "", q = null;
+  for (const c of str) {
+    if (q) { cur += c; if (c === q) q = null; }
+    else if (c === "'" || c === '"') { q = c; cur += c; }
+    else if (c === ',') { parts.push(cur); cur = ""; }
+    else cur += c;
+  }
+  if (cur.trim()) parts.push(cur);
+  return parts;
+}
+
 function parseYamlList(text, key) {
   const re = new RegExp(`${key}:\\s*\\n((?:\\s+-.+\\n?)+)`, "m");
   const m = text.match(re);
@@ -1544,7 +1556,7 @@ function parseYamlList(text, key) {
   return m[1].trim().split("\n").map(line => {
     const inner = line.trim().replace(/^-\s*/, "").replace(/^\{|\}$/g, "").trim();
     const obj = {};
-    inner.split(/,(?![^']*')/).forEach(pair => {
+    splitInlineObj(inner).forEach(pair => {
       const colon = pair.indexOf(":");
       if (colon === -1) return;
       const k = pair.slice(0, colon).trim();
