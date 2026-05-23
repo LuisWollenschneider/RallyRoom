@@ -693,7 +693,7 @@ function renderList(entries) {
 // ── Detail view ────────────────────────────────────────────────────────────────
 let _modalDiagram=null, _modalStage=null;
 
-function openEntry(slug) {
+function openEntry(slug, pushState=true) {
   const e=allEntries.find(x=>x.slug===slug);
   if(!e) return;
   _modalDiagram=e.diagram;
@@ -726,7 +726,7 @@ function openEntry(slug) {
         <div class="court-info">${courtInfoHtml}</div>
       </div>
     </div>`;
-  history.pushState({ slug }, "", "#" + slug);
+  if(pushState) history.pushState({ slug }, "", "#" + slug);
   showView("entry");
 }
 
@@ -754,8 +754,19 @@ function closeSidebar(){document.body.classList.remove("sidebar-open")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCourtModal();closeSidebar();}})
 
 window.addEventListener("popstate", e => {
-  if(e.state?.slug) openEntry(e.state.slug);
+  if(e.state?.slug) openEntry(e.state.slug, false);
   else showView("list");
+});
+
+document.getElementById("main").addEventListener("click", e => {
+  const a = e.target.closest("a");
+  if (!a) return;
+  const href = a.getAttribute("href") || "";
+  if (!href.startsWith("#")) return;
+  const slug = href.slice(1);
+  if (!slug || !allEntries.find(x => x.slug === slug)) return;
+  e.preventDefault();
+  openEntry(slug);
 });
 
 // ── Background court lines ─────────────────────────────────────────────────────
