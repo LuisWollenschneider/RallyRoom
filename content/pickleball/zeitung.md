@@ -6,12 +6,12 @@ skill_requirement: All Levels
 skills_trained:
   - Ballkontrolle
   - Grundschläge
+half_court: true
 players: 2
 duration: {min: 5, max: 8}
-summary: Ziel ist es die Ballkontrolle von hinten zu verbessern, ohne den Fokus darauf zu legen.
-half_court: true
 materials:
   - Zeitung
+summary: Ziel ist es die Ballkontrolle von hinten zu verbessern, ohne den Fokus darauf zu legen.
 diagram:
   players:
     - { id: e1, team: A, x: 0.481, y: -0.049, label: A1 }
@@ -25,17 +25,19 @@ diagram:
 ---
 
 ## Aufbau
-Platziere eine Zeitung auf jeder Seite des Spielfelds, ungefähr 2 Meter vor der Grundlinie.
+Platziere eine [Zeitung] auf jeder Seite des Spielfelds, ungefähr 2 Meter vor der Grundlinie.
 
 ## Aufgabe
-Die Spieler spielen von der Grundlinie Ballwechsel, wobei sie versuchen, die Zeitung auf der gegenüberliegenden Seite zu treffen.
+Die Spieler spielen von der Grundlinie Ballwechsel, wobei sie versuchen, die [Zeitung] auf der gegenüberliegenden Seite zu treffen.
+
 Bei einem Treffer wird die Zeitung einmal mittig gefaltet, und das Ziel verkleinert.
 
 ## Ziel
-Das Ziel der Spieler ist es, zum Ende der Übung die kleinste Zeitung zu haben.
+Das Ziel der Spieler ist es, zum Ende der Übung die kleinste [Zeitung] zu haben.
 
 ## Trainer Hinweise
-Erkläre den Spielern nicht, dass es bei dieser Übung darum geht, die Konsistenz und Kontrolle iherer Schläge zu verbessern.
+Erkläre den Spielern nicht, dass es bei dieser Übung darum geht, die Konsistenz und Kontrolle ihrer Schläge zu verbessern.
+
 Indem man ihnen ein Ziel gibt, welches sie anvisieren können, werden sie automatisch kontrollierter spielen.
 
 Die Nutzung der Zeitung bietet sowohl visuelles als auch akustisches Feedback, wenn sie getroffen wird.
@@ -43,4 +45,4 @@ Die Nutzung der Zeitung bietet sowohl visuelles als auch akustisches Feedback, w
 - Spieler sollten sich mehr auf die Platzierung des Balls konzentrieren, anstatt möglichst schnell und hart zu schlagen.
 
 ## Variationen
-Die Zeitung kann an verschiedenen Stellen, z.B. zentraler, in den Ecken der _Kitchen_, etc. platziert werden, um verschiedene Schlagplatzierungen zu üben.
+Die Zeitung kann an verschiedenen Stellen, z.B. zentraler, in den Ecken der $Kitchen$, etc. platziert werden, um verschiedene Schlagplatzierungen zu üben.

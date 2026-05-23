@@ -39,7 +39,7 @@ Der eingewechselte Spieler startet mit den alten Punkten des Verlierers.
 Der Gewinner muss wieder von 0 anfangen.
 
 ## Beispiel
-Das erste Spiel ended 5:7. Spieler A wechselst mit Spieler W, und die neue Runde (W vs B) beginnt mit dem Punktestand 5:0.
+Das erste Spiel ended `5:7`. Spieler {A} wechselst mit Spieler {W}, und die neue Runde ({W} vs {B}) beginnt mit dem Punktestand `5:0`.
 
 ## Ziel
 Mit dem _unfairen_ Punkte-Vorsprung in jeder neuen Runde, haben schwächere Spieler die Möglichkeit gegen stärkere Spieler zu gewinnen.

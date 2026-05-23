@@ -15,8 +15,8 @@ materials:
 summary: Gemeinsames Dinken in der Kitchen
 diagram:
   players:
-    - { id: e5, team: A, x: 0.496, y: 0.306, label: A1 }
-    - { id: e6, team: B, x: 0.493, y: 0.695, label: B1 }
+    - { id: e5, team: A, x: 0.496, y: 0.306, label: A }
+    - { id: e6, team: B, x: 0.493, y: 0.695, label: B }
   arrows:
     - { id: e8, x1: 0.461, y1: 0.336, x2: 0.426, y2: 0.496, type: ball }
     - { id: e9, x1: 0.464, y1: 0.664, x2: 0.426, y2: 0.608, type: move }

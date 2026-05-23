@@ -14,10 +14,10 @@ materials:
 summary: Wer wagt, gewinnt!
 diagram:
   players:
-    - { id: e7, team: A, x: 0.214, y: -0.026, label: A1 }
-    - { id: e8, team: B, x: 0.237, y: 1.027, label: B1 }
-    - { id: e13, team: A, x: 0.747, y: -0.032, label: A2 }
-    - { id: e14, team: B, x: 0.77, y: 1.032, label: B2 }
+    - { id: e7, team: A, x: 0.207, y: -0.026, label: A1 }
+    - { id: e8, team: B, x: 0.207, y: 1.028, label: B1 }
+    - { id: e13, team: A, x: 0.745, y: -0.028, label: A2 }
+    - { id: e14, team: B, x: 0.698, y: 1.026, label: B2 }
   arrows:
   markers:
     - { id: e11, type: text, x: 0.482, y: 0.139, color: '#e8ede4', text: '1', size: 38, bold: true }
@@ -26,15 +26,15 @@ diagram:
 ---
 
 ## Aufbau
-Das Spiel beginnt mit den Punktestand 1:1.
-Spieler müssen vor jedem Punkt eine bestimmte Anzahl ihrer Punkte wetten. Wenn sie den Punkt gewinnen, werden die gesetzten Punkte verdoppelt. Wenn sie verlieren, verlieren sie die gesetzten Punkte.
+Das Spiel beginnt mit den Punktestand `1:1`.
+Spieler/Teams müssen vor jedem Punkt eine bestimmte Anzahl ihrer Punkte wetten. Wenn sie den Punkt gewinnen, werden die gesetzten Punkte verdoppelt. Wenn sie verlieren, verlieren sie die gesetzten Punkte.
 
-Gesetzt werden kann immer nur maximal, was der Spieler an Punkten aktuell hat.
+Gesetzt werden kann immer nur maximal, was der Spieler/Team an Punkten aktuell hat.
 
-_Wenn ein Spieler 0 Punkte hat, kann er immer 1 Punkt setzen, um neu ins Spiel zu kommen. Negative Punkte sind nicht möglich._
+_Wenn ein Spieler/Team 0 Punkte hat, kann er immer 1 Punkt setzen, um neu ins Spiel zu kommen. Negative Punkte sind nicht möglich._
 
 ## Beispiel
-Steht es 4:2 und Spieler A setzt 3 Punkte, und Spieler B 1 Punkt, und Spieler A gewinnt, steht es danach 7:1.
+Steht es `4:2` und Team {A1}&{A2} setzten 3 Punkte, und Team {B1}&{B2} 1 Punkt. Gewinnt {A1}&{A2}, steht es danach `7:1`.
 
 ## Ziel
 Gespielt wird bis 21.

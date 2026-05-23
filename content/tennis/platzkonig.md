@@ -1,5 +1,5 @@
 ---
-sport: pickleball
+sport: tennis
 title: Platzkönig
 category: Game
 skill_requirement: All Levels
@@ -7,6 +7,8 @@ skills_trained:
   - Drucksituationen
   - Punkte
 half_court: false
+stages: []
+diagram_stage: yellow
 players: 3+
 duration: {min: 5, max: 10}
 materials:

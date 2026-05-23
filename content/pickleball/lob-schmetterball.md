@@ -14,32 +14,34 @@ materials:
 summary: 2 Übungen in einem, gemeinsames üben.
 diagram:
   players:
-    - { id: e5, team: A, x: 0.496, y: 0.306, label: A1 }
-    - { id: e6, team: B, x: 0.507, y: 1.036, label: B1 }
+    - { id: e5, team: A, x: 0.496, y: 0.306, label: A }
+    - { id: e6, team: B, x: 0.507, y: 1.036, label: B }
   arrows:
+    - { id: e12, x1: 0.485, y1: 1.004, x2: 0.498, y2: 0.081, type: ball, cx: 0.119, cy: 0.184, midTouched: true }
+    - { id: e13, x1: 0.502, y1: 0.264, x2: 0.502, y2: 0.184, type: move }
   markers:
   zones:
     - { id: e11, x: 0.124, y: 0.021, width: 0.779, height: 0.094, label: Lob Ziel, color: '#cb5942' }
 ---
 
 Bei dieser Übung trainieren die Spieler jeweils verschiedene Schläge.
-Während Spieler A den Schmetterball übt, trainiert Spieler B den defensiven Lob.
+Während {A} den Schmetterball übt, trainiert {B} den defensiven Lob.
 
 ## Aufbau
-- Spieler A startet an der Kitchen
-- Spieler B startet an der Grundlinie
-- Spielet B spielt einen hohen Ball zu Spieler A, welcher diesen als Schmetterball zurückspielt. (regulierte Stärke, _miteinander spielen_)
+- {A} startet an der Kitchen
+- {B} startet an der Grundlinie
+- {B} spielt einen hohen Ball zu {A}, welcher diesen als Schmetterball zurückspielt. (regulierte Stärke, _miteinander spielen_)
 
 
 ## Ziel
-Spieler B sollte lernen, den Lob als defensive Waffe zu nutzen, um sich aus unangenehmen Situationen zu befreien.
-Die hohe Flugbahn des Balls gibt Spieler B mehr Zeit, um sich zu positionieren und den nächsten Schlag vorzubereiten.
+Spieler {B} sollte lernen, den Lob als defensive Waffe zu nutzen, um sich aus unangenehmen Situationen zu befreien.
+Die hohe Flugbahn des Balls gibt Spieler {B} mehr Zeit, um sich zu positionieren und den nächsten Schlag vorzubereiten.
 
-Wenn der Ball von Spieler B zusätzlich noch in die markierte Zone gespielt wird, hat Spieler A potentiell Schwierigkeiten, 
+Wenn der Ball von Spieler {B} zusätzlich noch in die markierte Zone [Lob Ziel] gespielt wird, hat Spieler {A} potentiell Schwierigkeiten, 
 den Ball mit einem aggressiven Schlag zurückzuspielen, da er weiter von der Kitchen entfernt ist.
 
-Spieler A sollte lernen, den Schmetterball zu plazieren. Es geht nicht direkt um die Schlagstärke.
+Spieler {A} sollte lernen, den Schmetterball zu plazieren. Es geht nicht direkt um die Schlagstärke.
 Diese ist zwar auch wichtig, aber würde die Übung zu sehr dominieren.
 
 ## Variationen
-- Spieler A spielt den Schmetterball crosscourt, um die Platzierung zu erschweren
+- {A} spielt den Schmetterball crosscourt, um die Platzierung zu erschweren
