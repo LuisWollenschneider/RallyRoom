@@ -527,7 +527,7 @@ function renderDiagram(d, W, H, sfx, rb) {
 
   (d.players||[]).forEach(p => {
     const px=p.x*W, py=p.y*H, r=W*.055;
-    const col=TC[p.team]||TC.A;
+    const col=p.team==='P'?(p.color||'#888'):(TC[p.team]||TC.A);
     if(p.image){
       s+=`<clipPath id="cp${p.id}${sfx}"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>`;
       s+=`<image href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" clip-path="url(#cp${p.id}${sfx})" preserveAspectRatio="xMidYMid slice"/>`;

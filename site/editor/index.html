@@ -150,6 +150,7 @@ a.btn-ghost{text-decoration:none}
 .tool-chip.t-a{color:#4caf6e}.tool-chip.t-a.active{border-color:#4caf6e;background:rgba(76,175,110,.15)}
 .tool-chip.t-b{color:#d45c43}.tool-chip.t-b.active{border-color:#d45c43;background:rgba(212,92,67,.15)}
 .tool-chip.t-w{color:#d4a843}.tool-chip.t-w.active{border-color:#d4a843;background:rgba(212,168,67,.15)}
+.tool-chip.t-p{color:#aaa}.tool-chip.t-p.active{border-color:#aaa;background:rgba(170,170,170,.15)}
 .tool-chip.t-ball{color:#f5e642}.tool-chip.t-ball.active{border-color:#f5e642;background:rgba(245,230,66,.1)}
 .tool-chip.t-move{color:#7ab3f5}.tool-chip.t-move.active{border-color:#7ab3f5;background:rgba(122,179,245,.1)}
 .tool-chip.t-screen{color:#c084f5}.tool-chip.t-screen.active{border-color:#c084f5;background:rgba(192,132,245,.1)}
@@ -552,6 +553,7 @@ a.btn-ghost{text-decoration:none}
         <button class="tool-chip t-a" id="ts-player-A" onclick="setTool('player-A')">● A</button>
         <button class="tool-chip t-b" id="ts-player-B" onclick="setTool('player-B')">● B</button>
         <button class="tool-chip t-w" id="ts-player-W" onclick="setTool('player-W')">● W</button>
+        <button class="tool-chip t-p" id="ts-player-P" onclick="setTool('player-P')">● P</button>
         <div class="tool-strip-sep"></div>
         <button class="tool-chip t-ball" id="ts-arrow-ball" onclick="setTool('arrow-ball')">→ Ball</button>
         <button class="tool-chip t-move" id="ts-arrow-move" onclick="setTool('arrow-move')">⇢ Bewegen</button>
@@ -1008,7 +1010,7 @@ function renderCanvas() {
 
   state.players.forEach(p => {
     const px=p.x*VW, py=p.y*VH, r=10;
-    const col=TC[p.team]||TC.A, sel=state.selected?.id===p.id;
+    const col=p.team==='P'?(p.color||'#888'):(TC[p.team]||TC.A), sel=state.selected?.id===p.id;
     if (p.image) {
       s += `<clipPath id="cp${p.id}e"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>
         <image data-id="${p.id}" data-kind="player" href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}"
@@ -1039,7 +1041,11 @@ function updateProps() {
   if (kind === "player") {
     html += propField("Label", "label", sel.label||"", "text");
     html += propField("Bild-URL", "image", sel.image||"", "text", "https://…");
-    html += `<div class="prop-type">Team: <strong style="color:${TC[sel.team]||'inherit'}">${sel.team}</strong></div>`;
+    if (sel.team === 'P') {
+      html += propColor("Farbe", sel.color||"#888888");
+    } else {
+      html += `<div class="prop-type">Team: <strong style="color:${TC[sel.team]||'inherit'}">${sel.team}</strong></div>`;
+    }
   } else if (kind === "marker") {
     if (sel.type === "cone") html += propColor("Farbe", sel.color||"#f5a542");
     if (sel.type === "text") {
@@ -1156,8 +1162,19 @@ function onDown(evt) {
   }
   if (state.tool.startsWith("player-")) {
     const team = state.tool.split("-")[1];
-    const n = state.players.filter(p => p.team === team).length + 1;
-    state.players.push({ id: genId(), team, x: c.x, y: c.y, label: team + n });
+    const teamPlayers = state.players.filter(p => p.team === team);
+    const n = teamPlayers.length;
+    let newLabel;
+    if (n === 0) {
+      newLabel = team;
+    } else {
+      newLabel = team + (n + 1);
+      if (n === 1 && teamPlayers[0].label === team) {
+        renameMdRef(`{${team}}`, `{${team}1}`);
+        teamPlayers[0].label = team + "1";
+      }
+    }
+    state.players.push({ id: genId(), team, x: c.x, y: c.y, label: newLabel });
     render(); return;
   }
   if (state.tool.startsWith("marker-")) {
@@ -1391,7 +1408,7 @@ function mdToHtml(md) {
   s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
   s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
     const p = state.players.find(pl => (pl.label||pl.team) === label);
-    const col = p ? (TC[p.team]||'#888') : '#888';
+    const col = p ? (p.team === 'P' ? (p.color || '#888') : (TC[p.team] || '#888')) : '#888';
     return `<span class="md-player" style="background:${col}">${label}</span>`;
   });
   s = s.replace(/<#([0-9a-fA-F]{3,6})>/g, (_, hex) =>
@@ -1478,7 +1495,7 @@ function overlayTag(tag) {
   if (tag.startsWith("{") && tag.endsWith("}")) {
     const label = tag.slice(1,-1);
     const pl = state.players.find(p => (p.label||p.team) === label);
-    const col = pl ? (TC[pl.team]||"#888") : "#888";
+    const col = pl ? (pl.team === 'P' ? (pl.color || '#888') : (TC[pl.team] || '#888')) : '#888';
     return `<span class="ov-tag">${esc(tag)}</span><span class="md-player" style="background:${col}">${esc(label)}</span>`;
   }
   // [Zone]
@@ -1513,7 +1530,7 @@ function buildMdSidebar() {
     html += `<div><div class="md-sb-section">Spieler</div><div class="md-sb-chips">`;
     players.forEach(p => {
       const label = p.label || p.team;
-      const col = TC[p.team] || "#888";
+      const col = p.team === 'P' ? (p.color || '#888') : (TC[p.team] || '#888');
       html += `<span class="md-sb-chip" onclick="insertMdTag('{${label}}')" title="Spieler ${label} einfügen">
         <span class="md-player" style="background:${col}"></span>${label}
       </span>`;
@@ -1617,7 +1634,7 @@ function previewCourtSvg() {
     }
   });
   state.players.forEach(p => {
-    const px=p.x*W, py=p.y*H, r=W*.055, col=TC_p[p.team]||TC_p.A;
+    const px=p.x*W, py=p.y*H, r=W*.055, col=p.team==='P'?(p.color||'#888'):(TC_p[p.team]||TC_p.A);
     if (p.image) {
       s += `<clipPath id="pvcp${p.id}"><circle cx="${px}" cy="${py}" r="${r}"/></clipPath>
         <image href="${p.image}" x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" clip-path="url(#pvcp${p.id})" preserveAspectRatio="xMidYMid slice"/>
@@ -1699,7 +1716,8 @@ function diagramYaml() {
   lines.push("  players:");
   state.players.forEach(p => {
     const img = p.image ? `, image: '${p.image}'` : "";
-    lines.push(`    - { id: ${p.id}, team: ${p.team}, x: ${fmt(p.x)}, y: ${fmt(p.y)}, label: ${p.label||p.team}${img} }`);
+    const clr = p.team === 'P' ? `, color: '${p.color||'#888888'}'` : "";
+    lines.push(`    - { id: ${p.id}, team: ${p.team}, x: ${fmt(p.x)}, y: ${fmt(p.y)}, label: ${p.label||p.team}${img}${clr} }`);
   });
   lines.push("  arrows:");
   state.arrows.forEach(a => {

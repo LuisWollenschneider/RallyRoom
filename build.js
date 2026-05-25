@@ -78,7 +78,7 @@ function mdToHtml(md, diagram, sport) {
     s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
     s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
         const p = players.find((pl) => (pl.label || pl.team) === label);
-        const col = p ? TC[p.team] || "#888" : "#888";
+        const col = p ? (p.team === 'P' ? (p.color || '#888') : (TC[p.team] || '#888')) : '#888';
         return `<span class="md-player" style="background:${col}">${esc(label)}</span>`;
     });
     s = s.replace(
