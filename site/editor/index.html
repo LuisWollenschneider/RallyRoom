@@ -297,6 +297,60 @@ a.btn-ghost{text-decoration:none}
 .modal-ok.danger{border-color:var(--red);background:rgba(212,92,67,.15);color:var(--red)}
 .modal-ok.danger:hover{background:rgba(212,92,67,.25)}
 
+/* ── Tag select ── */
+.tag-select-wrap{
+  min-height:34px;padding:5px 8px;background:var(--card);border:1px solid var(--border);
+  border-radius:5px;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+  transition:border-color 0.1s;
+}
+.tag-select-wrap:hover{border-color:var(--ink-faint)}
+.tag-chips-display{display:contents}
+.tag-placeholder{font-size:0.76rem;color:var(--ink-faint)}
+.tag-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:20px;background:var(--surface);border:1px solid var(--border);
+  font-size:0.68rem;color:var(--ink-muted);white-space:nowrap;
+}
+.tag-remove{cursor:pointer;opacity:0.55;font-size:0.75rem;line-height:1;margin-left:1px}
+.tag-remove:hover{opacity:1;color:var(--red)}
+
+/* ── Tag modal ── */
+#tag-modal{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+#tag-modal.open{display:flex}
+.tag-modal-inner{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;max-width:400px;width:90%;display:flex;flex-direction:column;gap:12px;
+}
+.tag-modal-header{display:flex;align-items:center;justify-content:space-between}
+.tag-modal-title{font-family:var(--serif);font-size:0.95rem;font-weight:600;font-style:italic;color:var(--ink)}
+.tag-modal-close{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:1rem;padding:2px 6px;line-height:1;transition:color 0.1s}
+.tag-modal-close:hover{color:var(--ink)}
+#tag-modal-input{
+  width:100%;padding:7px 10px;background:var(--card);border:1px solid var(--border);
+  color:var(--ink);border-radius:5px;font-family:var(--sans);font-size:0.8rem;outline:none;
+}
+#tag-modal-input:focus{border-color:var(--green-dim)}
+#tag-modal-input::placeholder{color:var(--ink-faint)}
+.tag-modal-section-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:5px;font-weight:500}
+#tag-modal-suggestions,#tag-modal-selected{display:flex;flex-wrap:wrap;gap:5px}
+.tag-suggest-chip{
+  padding:3px 10px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.72rem;transition:all 0.1s;
+}
+.tag-suggest-chip:hover{border-color:var(--ink-faint);color:var(--ink)}
+.tag-suggest-chip.selected{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.tag-selected-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:20px;background:var(--green-dim);border:1px solid var(--green);
+  color:var(--green);font-size:0.72rem;font-family:var(--sans);
+}
+.tag-selected-chip .tag-remove{color:var(--green)}
+
 /* ── Narrow screen block ── */
 #narrow-block{
   display:none;position:fixed;inset:0;z-index:500;
@@ -307,6 +361,26 @@ a.btn-ghost{text-decoration:none}
 #narrow-block p{font-size:0.82rem;color:var(--ink-muted);line-height:1.7;max-width:280px}
 #narrow-block a{color:var(--ink-faint);font-family:var(--mono);font-size:0.7rem;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:900px){#narrow-block{display:flex}}
+
+/* ── Sidebar mode bar ── */
+#sidebar-mode-bar{display:flex;margin-bottom:13px;border-radius:6px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
+.sm-btn{flex:1;padding:5px 8px;background:transparent;border:none;color:var(--ink-muted);cursor:pointer;font-family:var(--sans);font-size:0.72rem;transition:all 0.1s}
+.sm-btn.active{background:var(--card);color:var(--ink)}
+.sm-btn:hover:not(.active){color:var(--ink)}
+
+/* ── Browse panel ── */
+#form-sidebar.browse-mode{overflow:hidden}
+#browse-panel{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
+#browse-search{width:100%;padding:6px 9px;background:var(--card);border:1px solid var(--border);color:var(--ink);border-radius:5px;font-family:var(--sans);font-size:0.78rem;outline:none;flex-shrink:0}
+#browse-search:focus{border-color:var(--green-dim)}
+#browse-search::placeholder{color:var(--ink-faint)}
+#browse-filters{display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0}
+#browse-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;min-height:0}
+.browse-entry{padding:8px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:border-color 0.1s;flex-shrink:0}
+.browse-entry:hover{border-color:var(--accent)}
+.browse-entry-title{font-family:var(--serif);font-size:0.85rem;font-weight:600;font-style:italic}
+.browse-entry-meta{font-size:0.65rem;color:var(--ink-faint);font-family:var(--mono);margin-top:2px}
+.browse-empty{color:var(--ink-faint);font-size:0.78rem;text-align:center;padding:20px 0;line-height:1.6}
 
 /* ── Toast ── */
 #toast{
@@ -321,6 +395,24 @@ a.btn-ghost{text-decoration:none}
 </style>
 </head>
 <body>
+
+<div id="tag-modal" onclick="closeTagModal()">
+  <div class="tag-modal-inner" onclick="event.stopPropagation()">
+    <div class="tag-modal-header">
+      <span class="tag-modal-title" id="tag-modal-title"></span>
+      <button class="tag-modal-close" onclick="closeTagModal()">✕</button>
+    </div>
+    <input id="tag-modal-input" type="text" placeholder="Neu eingeben und Enter…" onkeydown="onTagInput(event)"/>
+    <div id="tag-modal-suggestions-wrap" style="display:none">
+      <div class="tag-modal-section-label">Vorschläge</div>
+      <div id="tag-modal-suggestions"></div>
+    </div>
+    <div id="tag-modal-selected-wrap" style="display:none">
+      <div class="tag-modal-section-label" id="tag-modal-selected-label"></div>
+      <div id="tag-modal-selected"></div>
+    </div>
+  </div>
+</div>
 
 <div id="narrow-block" aria-hidden="true">
   <h2>Zu schmal für den Editor</h2>
@@ -347,6 +439,13 @@ a.btn-ghost{text-decoration:none}
 
   <!-- ── Metadata sidebar ── -->
   <div id="form-sidebar">
+
+    <div id="sidebar-mode-bar">
+      <button class="sm-btn active" data-mode="form" onclick="setSidebarMode('form')">Formular</button>
+      <button class="sm-btn" data-mode="browse" onclick="setSidebarMode('browse')">Öffnen</button>
+    </div>
+
+    <div id="form-panel" style="display:contents">
 
     <div class="field-section">
       <div class="field-label">Sport</div>
@@ -412,13 +511,27 @@ a.btn-ghost{text-decoration:none}
 
     <div class="field-section">
       <div class="field-label">Trainierte Kompetenzen</div>
-      <input id="f-skills" class="field-input" type="text" placeholder="Ballkontrolle, Beinarbeit, …" oninput="onFormChange()"/>
-      <div class="field-hint">Kommagetrennt</div>
+      <div class="tag-select-wrap" id="skills-wrap" onclick="openTagModal('skills')">
+        <div class="tag-chips-display" id="skills-display"></div>
+        <span class="tag-placeholder" id="skills-placeholder">Hinzufügen…</span>
+      </div>
+      <input id="f-skills" type="hidden"/>
     </div>
 
     <div class="field-section">
       <div class="field-label">Materialien</div>
-      <input id="f-materials" class="field-input" type="text" placeholder="Hütchen, Bälle, … (leer = keine)" oninput="onFormChange()"/>
+      <div class="tag-select-wrap" id="materials-wrap" onclick="openTagModal('materials')">
+        <div class="tag-chips-display" id="materials-display"></div>
+        <span class="tag-placeholder" id="materials-placeholder">Hinzufügen…</span>
+      </div>
+      <input id="f-materials" type="hidden"/>
+    </div>
+
+    </div><!-- end #form-panel -->
+
+    <div id="browse-panel" style="display:none">
+      <input id="browse-search" type="text" placeholder="Suche…" oninput="renderBrowseList()"/>
+      <div id="browse-list"><div class="browse-empty">Sport wählen und Öffnen klicken</div></div>
     </div>
 
   </div>
@@ -554,6 +667,18 @@ a.btn-ghost{text-decoration:none}
   </div>
 </div>
 
+<!-- Load confirm modal -->
+<div class="modal-overlay hidden" id="load-confirm-modal">
+  <div class="modal">
+    <div class="modal-title">Übung laden?</div>
+    <div class="modal-body" id="load-confirm-body"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('load-confirm-modal')">Abbrechen</button>
+      <button class="modal-ok" id="load-confirm-ok">Laden</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reset all modal -->
 <div class="modal-overlay hidden" id="reset-modal">
   <div class="modal">
@@ -681,6 +806,9 @@ function setSport(id) {
   }
   render();
   if (currentTab === "preview") renderPreview();
+  const bp = document.getElementById("browse-panel");
+  if (bp && bp.style.display !== "none") loadBrowseData();
+  else loadSportMeta();
 }
 
 // ── Category / Skill ──────────────────────────────────────────────────────────
@@ -1142,7 +1270,7 @@ let _preShiftTool = null;
 let _clipboard = null;
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); closeModal("submit-modal"); return; }
+  if (e.key === "Escape") { closeModal("clear-modal"); closeModal("reset-modal"); closeModal("overwrite-modal"); closeModal("submit-modal"); closeModal("load-confirm-modal"); closeTagModal(); return; }
   const tag = document.activeElement?.tagName;
   if ((e.metaKey || e.ctrlKey) && e.key === "c" && state.selected && tag !== "INPUT" && tag !== "TEXTAREA") {
     _clipboard = JSON.parse(JSON.stringify(state.selected));
@@ -1191,6 +1319,7 @@ function confirmReset() {
   currentStages = []; document.querySelectorAll("#stufe-applies-group .stufe-btn").forEach(b=>b.classList.remove("active"));
   currentDiagramStage = "yellow"; document.querySelectorAll("#stufe-diagram-group .stufe-btn").forEach(b=>b.classList.toggle("active",b.dataset.stage==="yellow"));
   ["f-title","f-players","f-dur-min","f-dur-max","f-skills","f-materials","f-summary"].forEach(id => document.getElementById(id).value = "");
+  syncTagDisplays();
   document.getElementById("f-half-court").checked = false;
   document.getElementById("f-body").value = "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen";
   state.players=[]; state.arrows=[]; state.markers=[]; state.zones=[];
@@ -1831,7 +1960,7 @@ function loadFromStorage() {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return false;
     const d = JSON.parse(raw);
-    if (d.sport && SPORT_MAP[d.sport]) { currentSport = d.sport; TC = getTCFor(d.sport); document.querySelectorAll(".sport-btn").forEach(b => b.classList.toggle("active", b.dataset.sport === d.sport)); const hasSt=!!(SPORT_MAP[d.sport]?.stages?.length); document.getElementById("stufe-section").style.display=hasSt?"":"none"; }
+    if (d.sport && SPORT_MAP[d.sport]) { currentSport = d.sport; TC = getTCFor(d.sport); document.documentElement.style.setProperty("--accent", SPORT_MAP[d.sport].accent || "#d4763a"); document.querySelectorAll(".sport-btn").forEach(b => b.classList.toggle("active", b.dataset.sport === d.sport)); const hasSt=!!(SPORT_MAP[d.sport]?.stages?.length); document.getElementById("stufe-section").style.display=hasSt?"":"none"; }
     if (d.category) { currentCategory = d.category; document.querySelectorAll("#cat-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.category)); }
     if (d.skillReq) { currentSkillReq = d.skillReq; document.querySelectorAll("#skill-group .chip-btn").forEach(b => b.classList.toggle("active", b.dataset.val === d.skillReq)); }
     { const hasSt2=!!(SPORT_MAP[d.sport||currentSport]?.stages?.length);
@@ -1848,6 +1977,7 @@ function loadFromStorage() {
     document.getElementById("f-materials").value = d.materials || "";
     document.getElementById("f-summary").value   = d.summary   || "";
     document.getElementById("f-body").value      = d.body      || "";
+    syncTagDisplays();
     if (d.court) {
       state.players = d.court.players || []; state.arrows  = d.court.arrows  || [];
       state.markers = d.court.markers || []; state.zones   = d.court.zones   || [];
@@ -1929,6 +2059,7 @@ function populateFromParsed(meta, body, rawFm) {
   document.getElementById("f-half-court").checked = !!meta.half_court;
   document.getElementById("f-skills").value    = (meta.skills_trained || []).join(", ");
   document.getElementById("f-materials").value = (meta.materials      || []).join(", ");
+  syncTagDisplays();
   document.getElementById("f-summary").value   = meta.summary || "";
   document.getElementById("f-body").value      = body;
   state.players = parseYamlList(rawFm, "players");
@@ -1946,19 +2077,20 @@ function populateFromParsed(meta, body, rawFm) {
   saveToStorage();
 }
 
+function loadMdText(text, name) {
+  const parts = text.split(/^---[ \t]*$/m);
+  if (parts.length < 3) { showToast("⚠ Kein gültiges Frontmatter gefunden"); return; }
+  const rawFm = parts[1];
+  const body  = parts.slice(2).join("---").trim();
+  const meta  = parseFrontmatter(rawFm);
+  populateFromParsed(meta, body, rawFm);
+  showToast("✓ " + (meta.title || name) + " geladen");
+}
+
 function readMdFile(file) {
   if (!file || !file.name.endsWith(".md")) { showToast("⚠ Nur .md Dateien"); return; }
   const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    const parts = text.split(/^---[ \t]*$/m);
-    if (parts.length < 3) { showToast("⚠ Kein gültiges Frontmatter gefunden"); return; }
-    const rawFm = parts[1];
-    const body  = parts.slice(2).join("---").trim();
-    const meta  = parseFrontmatter(rawFm);
-    populateFromParsed(meta, body, rawFm);
-    showToast("✓ " + (meta.title || file.name) + " geladen");
-  };
+  reader.onload = e => loadMdText(e.target.result, file.name);
   reader.readAsText(file);
 }
 
@@ -1971,9 +2103,221 @@ document.addEventListener("drop", e => {
   if (file) readMdFile(file);
 });
 
+// ── Browse panel ──────────────────────────────────────────────────────────────
+let browseEntries = [], browseMeta = null;
+const _CAT_LABEL  = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
+const _SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschritten", Advanced:"Experten", "All Levels":"Alle Niveaus" };
+
+function setSidebarMode(mode) {
+  document.querySelectorAll(".sm-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  const fp = document.getElementById("form-panel");
+  const bp = document.getElementById("browse-panel");
+  fp.style.display = mode === "form" ? "contents" : "none";
+  bp.style.display = mode === "browse" ? "" : "none";
+  document.getElementById("form-sidebar").classList.toggle("browse-mode", mode === "browse");
+  if (mode === "browse") loadBrowseData();
+}
+
+async function loadSportMeta() {
+  try {
+    const r = await fetch(`../${currentSport}/meta.json`);
+    if (r.ok) browseMeta = await r.json();
+  } catch {}
+}
+
+async function loadBrowseData() {
+  const list = document.getElementById("browse-list");
+  list.innerHTML = `<div class="browse-empty">Lädt…</div>`;
+  try {
+    const [dataRes, metaRes] = await Promise.all([
+      fetch(`../${currentSport}/data.json`),
+      fetch(`../${currentSport}/meta.json`),
+    ]);
+    if (!dataRes.ok || !metaRes.ok) throw new Error();
+    browseEntries = await dataRes.json();
+    browseMeta    = await metaRes.json();
+    renderBrowseList();
+  } catch {
+    list.innerHTML = `<div class="browse-empty">Keine Daten gefunden.<br><small>node build.js ausführen?</small></div>`;
+  }
+}
+
+function renderBrowseList() {
+  const q = (document.getElementById("browse-search")?.value || "").toLowerCase().trim();
+  const entries = browseEntries.filter(e => {
+    if (q) { const hay = [e.title, e.summary, ...(e.skills_trained||[])].join(" ").toLowerCase(); if (!hay.includes(q)) return false; }
+    return true;
+  });
+  document.getElementById("browse-list").innerHTML = entries.length
+    ? entries.map(e => `<div class="browse-entry" onclick="loadBrowseEntry('${e.slug}')">
+        <div class="browse-entry-title">${e.title}</div>
+        <div class="browse-entry-meta">${_CAT_LABEL[e.category]||e.category||""}${e.skill_requirement?" · "+(_SKILL_LABEL[e.skill_requirement]||e.skill_requirement):""}</div>
+      </div>`).join("")
+    : `<div class="browse-empty">Keine Übungen gefunden</div>`;
+}
+
+function openLoadConfirm(title, onConfirm) {
+  document.getElementById("load-confirm-body").textContent =
+    `"${title}" laden? Nicht gespeicherte Änderungen gehen verloren.`;
+  document.getElementById("load-confirm-ok").onclick = () => {
+    closeModal("load-confirm-modal");
+    onConfirm();
+  };
+  document.getElementById("load-confirm-modal").classList.remove("hidden");
+}
+
+async function fetchMdFile(sport, slug) {
+  let res = await fetch(`../${sport}/md/${slug}.md`);
+  if (!res.ok) res = await fetch(`/api/load?sport=${sport}&file=${slug}.md`);
+  if (!res.ok) throw new Error("not found");
+  return res.text();
+}
+
+function loadBrowseEntry(slug) {
+  const entry = browseEntries.find(e => e.slug === slug);
+  openLoadConfirm(entry?.title || slug, async () => {
+    try {
+      loadMdText(await fetchMdFile(currentSport, slug), slug + ".md");
+      setSidebarMode("form");
+    } catch {
+      showToast("⚠ Laden fehlgeschlagen");
+    }
+  });
+}
+
+// ── Tag modal ─────────────────────────────────────────────────────────────────
+let _tagField = "";
+const TAG_TITLES = { skills: "Trainierte Kompetenzen", materials: "Materialien" };
+
+function getTagList(field) {
+  const val = document.getElementById(field === "skills" ? "f-skills" : "f-materials").value;
+  return val.split(",").map(s => s.trim()).filter(Boolean);
+}
+function setTagList(field, arr) {
+  const input = document.getElementById(field === "skills" ? "f-skills" : "f-materials");
+  input.value = arr.join(", ");
+  renderTagDisplay(field);
+  onFormChange();
+}
+function renderTagDisplay(field) {
+  const arr = getTagList(field);
+  const display = document.getElementById(field + "-display");
+  const ph = document.getElementById(field + "-placeholder");
+  display.innerHTML = arr.map(t =>
+    `<span class="tag-chip">${t}<span class="tag-remove" onclick="event.stopPropagation();removeTagDirect('${field}','${t.replace(/'/g,"\\'")}')">×</span></span>`
+  ).join("");
+  ph.style.display = arr.length ? "none" : "";
+}
+function removeTagDirect(field, val) {
+  setTagList(field, getTagList(field).filter(t => t !== val));
+}
+function syncTagDisplays() {
+  renderTagDisplay("skills");
+  renderTagDisplay("materials");
+}
+
+function openTagModal(field) {
+  _tagField = field;
+  document.getElementById("tag-modal-title").textContent = TAG_TITLES[field] || field;
+  document.getElementById("tag-modal-input").value = "";
+  renderTagModal();
+  document.getElementById("tag-modal").classList.add("open");
+  setTimeout(() => document.getElementById("tag-modal-input").focus(), 50);
+  if (!browseMeta) loadSportMeta().then(renderTagModal);
+}
+function closeTagModal() {
+  document.getElementById("tag-modal").classList.remove("open");
+}
+function renderTagModal() {
+  const field = _tagField;
+  const selected = new Set(getTagList(field));
+  const suggestions = field === "skills"
+    ? (browseMeta?.skills_trained || [])
+    : (browseMeta?.materials || []);
+  const q = document.getElementById("tag-modal-input").value.trim().toLowerCase();
+  const filtered = suggestions.filter(s => !q || s.toLowerCase().includes(q));
+
+  const sugWrap = document.getElementById("tag-modal-suggestions-wrap");
+  const sugEl = document.getElementById("tag-modal-suggestions");
+  if (filtered.length) {
+    sugWrap.style.display = "";
+    sugEl.innerHTML = filtered.map(s =>
+      `<button class="tag-suggest-chip ${selected.has(s)?"selected":""}" onclick="toggleTagSuggestion('${s.replace(/'/g,"\\'")}')">
+        ${selected.has(s) ? "✓ " : ""}${s}
+      </button>`
+    ).join("");
+  } else {
+    sugWrap.style.display = "none";
+  }
+
+  const sugSet = new Set(suggestions);
+  const custom = [...selected].filter(s => !sugSet.has(s));
+  const selWrap = document.getElementById("tag-modal-selected-wrap");
+  const selEl = document.getElementById("tag-modal-selected");
+  if (custom.length) {
+    selWrap.style.display = "";
+    document.getElementById("tag-modal-selected-label").textContent =
+      field === "skills" ? "Neue Kompetenzen" : "Neue Materialien";
+    selEl.innerHTML = custom.map(s =>
+      `<span class="tag-selected-chip">${s}<span class="tag-remove" onclick="toggleTagSuggestion('${s.replace(/'/g,"\\'")}')">×</span></span>`
+    ).join("");
+  } else {
+    selWrap.style.display = "none";
+  }
+}
+function toggleTagSuggestion(val) {
+  const arr = getTagList(_tagField);
+  const idx = arr.indexOf(val);
+  if (idx === -1) arr.push(val); else arr.splice(idx, 1);
+  setTagList(_tagField, arr);
+  renderTagModal();
+}
+function onTagInput(e) {
+  if (e.key === "Enter") {
+    const val = document.getElementById("tag-modal-input").value.trim();
+    if (!val) return;
+    const arr = getTagList(_tagField);
+    if (!arr.includes(val)) { arr.push(val); setTagList(_tagField, arr); }
+    document.getElementById("tag-modal-input").value = "";
+    renderTagModal();
+  } else {
+    setTimeout(renderTagModal, 0);
+  }
+}
+
+// ── Cross-tab sync ────────────────────────────────────────────────────────────
+window.addEventListener("storage", e => {
+  if (e.key !== LS_KEY) return;
+  loadFromStorage();
+  syncTagDisplays();
+  render();
+  if (currentTab === "preview") renderPreview();
+  if (currentTab === "markdown") { buildMdSidebar(); renderMdOverlay(); }
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadFromStorage();
+syncTagDisplays();
+loadSportMeta();
 setTab(HASH_TAB[location.hash] || "court", { pushState: false });
+
+// URL param: ?sport=tennis&slug=winner → prompt to load entry
+(async () => {
+  const p = new URLSearchParams(location.search);
+  const pSport = p.get("sport"), pSlug = p.get("slug");
+  if (!pSport || !pSlug || !SPORT_MAP[pSport]) return;
+  setSport(pSport);
+  let title = pSlug;
+  try {
+    const r = await fetch(`../${pSport}/data.json`);
+    if (r.ok) { const entries = await r.json(); title = entries.find(e => e.slug === pSlug)?.title || pSlug; }
+  } catch {}
+  openLoadConfirm(title, async () => {
+    try {
+      loadMdText(await fetchMdFile(pSport, pSlug), pSlug + ".md");
+    } catch { showToast("⚠ Laden fehlgeschlagen"); }
+  });
+})();
 </script>
 </body>
 </html>

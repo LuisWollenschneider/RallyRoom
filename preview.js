@@ -85,6 +85,28 @@ http.createServer((req, res) => {
         return;
     }
 
+    // ── GET /api/load — read raw .md from content/{sport}/ ──
+    if (req.method === "GET" && req.url.startsWith("/api/load")) {
+        const params = new URL(req.url, "http://localhost").searchParams;
+        const sport = params.get("sport");
+        const file  = params.get("file");
+        if (!SPORT_IDS.includes(sport) || !/^[\w-]+\.md$/.test(file)) {
+            res.writeHead(400, { "Content-Type": "text/plain" });
+            res.end("Invalid sport or filename");
+            return;
+        }
+        const filePath = path.join(CONTENT_DIR, sport, file);
+        try {
+            const data = fs.readFileSync(filePath, "utf8");
+            res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+            res.end(data);
+        } catch {
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            res.end("Not found");
+        }
+        return;
+    }
+
     let urlPath = req.url.split("?")[0];
 
     // Directory index → serve index.html

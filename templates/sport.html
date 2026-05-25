@@ -91,6 +91,8 @@ a[target="_blank"]:hover::after{margin-left:6px}
 .chip.sk-all.active{background:rgba(67,133,212,0.15);border-color:#4385d4;color:#4385d4}
 
 .chip.danger{border-color:var(--red);color:var(--red)}
+.chip.chip-config{border-color:var(--accent-dim);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.chip.chip-config:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:var(--accent)}
 .chip.danger:hover{border-color:var(--red);color:#ddd;background:var(--red)}
 .chip.danger.active{background:rgba(212,92,67,0.15);border-color:#d45c43;color:#d45c43}
 
@@ -175,6 +177,43 @@ a[target="_blank"]:hover::after{margin-left:6px}
     margin-top:0
   }
 }
+
+/* ── Materials modal ────────────────────────────────────────── */
+#materials-modal{
+  display:none;position:fixed;inset:0;z-index:601;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);
+  align-items:center;justify-content:center;
+}
+#materials-modal.open{display:flex}
+.mat-modal-inner{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:20px 22px;max-width:480px;width:92%;max-height:78vh;
+  display:flex;flex-direction:column;gap:14px;overflow:hidden;
+}
+.mat-modal-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mat-modal-title{font-family:var(--serif);font-size:1rem;font-weight:600;font-style:italic;flex:1;min-width:0}
+.mat-modal-btns{display:flex;gap:6px}
+.mat-modal-btn{
+  padding:4px 11px;border-radius:5px;border:1px solid var(--border);
+  background:transparent;color:var(--ink-muted);cursor:pointer;
+  font-family:var(--sans);font-size:0.72rem;transition:all 0.1s;
+}
+.mat-modal-btn:hover{color:var(--ink);border-color:var(--ink-faint)}
+.mat-modal-close{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;transition:color 0.1s}
+.mat-modal-close:hover{color:var(--ink)}
+#mat-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;overflow-y:auto;padding-right:2px}
+.mat-card{
+  padding:10px 12px;border-radius:8px;cursor:pointer;text-align:center;
+  font-size:0.8rem;border:2px solid transparent;transition:all 0.15s;
+  position:relative;font-family:var(--sans);line-height:1.3;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;
+  min-height:52px;
+}
+.mat-card:hover{filter:brightness(1.25)}
+.mat-card.mat-unspecified{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.35);color:#d4a843}
+.mat-card.mat-available{background:rgba(76,175,110,0.12);border-color:#4caf6e;color:#4caf6e}
+.mat-card.mat-unavailable{background:rgba(212,92,67,0.12);border-color:#d45c43;color:#d45c43;text-decoration:line-through}
+.mat-new-badge{font-size:0.52rem;background:#d4a843;color:#1a1f1a;padding:1px 5px;border-radius:3px;font-family:var(--mono);font-weight:500;text-decoration:none;display:inline-block}
 
 /* ── Court modal ─────────────────────────────────────────── */
 #court-modal{
@@ -302,6 +341,20 @@ body.entry-view #menu-btn{display:none}
 </header>
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
+<div id="materials-modal" onclick="closeMaterialsModal()">
+  <div class="mat-modal-inner" onclick="event.stopPropagation()">
+    <div class="mat-modal-header">
+      <span class="mat-modal-title">Materialien</span>
+      <div class="mat-modal-btns">
+        <button class="mat-modal-btn" onclick="setAllMaterials('available')">Alle verfügbar</button>
+        <button class="mat-modal-btn" onclick="setAllMaterials('unavailable')">Keine verfügbar</button>
+      </div>
+      <button class="mat-modal-close" onclick="closeMaterialsModal()">✕</button>
+    </div>
+    <div id="mat-modal-grid"></div>
+  </div>
+</div>
+
 <div id="court-modal" onclick="closeCourtModal()">
   <div class="court-modal-inner" onclick="event.stopPropagation()">
     <button id="court-modal-close" onclick="closeCourtModal()">✕ Close</button>
@@ -341,7 +394,6 @@ body.entry-view #menu-btn{display:none}
       <button class="chip sk-advanced" data-skill="Advanced" onclick="setSkill('Advanced')">
         Experten
       </button>
-      <button class="chip sk-all" data-skill="All Levels" onclick="setSkill('All Levels')">Alle Niveaus</button>
     </div>
   </div>
 
@@ -364,7 +416,10 @@ body.entry-view #menu-btn{display:none}
 
   <div class="sb-section" id="materials-section" style="display:none">
     <span class="sb-label">Materialien</span>
-    <div class="chips" id="materials-list"></div>
+    <div class="chips">
+      <button class="chip chip-config" id="mat-open-modal" onclick="openMaterialsModal()">⚙ Konfigurieren</button>
+      <button class="chip" id="mat-no-materials" onclick="toggleNoMaterials(this)">Kein Material</button>
+    </div>
   </div>
 
   <div class="sb-section">
@@ -393,7 +448,10 @@ body.entry-view #menu-btn{display:none}
   </div>
 
   <div id="view-entry" class="view">
-    <button class="back-btn" onclick="showView('list',true)">← Zurück zur Übersicht</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:26px">
+      <button class="back-btn" style="margin-bottom:0" onclick="showView('list',true)">← Zurück zur Übersicht</button>
+      <a id="edit-btn" class="back-btn" style="margin-bottom:0;color:var(--accent);text-decoration:none" href="#" target="_blank" rel="noopener">Bearbeiten</a>
+    </div>
     <div id="entry-content"></div>
   </div>
 </main>
@@ -521,9 +579,11 @@ function stageBadge(s) {
 }
 
 // ── State ──────────────────────────────────────────────────────────────────────
+const SPORT_ID="{{SPORT_ID}}";
+const LS_KEY=`rally_filters_${SPORT_ID}`;
 let allEntries=[], activeCat="", activeSkill="", activeTrains=new Set();
 let durationMin=null, durationMax=null;
-let activeMaterials=null;
+let materialStates={}, allMaterials=[], filterNoMaterials=false;
 let filterHalfCourt=false;
 let activeStage="";
 
@@ -539,9 +599,11 @@ function getFiltered() {
   const q=document.getElementById("search").value.toLowerCase().trim();
   return allEntries.filter(e => {
     if(activeCat   && e.category!==activeCat) return false;
-    if(activeSkill && e.skill_requirement!==activeSkill) return false;
+    if(activeSkill && e.skill_requirement!==activeSkill && e.skill_requirement!=="All Levels") return false;
     if(activeTrains.size>0 && ![...activeTrains].every(s=>(e.skills_trained||[]).includes(s))) return false;
-    if(activeMaterials!==null && !(e.materials||[]).every(m=>activeMaterials.has(m))) return false;
+    {const mats=Array.isArray(e.materials)?e.materials.filter(Boolean):Object.keys(e.materials||{});
+    if(filterNoMaterials){if(mats.length>0)return false;}
+    else if(mats.some(m=>materialStates[m]==="unavailable"))return false;}
     if(filterHalfCourt && !e.half_court) return false;
     if(activeStage && (e.stages||[]).length && !(e.stages||[]).includes(activeStage)) return false;
     if(durationMin!==null||durationMax!==null){
@@ -562,38 +624,38 @@ function getFiltered() {
 function setCat(cat) {
   activeCat=cat;
   document.querySelectorAll("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===cat));
-  filterEntries();
+  filterEntries(); saveFilters();
   if(document.getElementById("view-entry").classList.contains("active")) showView("list",true);
   else closeSidebar();
 }
 function setSkill(sk) {
   activeSkill=sk;
   document.querySelectorAll("[data-skill]").forEach(b=>b.classList.toggle("active",b.dataset.skill===sk));
-  filterEntries();
+  filterEntries(); saveFilters();
 }
 function toggleHalfCourt(btn) {
   filterHalfCourt=!filterHalfCourt;
   btn.classList.toggle("active",filterHalfCourt);
-  filterEntries();
+  filterEntries(); saveFilters();
 }
 function setStage(stg) {
   activeStage=stg;
   document.querySelectorAll("#stage-chips .chip").forEach(b=>b.classList.toggle("active",b.dataset.stage===stg));
-  filterEntries();
+  filterEntries(); saveFilters();
   if(document.getElementById("view-entry").classList.contains("active")) showView("list",true);
   else closeSidebar();
 }
 function toggleTrain(skill,btn) {
   activeTrains.has(skill)?activeTrains.delete(skill):activeTrains.add(skill);
   btn.classList.toggle("active",activeTrains.has(skill));
-  filterEntries();
+  filterEntries(); saveFilters();
 }
 function setDuration() {
   const mn=document.getElementById("dur-min").value;
   const mx=document.getElementById("dur-max").value;
   durationMin=mn!==""?+mn:null;
   durationMax=mx!==""?+mx:null;
-  filterEntries();
+  filterEntries(); saveFilters();
 }
 
 function buildSkillsList() {
@@ -601,62 +663,199 @@ function buildSkillsList() {
   allEntries.forEach(e=>(e.skills_trained||[]).forEach(s=>all.add(s)));
   const sec =document.getElementById("skills-list").parentElement;
   if(!all.size){sec.style.display="none";return;}
-  document.getElementById("skills-list").innerHTML=[...all].sort().map(s=>`
-    <button class="chip" onclick="toggleTrain('${s.replace(/'/g,"\\'")}',this)">${s}</button>`).join("");
+  document.getElementById("skills-list").innerHTML=[...all].sort().map(s=>
+    `<button class="chip ${activeTrains.has(s)?"active":""}" onclick="toggleTrain('${s.replace(/'/g,"\\'")}',this)">${s}</button>`).join("");
 }
 
 function buildMaterialsList() {
   const all=new Set();
-  allEntries.forEach(e=>(e.materials||[]).forEach(m=>{
-    if (m) all.add(m);
-   }) );
+  allEntries.forEach(e=>{
+    const mats=Array.isArray(e.materials)?e.materials:Object.keys(e.materials||{});
+    mats.filter(Boolean).forEach(m=>all.add(m));
+  });
   const sec=document.getElementById("materials-section");
   if(!all.size){sec.style.display="none";return;}
   sec.style.display="";
-  document.getElementById("materials-list").innerHTML=
-    `<button class="chip active" id="mat-any" onclick="setMaterialAny()">Alle</button>`+
-    `<button class="chip danger" id="mat-none" onclick="setMaterialNone()">Keine</button>`+
-    [...all].sort().map(m=>`<button class="chip" onclick="toggleMaterial('${m.replace(/'/g,"\\'")}',this)">${m}</button>`).join("");
+  allMaterials=[...all].sort();
 }
 
-function setMaterialAny() {
-  activeMaterials=null;
-  document.querySelectorAll("#materials-list .chip").forEach(b=>b.classList.remove("active"));
-  document.getElementById("mat-any").classList.add("active");
+function openMaterialsModal() {
+  renderMaterialsModal();
+  document.getElementById("materials-modal").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeMaterialsModal() {
+  document.getElementById("materials-modal").classList.remove("open");
+  document.body.style.overflow="";
+}
+function renderMaterialsModal() {
+  document.getElementById("mat-modal-grid").innerHTML=allMaterials.map(mat=>{
+    const state=materialStates[mat];
+    const cls=!state?"mat-unspecified":state==="available"?"mat-available":"mat-unavailable";
+    const badge=!state?'<span class="mat-new-badge">NEU</span>':"";
+    return `<div class="mat-card ${cls}" onclick="toggleMaterialState('${mat.replace(/'/g,"\\'")}')"><span>${mat}</span>${badge}</div>`;
+  }).join("");
+}
+function toggleMaterialState(mat) {
+  materialStates[mat]=materialStates[mat]==="available"?"unavailable":"available";
+  renderMaterialsModal();
   filterEntries();
+  saveFilters();
+}
+function setAllMaterials(state) {
+  allMaterials.forEach(m=>{ materialStates[m]=state; });
+  renderMaterialsModal();
+  filterEntries();
+  saveFilters();
+}
+function toggleNoMaterials(btn) {
+  filterNoMaterials=!filterNoMaterials;
+  btn.classList.toggle("active",filterNoMaterials);
+  filterEntries();
+  saveFilters();
 }
 
-function setMaterialNone() {
-  if (activeMaterials!==null && activeMaterials.has(null)) {
-    setMaterialAny();
-    return;
-  }
-  activeMaterials=new Set([null]);
-  document.querySelectorAll("#materials-list .chip").forEach(b=>b.classList.remove("active"));
-  document.getElementById("mat-none").classList.add("active");
-  filterEntries();
+// ── Persistence ────────────────────────────────────────────────────────────────
+function saveFilters() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      activeCat, activeSkill, activeTrains:[...activeTrains],
+      durationMin, durationMax, filterHalfCourt, activeStage,
+      materialStates, filterNoMaterials,
+    }));
+  } catch {}
+}
+function loadFilters() {
+  try {
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    activeCat       = d.activeCat||"";
+    activeSkill     = d.activeSkill||"";
+    activeTrains    = new Set(d.activeTrains||[]);
+    durationMin     = d.durationMin??null;
+    durationMax     = d.durationMax??null;
+    filterHalfCourt = !!d.filterHalfCourt;
+    activeStage     = d.activeStage||"";
+    materialStates  = d.materialStates||{};
+    filterNoMaterials=!!d.filterNoMaterials;
+  } catch {}
+}
+function applyFilterStateToUI() {
+  document.querySelectorAll("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===activeCat));
+  document.querySelectorAll("[data-skill]").forEach(b=>b.classList.toggle("active",b.dataset.skill===activeSkill));
+  document.querySelectorAll("#stage-chips .chip").forEach(b=>b.classList.toggle("active",b.dataset.stage===activeStage));
+  const hcBtn=document.querySelector(".chips button[onclick='toggleHalfCourt(this)']");
+  if(hcBtn)hcBtn.classList.toggle("active",filterHalfCourt);
+  if(durationMin!==null)document.getElementById("dur-min").value=durationMin;
+  if(durationMax!==null)document.getElementById("dur-max").value=durationMax;
+  const noBtn=document.getElementById("mat-no-materials");
+  if(noBtn)noBtn.classList.toggle("active",filterNoMaterials);
 }
 
-function toggleMaterial(mat,btn) {
-  if(activeMaterials===null){
-    activeMaterials=new Set();
-    document.getElementById("mat-any").classList.remove("active");
-    document.getElementById("mat-none").classList.remove("active");
+function countWith(ov) {
+  const q=document.getElementById("search").value.toLowerCase().trim();
+  const cat   =ov.cat   !==undefined?ov.cat   :activeCat;
+  const skill =ov.skill !==undefined?ov.skill :activeSkill;
+  const stage =ov.stage !==undefined?ov.stage :activeStage;
+  const trains=ov.trains!==undefined?ov.trains:activeTrains;
+  const hc    =ov.hc    !==undefined?ov.hc    :filterHalfCourt;
+  const noMats=ov.noMats!==undefined?ov.noMats:filterNoMaterials;
+  return allEntries.filter(e=>{
+    if(cat   &&e.category!==cat)            return false;
+    if(skill &&e.skill_requirement!==skill&&e.skill_requirement!=="All Levels") return false;
+    if(trains.size>0&&![...trains].every(s=>(e.skills_trained||[]).includes(s))) return false;
+    if(hc&&!e.half_court)                   return false;
+    if(stage&&(e.stages||[]).length&&!(e.stages||[]).includes(stage)) return false;
+    {const mats=Array.isArray(e.materials)?e.materials.filter(Boolean):Object.keys(e.materials||{});
+    if(noMats){if(mats.length>0)return false;}
+    else if(mats.some(m=>materialStates[m]==="unavailable"))return false;}
+    if(durationMin!==null||durationMax!==null){
+      const d=e.duration;
+      if(!d||typeof d!=="object") return false;
+      if(durationMin!==null&&(d.max??Infinity)<durationMin) return false;
+      if(durationMax!==null&&(d.min??0)>durationMax) return false;
+    }
+    if(q){const hay=[e.title,e.summary,...(e.skills_trained||[])].join(" ").toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  }).length;
+}
+
+function updateChipVisibility() {
+  // Category
+  let visCat=0;
+  document.querySelectorAll("#cat-chips .chip").forEach(btn=>{
+    const active=btn.classList.contains("active");
+    if(active){btn.style.display="";visCat++;return;}
+    const n=countWith({cat:btn.dataset.cat});
+    btn.style.display=n>0?"":"none";
+    if(n>0)visCat++;
+  });
+  const catSec=document.getElementById("cat-chips").closest(".sb-section");
+  if(catSec)catSec.style.display=visCat>0?"":"none";
+
+  // Skill level
+  let visSkill=0;
+  document.querySelectorAll("#skill-chips .chip").forEach(btn=>{
+    const active=btn.classList.contains("active");
+    if(active){btn.style.display="";visSkill++;return;}
+    const n=countWith({skill:btn.dataset.skill});
+    btn.style.display=n>0?"":"none";
+    if(n>0)visSkill++;
+  });
+  const skillSec=document.getElementById("skill-chips").closest(".sb-section");
+  if(skillSec)skillSec.style.display=visSkill>0?"":"none";
+
+  // Half court
+  {
+    const hcBtn=document.querySelector(".chips button[onclick='toggleHalfCourt(this)']");
+    if(hcBtn){
+      const visible=filterHalfCourt||countWith({hc:true})>0;
+      hcBtn.style.display=visible?"":"none";
+      const sec=hcBtn.closest(".sb-section");
+      if(sec)sec.style.display=visible?"":"none";
+    }
   }
-  if (activeMaterials.has(null)) {
-    activeMaterials.delete(null);
-    document.getElementById("mat-none").classList.remove("active");
+
+  // Stages
+  if(SPORT_STAGES.length){
+    document.querySelectorAll("#stage-chips .chip").forEach(btn=>{
+      if(btn.classList.contains("active")||!btn.dataset.stage){btn.style.display="";return;}
+      const n=countWith({stage:btn.dataset.stage});
+      btn.style.display=n>0?"":"none";
+    });
   }
-  activeMaterials.has(mat)?activeMaterials.delete(mat):activeMaterials.add(mat);
-  btn.classList.toggle("active",activeMaterials.has(mat));
-  if(activeMaterials.size===0) setMaterialAny();
-  filterEntries();
+
+  // Skills trained
+  {
+    let visAny=false;
+    document.querySelectorAll("#skills-list .chip").forEach(btn=>{
+      const skill=btn.textContent.trim();
+      if(btn.classList.contains("active")){btn.style.display="";visAny=true;return;}
+      const newT=new Set([...activeTrains,skill]);
+      const n=countWith({trains:newT});
+      btn.style.display=n>0?"":"none";
+      if(n>0)visAny=true;
+    });
+    const sec=document.getElementById("skills-list").parentElement;
+    if(sec)sec.style.display=visAny?"":"none";
+  }
+
+  // Materials "no materials" chip
+  {
+    const noBtn=document.getElementById("mat-no-materials");
+    if(noBtn){
+      const visible=filterNoMaterials||countWith({noMats:true})>0;
+      noBtn.style.display=visible?"":"none";
+    }
+  }
 }
 
 function filterEntries() {
   const f=getFiltered();
   document.getElementById("entry-count").textContent=`${f.length} / ${allEntries.length}`;
   renderList(f);
+  updateChipVisibility();
 }
 
 // ── List view ──────────────────────────────────────────────────────────────────
@@ -727,6 +926,8 @@ function openEntry(slug, pushState=true) {
       </div>
     </div>`;
   if(pushState) history.pushState({ slug }, "", "#" + slug);
+  const editBtn=document.getElementById("edit-btn");
+  if(editBtn) editBtn.href=`../editor/?sport=${SPORT_ID}&slug=${slug}`;
   showView("entry");
 }
 
@@ -751,7 +952,7 @@ function showView(name, pushState=false) {
 
 function toggleSidebar(){document.body.classList.toggle("sidebar-open")}
 function closeSidebar(){document.body.classList.remove("sidebar-open")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCourtModal();closeSidebar();}})
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCourtModal();closeMaterialsModal();closeSidebar();}})
 
 window.addEventListener("popstate", e => {
   if(e.state?.slug) openEntry(e.state.slug, false);
@@ -816,8 +1017,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const r=await fetch("data.json");
     if(!r.ok) throw new Error();
     allEntries=await r.json();
+    loadFilters();
     buildSkillsList();
     buildMaterialsList();
+    applyFilterStateToUI();
     filterEntries();
     const hash=location.hash.slice(1);
     if(hash && allEntries.find(e=>e.slug===hash)) openEntry(hash);

@@ -342,7 +342,10 @@ function buildSport(sport) {
             .filter((f) => f.endsWith(".md"))
             .sort()
             .reverse();
+        const mdDir = path.join(outDir, "md");
+        fs.mkdirSync(mdDir, { recursive: true });
         for (const file of files) {
+            fs.copyFileSync(path.join(contentDir, file), path.join(mdDir, file));
             const raw = fs.readFileSync(path.join(contentDir, file), "utf8");
             const { meta, body } = parseFrontmatter(raw);
             const slug = file.replace(/\.md$/, "");
@@ -376,6 +379,22 @@ function buildSport(sport) {
     }
 
     entries.sort((a, b) => (b.date > a.date ? 1 : -1));
+
+    const meta = {
+        categories: [...new Set(entries.map(e => e.category).filter(Boolean))].sort(),
+        skill_requirements: [...new Set(entries.map(e => e.skill_requirement).filter(Boolean))].sort(),
+        skills_trained: [...new Set(entries.flatMap(e => e.skills_trained || []).filter(Boolean))].sort(),
+        stages: sport.stages || [],
+        materials: [...new Set(entries.flatMap(e => {
+            const m = e.materials;
+            if (!m) return [];
+            if (Array.isArray(m)) return m.filter(x => x != null && x !== "");
+            if (typeof m === "object") return Object.keys(m);
+            return [];
+        }))].sort(),
+    };
+
+    fs.writeFileSync(path.join(outDir, "meta.json"), JSON.stringify(meta, null, 2));
     fs.writeFileSync(
         path.join(outDir, "data.json"),
         JSON.stringify(entries, null, 2),
