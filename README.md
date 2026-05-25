@@ -8,7 +8,7 @@ Site available at: https://luiswollenschneider.github.io/RallyRoom/
 
 ## Workflow
 
-Submission via [https://formspree.io](https://formspree.io) available.
+Submission via [https://staticforms.dev](https://staticforms.dev) available.
 
 OR
 

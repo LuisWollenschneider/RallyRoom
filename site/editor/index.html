@@ -662,7 +662,7 @@ a.btn-ghost{text-decoration:none}
     </div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModal('submit-modal')">Abbrechen</button>
-      <button class="modal-ok" style="border-color:#7a5010;background:rgba(232,168,48,.15);color:#e8a830" onclick="submitToFormspree()">Einreichen →</button>
+      <button class="modal-ok" style="border-color:#7a5010;background:rgba(232,168,48,.15);color:#e8a830" onclick="submitEntry()">Einreichen →</button>
     </div>
   </div>
 </div>
@@ -1850,10 +1850,10 @@ function showToast(msg, type) {
   }, 2600);
 }
 
-// ── Formspree config — replace with your form ID from formspree.io ────────────
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xlgvnwwl";
+// ── StaticForms ───────────────────────────────────────────────────────────────
+const STATICFORMS_KEY = "sf_e55a13bc27d565ee790e8cb1";
 
-// ── Submit to Formspree ───────────────────────────────────────────────────────
+// ── Submit ────────────────────────────────────────────────────────────────────
 const DEFAULT_BODY = "Beschreibe die Übung hier.";
 
 function openSubmitModal() {
@@ -1902,10 +1902,7 @@ function openSubmitModal() {
   document.getElementById("submit-modal").classList.remove("hidden");
 }
 
-async function submitToFormspree() {
-  if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")) {
-    showToast("⚠ Kein Formspree-Endpunkt konfiguriert"); return;
-  }
+async function submitEntry() {
   const title   = document.getElementById("f-title").value.trim();
   const name    = document.getElementById("submit-name").value.trim();
   const email   = document.getElementById("submit-email").value.trim();
@@ -1916,17 +1913,17 @@ async function submitToFormspree() {
   const content = generateMd();
   closeModal("submit-modal");
   try {
-    const res = await fetch(FORMSPREE_ENDPOINT, {
+    const res = await fetch("https://api.staticforms.dev/submit", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        _subject:  `Neue Übung: ${title}`,
-        _replyto:  email || undefined,
-        name:      name  || "(anonym)",
-        sport:     currentSport,
-        title,
-        note:      note  || "",
-        markdown:  content,
+        apiKey:  STATICFORMS_KEY,
+        subject: `Neue Übung: [${currentSport}] ${title}`,
+        name:    name  || "(anonym)",
+        email,
+        note: note,
+        md: content,
+        // message: `${note ? ("Note: " + note) : ""}\n\n${content}`,
       }),
     });
     if (res.ok) showToast("✓ Eingereicht — danke!");
