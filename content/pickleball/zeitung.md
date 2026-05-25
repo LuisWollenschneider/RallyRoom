@@ -14,18 +14,18 @@ materials:
 summary: Ziel ist es die Ballkontrolle von hinten zu verbessern, ohne den Fokus darauf zu legen.
 diagram:
   players:
-    - { id: e1, team: A, x: 0.481, y: -0.049, label: A1 }
-    - { id: e2, team: B, x: 0.504, y: 1.055, label: B1 }
+    - { id: e1, team: A, x: 0.504, y: -0.024, label: A }
+    - { id: e2, team: B, x: 0.504, y: 1.055, label: B }
   arrows:
-    - { id: e7, x1: 0.499, y1: 0.998, x2: 0.501, y2: 0.197, type: ball }
+    - { id: e7, x1: 0.492, y1: 1.008, x2: 0.505, y2: 0.162, type: ball, cx: 0.413, cy: 0.443, midTouched: true }
   markers:
   zones:
-    - { id: e5, x: 0.386, y: 0.124, width: 0.234, height: 0.052, label: Zeitung, color: '#f5e642' }
-    - { id: e6, x: 0.377, y: 0.828, width: 0.242, height: 0.059, label: Zeitung, color: '#f5e642' }
+    - { id: e6, x: 0.377, y: 0.828, width: 0.242, height: 0.059, label: Zeitung A, color: '#f5e642' }
+    - { id: e8, x: 0.362, y: 0.112, width: 0.242, height: 0.059, label: Zeitung B, color: '#f5e642' }
 ---
 
 ## Aufbau
-Platziere eine [Zeitung] auf jeder Seite des Spielfelds, ungefähr 2 Meter vor der Grundlinie.
+Platziere 2 $Zeitungen$, jeweils ungefähr 2 Meter vor der Grundlinie.
 
 ## Aufgabe
 Die Spieler spielen von der Grundlinie Ballwechsel, wobei sie versuchen, die [Zeitung] auf der gegenüberliegenden Seite zu treffen.

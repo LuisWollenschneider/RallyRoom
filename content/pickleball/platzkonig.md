@@ -44,12 +44,12 @@ Spieler {S} hat immer Angabe. Für die Angabe muss {S} hinter der Grundlinie ste
 Punkte kann nur der Platzkönig machen. Jeder gewonnene Ballwechseln zählt 1 Punkt.
 
 ## Ziel
-Das Spiel kann auf 
-- Zeit gespielt werden, oder 
+Das Spiel kann 
+- auf Zeit gespielt werden, oder 
 - bis ein Spieler z.B. 11 Punkte hat.
 
 ## Trainer Hinweise
-Es ist ratsam vor dem Spiel alle Bälle auf die Seite von {S} & {W} zu bringen. Von der Seite wird immer aufgeschlagen, wodurch viele Bälle verbraucht werden.
+Es ist ratsam vor dem Spiel alle Bälle auf die Seite von {S} & {W1} zu bringen. Von der Seite wird immer aufgeschlagen, wodurch viele Bälle verbraucht werden.
 
 ## Variationen
 - Unfaire Angabe - Erlaube es die Angabe (weiterhin von hinter der Grundlinie) jederzeit und egal wo hin zu machen. Explizit erlaubt sind dabei Angaben, bevor der Platzkönig wieder bereit ist. Dies bringt mehr Wechsel in das Spiel und setzt den Platzkönig unter mehr Druck.

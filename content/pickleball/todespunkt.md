@@ -54,7 +54,7 @@ Danach ist ein neuer Spieler als {A} an der Reihe.
 - Gewinner ist, wer am längsten überlebt.
 
 ## Trainer Hinweise
-- Es ist ratsam vor dem Spiel alle Bälle auf die Seite von (S) + (W) zu bringen. Von der Seite wird immer aufgeschlagen, wodurch viele Bälle verbraucht werden.
+- Es ist ratsam vor dem Spiel alle Bälle auf die Seite von {S} + {W1} zu bringen. Von der Seite wird immer aufgeschlagen, wodurch viele Bälle verbraucht werden.
 - Man kann zusätzlich zu den Leben ein Zeitlimit hinzufügen, damit einzelne Runden nicht zu lange dauern.
 
 ## Variationen

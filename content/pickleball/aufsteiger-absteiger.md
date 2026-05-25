@@ -18,7 +18,7 @@ diagram:
     - { id: e6, team: B, x: 0.737, y: -0.027, label: B1 }
     - { id: e7, team: B, x: 0.763, y: 1.024, label: B2 }
   arrows:
-    - { id: e29, x1: 0.335, y1: 1.026, x2: 0.659, y2: 1.024, type: move, bidir: true }
+    - { id: e29, x1: 0.335, y1: 1.026, x2: 0.659, y2: 1.024, type: move, headStart: true }
   markers:
     - { id: e26, type: text, x: 0.41, y: 0.223, color: '#e8ede4', text: 'Text', size: 0.06 }
     - { id: e28, type: text, x: 0.781, y: 0.644, color: '#e8ede4', text: 'Feld 2', size: 20, rotation: 270, bold: true, italic: true }
@@ -31,7 +31,7 @@ diagram:
     - { id: e32, x: 0.091, y: 0.885, width: 0.262, height: 0.067, label: Verlierer, color: '#ff6251' }
 ---
 
-**Aufsteiger Absteiger** ist ein allgemeines Spielformat, welches gut mit 
+$Aufsteiger Absteiger$ ist ein allgemeines Spielformat, welches gut mit 
 anderen Punkte-Variationen kombiniert werden kann.
 
 Man kann dies sowohl als Doppel, als auch Einzel (auch im Halben Feld) spielen.
@@ -41,8 +41,8 @@ Man kann dies sowohl als Doppel, als auch Einzel (auch im Halben Feld) spielen.
 - Die Spieler / Teams verteilen sich über die Felder.
 - Eine Runde, nach beliebigen Regeln, wird gespielt.
 - Zum Ende der Runde, wechseln alle Spieler das Feld
-  - Gewinner steigen auf
-  - Verlierer steigen ab
+  - [Sieger] steigen auf
+  - [Verlierer] steigen ab
   - Der Sieger auf Feld 1 und Verlierer des letzten Feldes bleiben stehen.
 
 ## Trainer Hinweise
@@ -53,7 +53,7 @@ So entsteht eine höhere Wechsel-Frequenz und Wartezeiten fallen weg.
 Bei Unentschieden sollte ein finaler Entscheidungspunkt gespielt werden.
 
 ## Variationen
-Da **Aufsteiger Absteiger** ein übergeordnetes Konzept ist, sind die Variationen 
+Da $Aufsteiger Absteiger$ ein übergeordnetes Konzept ist, sind die Variationen 
 unbegrenzt. Alles ist möglich:
 - Normales Pickleball 2v2
 - Einzel Punkte auf halbem Feld
