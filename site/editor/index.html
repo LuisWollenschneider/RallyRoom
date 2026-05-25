@@ -2032,7 +2032,9 @@ function parseFrontmatter(fm) {
     const [, key, val] = kvM;
     const v = val.trim();
     if (v === "") { listKey = key; result[key] = []; }
-    else if (v.startsWith("{")) {
+    else if (v.startsWith("[")) {
+      result[key] = v === "[]" ? [] : v.slice(1, -1).split(",").map(s => s.trim()).filter(Boolean);
+    } else if (v.startsWith("{")) {
       const obj = {};
       v.slice(1, -1).split(",").forEach(p => { const [k,w] = p.split(":").map(s=>s.trim()); obj[k] = isNaN(w)?w:Number(w); });
       result[key] = obj;
@@ -2313,6 +2315,7 @@ setTab(HASH_TAB[location.hash] || "court", { pushState: false });
     if (r.ok) { const entries = await r.json(); title = entries.find(e => e.slug === pSlug)?.title || pSlug; }
   } catch {}
   openLoadConfirm(title, async () => {
+    history.replaceState(null, "", location.pathname);
     try {
       loadMdText(await fetchMdFile(pSport, pSlug), pSlug + ".md");
     } catch { showToast("⚠ Laden fehlgeschlagen"); }

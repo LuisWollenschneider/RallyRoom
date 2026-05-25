@@ -7,7 +7,7 @@ skills_trained:
   - Drucksituationen
   - Punkte
 half_court: false
-stages: []
+stages: [orange, green, yellow]
 diagram_stage: yellow
 players: 3+
 duration: {min: 5, max: 10}
