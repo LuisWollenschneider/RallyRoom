@@ -171,11 +171,9 @@ a[target="_blank"]:hover::after{margin-left:6px}
 @media(max-width:780px){
   .entry-layout{grid-template-columns:1fr}
   .court-panel{display:none}
-  .court-inline{display:flex;gap:14px;align-items:flex-start;margin-bottom:22px}
+  .court-inline{display:flex;gap:14px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
   .court-inline .court-wrap{width:110px;flex-shrink:0}
-  .court-inline .court-info{
-    margin-top:0
-  }
+  .court-inline .court-info{min-width:200px;margin-top:0;align-self:flex-start}
 }
 
 /* ── Materials modal ────────────────────────────────────────── */
@@ -305,6 +303,7 @@ body.entry-view #menu-btn{display:none}
   body.sidebar-open #sidebar{transform:translateX(0);}
   body.sidebar-open #sidebar-overlay{display:block;}
   .info-row{font-size:0.7rem;}
+  #edit-btn{display:none;}
 }
 </style>
 </head>
