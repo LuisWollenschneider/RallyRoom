@@ -263,6 +263,22 @@ a[target="_blank"]:hover::after{margin-left:6px}
 .info-value.danger{color:var(--red)}
 .empty{text-align:center;padding:60px 0;color:var(--ink-faint);font-family:var(--serif);font-style:italic}
 
+/* ── Favourites ───────────────────────────────────────── */
+.fav-btn{
+  background:none;border:none;cursor:pointer;
+  line-height:1;padding:0 2px;
+  display:inline-flex;align-items:center;
+  color:var(--ink-faint);transition:color 0.12s,transform 0.1s;
+  flex-shrink:0;
+}
+.fav-btn:hover{color:var(--yellow);transform:scale(1.2)}
+.fav-btn.active{color:var(--yellow)}
+.entry-card.is-fav{
+  border-color:color-mix(in srgb,var(--yellow) 50%,var(--border));
+  background:color-mix(in srgb,var(--yellow) 5%,var(--card));
+}
+.entry-card.is-fav:hover{border-color:var(--yellow)}
+
 /* ── Mobile header ───────────────────────────────────────── */
 #mobile-header{
   display:none;position:fixed;top:0;left:0;right:0;z-index:200;
@@ -372,6 +388,13 @@ body.entry-view #menu-btn{display:none}
   <hr/>
 
   <input id="search" type="text" placeholder="Suche…" oninput="filterEntries()"/>
+
+  <div class="sb-section" id="fav-section" style="display:none">
+    <span class="sb-label">Favoriten</span>
+    <div class="chips">
+      <button class="chip" id="fav-filter-chip" onclick="toggleFavFilter(this)" style="display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8,1 L9.59,5.82 L14.66,5.84 L10.57,8.83 L12.11,13.66 L8,10.7 L3.89,13.66 L5.43,8.83 L1.34,5.84 L6.41,5.82 Z"/></svg>Favoriten</button>
+    </div>
+  </div>
 
   <div class="sb-section">
     <span class="sb-label">Kategorie</span>
@@ -520,6 +543,15 @@ function renderDiagram(d, W, H, sfx, rb) {
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
       const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
       s+=`<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text||"Text"}</text>`;
+    } else if(m.type==="basket"){
+      const bc=m.color||"#d4a843", sw=r*0.16;
+      s+=`<path d="M ${mx-r} ${my-r*0.3} L ${mx+r} ${my-r*0.3} L ${mx+r*0.72} ${my+r*0.72} L ${mx-r*0.72} ${my+r*0.72} Z" fill="${bc}" fill-opacity="0.18" stroke="${bc}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+      s+=`<ellipse cx="${mx}" cy="${my-r*0.3}" rx="${r}" ry="${r*0.27}" fill="${bc}" fill-opacity="0.12" stroke="${bc}" stroke-width="${sw}"/>`;
+      s+=`<line x1="${mx}" y1="${my+r*0.72}" x2="${mx}" y2="${my+r*1.3}" stroke="${bc}" stroke-width="${sw*1.3}" stroke-linecap="round"/>`;
+      s+=`<line x1="${mx-r*0.52}" y1="${my+r*1.3}" x2="${mx+r*0.52}" y2="${my+r*1.3}" stroke="${bc}" stroke-width="${sw*1.3}" stroke-linecap="round"/>`;
+      s+=`<circle cx="${mx-r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
+      s+=`<circle cx="${mx}" cy="${my+r*0.1}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
+      s+=`<circle cx="${mx+r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
     } else {
       s+=`<rect x="${mx-r}" y="${my-r}" width="${r*2}" height="${r*2}" fill="#9a7af5" stroke="#6a4ac5" stroke-width="1" opacity="0.9"/>`;
     }
@@ -551,6 +583,7 @@ function courtSvg(diagram, sfx, stage) {
 }
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
+const STAR_SVG=`<svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8,1 L9.59,5.82 L14.66,5.84 L10.57,8.83 L12.11,13.66 L8,10.7 L3.89,13.66 L5.43,8.83 L1.34,5.84 L6.41,5.82 Z"/></svg>`;
 const CAT_LABEL = { Exercise:"Übung", Drill:"Korb-Übung", Game:"Spiel" };
 const SKILL_LABEL = { Beginner:"Beginner", Intermediate:"Fortgeschrittene", Advanced:"Experten", "All Levels":"Alle Niveaus" };
 const STAGE_LABEL = { red:"Rot", orange:"Orange", green:"Grün", yellow:"Gelb" };
@@ -570,8 +603,11 @@ function catBadge(c) {
 }
 function skillBadge(s) {
   if(!s) return "";
-  const cls=s.toLowerCase().replace(/ /g,"-");
-  return `<span class="badge badge-${cls}">${SKILL_LABEL[s]||s}</span>`;
+  const n={Beginner:1,Intermediate:2,Advanced:3}[s]??3;
+  const col=s==="Beginner"?"#4caf6e":s==="Intermediate"?"#d4a843":s==="Advanced"?"#d45c43":"#4385d4";
+  const label=SKILL_LABEL[s]||s;
+  const b=(x,y,h,on)=>`<rect x="${x}" y="${y}" width="2.8" height="${h}" rx="0.6" fill-opacity="${on?1:0.2}"/>`;
+  return `<span class="badge" title="${label}" style="background:color-mix(in srgb,${col} 15%,transparent);color:${col};padding:4px 6px;display:inline-flex;align-items:center"><svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor" aria-hidden="true">${b(0,5,5,n>=1)}${b(4.6,2.5,7.5,n>=2)}${b(9.2,0,10,n>=3)}</svg></span>`;
 }
 function stageBadge(s) {
   if(!s) return "";
@@ -581,11 +617,13 @@ function stageBadge(s) {
 // ── State ──────────────────────────────────────────────────────────────────────
 const SPORT_ID="{{SPORT_ID}}";
 const LS_KEY=`rally_filters_${SPORT_ID}`;
+const FAV_KEY=`rally_favs_${SPORT_ID}`;
 let allEntries=[], activeCat="", activeSkill="", activeTrains=new Set();
 let durationMin=null, durationMax=null;
 let materialStates={}, allMaterials=[], filterNoMaterials=false;
 let filterHalfCourt=false;
 let activeStage="";
+let favourites=new Set(), filterFavs=false;
 
 function fmtDuration(d) {
   if(!d||typeof d!=="object") return "";
@@ -598,6 +636,7 @@ function fmtDuration(d) {
 function getFiltered() {
   const q=document.getElementById("search").value.toLowerCase().trim();
   return allEntries.filter(e => {
+    if(filterFavs  && !favourites.has(e.slug)) return false;
     if(activeCat   && e.category!==activeCat) return false;
     if(activeSkill && e.skill_requirement!==activeSkill && e.skill_requirement!=="All Levels") return false;
     if(activeTrains.size>0 && ![...activeTrains].every(s=>(e.skills_trained||[]).includes(s))) return false;
@@ -713,6 +752,47 @@ function toggleNoMaterials(btn) {
   btn.classList.toggle("active",filterNoMaterials);
   filterEntries();
   saveFilters();
+}
+
+// ── Favourites ─────────────────────────────────────────────────────────────────
+function loadFavs() {
+  try { favourites=new Set(JSON.parse(localStorage.getItem(FAV_KEY)||"[]")); } catch {}
+}
+function saveFavs() {
+  try { localStorage.setItem(FAV_KEY,JSON.stringify([...favourites])); } catch {}
+}
+function toggleFav(slug, btn, event) {
+  if(event){event.preventDefault();event.stopPropagation();}
+  if(favourites.has(slug)) favourites.delete(slug);
+  else favourites.add(slug);
+  const active=favourites.has(slug);
+  btn.classList.toggle("active",active);
+  btn.closest(".entry-card")?.classList.toggle("is-fav",active);
+  // sync the other context (list ↔ detail)
+  const entryBtn=document.getElementById("entry-fav-btn");
+  if(entryBtn && entryBtn!==btn) entryBtn.classList.toggle("active",active);
+  const cardBtn=document.querySelector(`.entry-card[href="#${CSS.escape(slug)}"] .fav-btn`);
+  if(cardBtn && cardBtn!==btn){
+    cardBtn.classList.toggle("active",active);
+    cardBtn.closest(".entry-card")?.classList.toggle("is-fav",active);
+  }
+  saveFavs();
+  updateFavSection();
+  if(filterFavs) filterEntries();
+}
+function toggleFavFilter(btn) {
+  filterFavs=!filterFavs;
+  btn.classList.toggle("active",filterFavs);
+  filterEntries();
+}
+function updateFavSection() {
+  const sec=document.getElementById("fav-section");
+  if(sec) sec.style.display=favourites.size>0?"":"none";
+  if(!favourites.size && filterFavs) {
+    filterFavs=false;
+    const chip=document.getElementById("fav-filter-chip");
+    if(chip) chip.classList.remove("active");
+  }
 }
 
 // ── Persistence ────────────────────────────────────────────────────────────────
@@ -870,10 +950,12 @@ function renderList(entries) {
     const hasPlayers = typeof(e.players) !== "object";
     const playerIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.03 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>`;
     const clockIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
-    return `<a class="entry-card" href="#${e.slug}">
+    const isFav=favourites.has(e.slug);
+    const favBtn=`<button class="fav-btn${isFav?' active':''}" onclick="toggleFav('${e.slug.replace(/'/g,"\\'")}',this,event)" aria-label="Favorit" title="Favorit">${STAR_SVG}</button>`;
+    return `<a class="entry-card${isFav?' is-fav':''}" href="#${e.slug}">
       <div class="card-top">
         <div style="flex:1;min-width:0">
-          <div class="card-badges">${catBadge(e.category)}${skillBadge(e.skill_requirement)}</div>
+          <div class="card-badges">${favBtn}${catBadge(e.category)}${skillBadge(e.skill_requirement)}</div>
           <div class="card-title">${e.title}</div>
           ${e.summary?`<div class="card-summary" style="margin-top:5px">${e.summary}</div>`:""}
         </div>
@@ -909,7 +991,7 @@ function openEntry(slug, pushState=true) {
   document.getElementById("entry-content").innerHTML=`
     <div class="entry-layout">
       <div>
-        <div class="entry-byline">${catBadge(e.category)}${skillBadge(e.skill_requirement)}${date?`<span style="color:var(--ink-faint);font-size:0.75rem;font-family:var(--mono)">${date}</span>`:""}</div>
+        <div class="entry-byline"><button id="entry-fav-btn" class="fav-btn${favourites.has(e.slug)?' active':''}" onclick="toggleFav('${e.slug.replace(/'/g,"\\'")}',this,null)" aria-label="Favorit" title="Favorit" style="margin-right:4px"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8,1 L9.59,5.82 L14.66,5.84 L10.57,8.83 L12.11,13.66 L8,10.7 L3.89,13.66 L5.43,8.83 L1.34,5.84 L6.41,5.82 Z"/></svg></button>${catBadge(e.category)}${skillBadge(e.skill_requirement)}${date?`<span style="color:var(--ink-faint);font-size:0.75rem;font-family:var(--mono)">${date}</span>`:""}</div>
         <div class="entry-heading">${e.title}</div>
         ${skills?`<div class="entry-trained">${skills}</div>`:""}
         ${(e.materials||[]).length?`<div style="margin-bottom:20px"><span style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;display:block;margin-bottom:6px">Materialien</span><ul style="margin:0 0 0 1.2em;font-size:0.85rem;color:var(--ink-muted);line-height:1.8">${e.materials.map(m=>`<li>${m}</li>`).join("")}</ul></div>`:""}
@@ -1019,10 +1101,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const r=await fetch("data.json");
     if(!r.ok) throw new Error();
     allEntries=await r.json();
+    loadFavs();
     loadFilters();
     buildSkillsList();
     buildMaterialsList();
     applyFilterStateToUI();
+    updateFavSection();
     filterEntries();
     const hash=location.hash.slice(1);
     if(hash && allEntries.find(e=>e.slug===hash)) openEntry(hash);

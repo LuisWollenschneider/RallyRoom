@@ -55,7 +55,7 @@ function mdToHtml(md, diagram, sport) {
         s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const players = (diagram && diagram.players) || [];
     const zones = (diagram && diagram.zones) || [];
-    const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW } : {};
+    const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW, T: sport.teamT } : {};
     let s = md;
     s = s.replace(/^(#{1,3} .+)$/gm, "$1\n");
     s = s.replace(
@@ -304,7 +304,7 @@ function buildSportHtml(sport) {
     const template = fs.readFileSync(TEMPLATE, "utf8");
 
     const sportJs = [
-        `const TC = { A:"${sport.teamA}", B:"${sport.teamB}", W:"${sport.teamW}" };`,
+        `const TC = { A:"${sport.teamA}", B:"${sport.teamB}", W:"${sport.teamW}", T:"${sport.teamT}" };`,
         sport.courtBase.toString(),
         sport.renderBall.toString(),
         sport.courtBaseByStage

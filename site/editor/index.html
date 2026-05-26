@@ -151,6 +151,7 @@ a.btn-ghost{text-decoration:none}
 .tool-chip.t-b{color:#d45c43}.tool-chip.t-b.active{border-color:#d45c43;background:rgba(212,92,67,.15)}
 .tool-chip.t-w{color:#d4a843}.tool-chip.t-w.active{border-color:#d4a843;background:rgba(212,168,67,.15)}
 .tool-chip.t-p{color:#aaa}.tool-chip.t-p.active{border-color:#aaa;background:rgba(170,170,170,.15)}
+.tool-chip.t-t{color:#9b59b6}.tool-chip.t-t.active{border-color:#9b59b6;background:rgba(155,89,182,.15)}
 .tool-chip.t-ball{color:#f5e642}.tool-chip.t-ball.active{border-color:#f5e642;background:rgba(245,230,66,.1)}
 .tool-chip.t-move{color:#7ab3f5}.tool-chip.t-move.active{border-color:#7ab3f5;background:rgba(122,179,245,.1)}
 .tool-chip.t-screen{color:#c084f5}.tool-chip.t-screen.active{border-color:#c084f5;background:rgba(192,132,245,.1)}
@@ -554,6 +555,7 @@ a.btn-ghost{text-decoration:none}
         <button class="tool-chip t-b" id="ts-player-B" onclick="setTool('player-B')">● B</button>
         <button class="tool-chip t-w" id="ts-player-W" onclick="setTool('player-W')">● W</button>
         <button class="tool-chip t-p" id="ts-player-P" onclick="setTool('player-P')">● P</button>
+        <button class="tool-chip t-t" id="ts-player-T" onclick="setTool('player-T')">● T</button>
         <div class="tool-strip-sep"></div>
         <button class="tool-chip t-ball" id="ts-arrow-ball" onclick="setTool('arrow-ball')">→ Ball</button>
         <button class="tool-chip t-move" id="ts-arrow-move" onclick="setTool('arrow-move')">⇢ Bewegen</button>
@@ -562,6 +564,7 @@ a.btn-ghost{text-decoration:none}
         <div class="tool-strip-sep"></div>
         <button class="tool-chip" id="ts-marker-cone" onclick="setTool('marker-cone')">▲ Hütchen</button>
         <button class="tool-chip" id="ts-marker-ball" onclick="setTool('marker-ball')">● Ball</button>
+        <button class="tool-chip" id="ts-marker-basket" onclick="setTool('marker-basket')">⊡ Korb</button>
         <button class="tool-chip" id="ts-marker-text" onclick="setTool('marker-text')">T Text</button>
         <div class="tool-strip-sep"></div>
         <button class="tool-chip" id="ts-zone" onclick="setTool('zone')">□ Zone</button>
@@ -729,7 +732,7 @@ let TC = getTCFor("tennis");
 
 function getTCFor(id) {
   const s = SPORT_MAP[id];
-  return { A: s.teamA, B: s.teamB, W: s.teamW };
+  return { A: s.teamA, B: s.teamB, W: s.teamW, T: s.teamT };
 }
 
 // ── Court editor state ────────────────────────────────────────────────────────
@@ -1005,6 +1008,15 @@ function renderCanvas() {
         const hw = txt.length*fs*0.32, hh = fs*0.6;
         s += `<rect x="${mx-hw}" y="${my-hh}" width="${hw*2}" height="${hh*2}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-dasharray="3,2" transform="${tf}" style="pointer-events:none"/>`;
       }
+    } else if (m.type==="basket") {
+      const bc=m.color||"#d4a843", sw=r*0.16;
+      s += `<path data-id="${m.id}" data-kind="marker" d="M ${mx-r} ${my-r*0.3} L ${mx+r} ${my-r*0.3} L ${mx+r*0.72} ${my+r*0.72} L ${mx-r*0.72} ${my+r*0.72} Z" fill="${bc}" fill-opacity="0.18" stroke="${sel?"#fff":bc}" stroke-width="${sw}" stroke-linejoin="round" style="cursor:pointer"/>`;
+      s += `<ellipse cx="${mx}" cy="${my-r*0.3}" rx="${r}" ry="${r*0.27}" fill="${bc}" fill-opacity="0.12" stroke="${sel?"#fff":bc}" stroke-width="${sw}" style="pointer-events:none"/>`;
+      s += `<line x1="${mx}" y1="${my+r*0.72}" x2="${mx}" y2="${my+r*1.3}" stroke="${sel?"#fff":bc}" stroke-width="${sw*1.3}" stroke-linecap="round" style="pointer-events:none"/>`;
+      s += `<line x1="${mx-r*0.52}" y1="${my+r*1.3}" x2="${mx+r*0.52}" y2="${my+r*1.3}" stroke="${sel?"#fff":bc}" stroke-width="${sw*1.3}" stroke-linecap="round" style="pointer-events:none"/>`;
+      s += `<circle cx="${mx-r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88" style="pointer-events:none"/>`;
+      s += `<circle cx="${mx}" cy="${my+r*0.1}" r="${r*0.22}" fill="${bc}" opacity="0.88" style="pointer-events:none"/>`;
+      s += `<circle cx="${mx+r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88" style="pointer-events:none"/>`;
     }
   });
 
@@ -1048,6 +1060,7 @@ function updateProps() {
     }
   } else if (kind === "marker") {
     if (sel.type === "cone") html += propColor("Farbe", sel.color||"#f5a542");
+    if (sel.type === "basket") html += propColor("Farbe", sel.color||"#d4a843");
     if (sel.type === "text") {
       html += propField("Text", "text", sel.text??"Text", "text");
       html += propColor("Farbe", sel.color||"#e8ede4");
@@ -1631,6 +1644,15 @@ function previewCourtSvg() {
       const tf=rot?`rotate(${rot},${mx},${my})`:"";
       const fw=m.bold?"600":"300", fi=m.italic?"italic":"normal";
       s += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="${fs}" font-family="Fraunces,Georgia,serif" font-weight="${fw}" font-style="${fi}" transform="${tf}">${m.text??"Text"}</text>`;
+    } else if (m.type==="basket") {
+      const bc=m.color||"#d4a843", sw=r*0.16;
+      s += `<path d="M ${mx-r} ${my-r*0.3} L ${mx+r} ${my-r*0.3} L ${mx+r*0.72} ${my+r*0.72} L ${mx-r*0.72} ${my+r*0.72} Z" fill="${bc}" fill-opacity="0.18" stroke="${bc}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+      s += `<ellipse cx="${mx}" cy="${my-r*0.3}" rx="${r}" ry="${r*0.27}" fill="${bc}" fill-opacity="0.12" stroke="${bc}" stroke-width="${sw}"/>`;
+      s += `<line x1="${mx}" y1="${my+r*0.72}" x2="${mx}" y2="${my+r*1.3}" stroke="${bc}" stroke-width="${sw*1.3}" stroke-linecap="round"/>`;
+      s += `<line x1="${mx-r*0.52}" y1="${my+r*1.3}" x2="${mx+r*0.52}" y2="${my+r*1.3}" stroke="${bc}" stroke-width="${sw*1.3}" stroke-linecap="round"/>`;
+      s += `<circle cx="${mx-r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
+      s += `<circle cx="${mx}" cy="${my+r*0.1}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
+      s += `<circle cx="${mx+r*0.38}" cy="${my+r*0.22}" r="${r*0.22}" fill="${bc}" opacity="0.88"/>`;
     }
   });
   state.players.forEach(p => {
@@ -1674,9 +1696,11 @@ function renderPreview() {
                   :""));
 
   const catCls  = currentCategory.toLowerCase();
-  const skillCls = currentSkillReq.toLowerCase().replace(/ /g, "-");
-  const catBadge   = `<span class="badge badge-${catCls}">${CAT_LABEL[currentCategory]||currentCategory}</span>`;
-  const skillBadge = `<span class="badge badge-${skillCls}">${SKILL_LABEL[currentSkillReq]||currentSkillReq}</span>`;
+  const catBadge = `<span class="badge badge-${catCls}">${CAT_LABEL[currentCategory]||currentCategory}</span>`;
+  const _skillCol = currentSkillReq==="Beginner"?"#4caf6e":currentSkillReq==="Intermediate"?"#d4a843":currentSkillReq==="Advanced"?"#d45c43":"#4385d4";
+  const _skillN = {Beginner:1,Intermediate:2,Advanced:3}[currentSkillReq]??3;
+  const _sb = (x,y,h,on)=>`<rect x="${x}" y="${y}" width="2.8" height="${h}" rx="0.6" fill-opacity="${on?1:0.2}"/>`;
+  const skillBadge = currentSkillReq ? `<span class="badge" title="${SKILL_LABEL[currentSkillReq]||currentSkillReq}" style="background:color-mix(in srgb,${_skillCol} 15%,transparent);color:${_skillCol};padding:4px 6px;display:inline-flex;align-items:center"><svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor" aria-hidden="true">${_sb(0,5,5,_skillN>=1)}${_sb(4.6,2.5,7.5,_skillN>=2)}${_sb(9.2,0,10,_skillN>=3)}</svg></span>` : "";
 
   const trainedHtml = trainList.map(s=>`<span class="skill-tag">${s}</span>`).join("");
   const matsHtml = matList.length

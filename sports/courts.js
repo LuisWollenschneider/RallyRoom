@@ -24,6 +24,7 @@
             teamA: "#0c902b",
             teamB: "#4385d4",
             teamW: "#d4a843",
+            teamT: "#9b59b6",
 
             // Optic-yellow felt ball with white seam curves
             renderBall: function renderBall(mx, my, r, maskId) {
@@ -159,6 +160,7 @@
             teamA: "#e8a830",
             teamB: "#d45c43",
             teamW: "#4385d4",
+            teamT: "#9b59b6",
 
             // Orange + yellow-green bicolor ball with S-curve seam
             renderBall: function renderBall(mx, my, r, maskId) {
@@ -208,6 +210,7 @@
             teamA: "#4caf6e",
             teamB: "#d45c43",
             teamW: "#d4a843",
+            teamT: "#9b59b6",
 
             // Plastic ball with 26 holes
             renderBall: function renderBall(mx, my, r, maskId) {
@@ -256,6 +259,7 @@
             teamA: "#43b5c8",
             teamB: "#d45c43",
             teamW: "#d4a843",
+            teamT: "#9b59b6",
 
             // Depressurized tennis ball — same seam, slightly muted yellow
             renderBall: function renderBall(mx, my, r, maskId) {
