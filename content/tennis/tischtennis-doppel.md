@@ -22,6 +22,10 @@ diagram:
     - { id: e3, team: B, x: 0.489, y: 1.011, label: B1 }
     - { id: e4, team: B, x: 0.561, y: 1.082, label: B2 }
   arrows:
+    - { id: e9, x1: 0.423, y1: -0.076, x2: 0.41, y2: -0.018, type: move, cx: 0.358, cy: -0.057, midTouched: true }
+    - { id: e10, x1: 0.525, y1: -0.014, x2: 0.547, y2: -0.07, type: move, cx: 0.593, cy: -0.038, midTouched: true }
+    - { id: e11, x1: 0.606, y1: 1.057, x2: 0.541, y2: 1.002, type: move, cx: 0.636, cy: 1.015, midTouched: true }
+    - { id: e12, x1: 0.43, y1: 1.03, x2: 0.505, y2: 1.082, type: move, cx: 0.426, cy: 1.068, midTouched: true }
   markers:
   zones:
 ---
