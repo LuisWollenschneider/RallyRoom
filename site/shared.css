@@ -1,0 +1,25 @@
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1f1a;--surface:#212621;--card:#282e28;--border:#313831;
+  --ink:#e8ede4;--ink-muted:#8a9486;--ink-faint:#4a5248;
+  --yellow:#d4a843;--red:#d45c43;--blue:#4385d4;
+  --mono:'DM Mono',monospace;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+.badge{font-size:0.58rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;padding:3px 8px;border-radius:20px;white-space:nowrap;font-family:var(--mono);display:inline-block}
+.badge-exercise{background:#1e3626;color:#4caf6e}
+.badge-drill{background:#1a2e3a;color:#4385d4}
+.badge-game{background:#3a2618;color:#d4863a}
+.badge-beginner{background:rgba(76,175,110,0.15);color:#4caf6e}
+.badge-intermediate{background:rgba(212,168,67,0.15);color:#d4a843}
+.badge-advanced{background:rgba(212,92,67,0.15);color:#d45c43}
+.badge-all-levels{background:rgba(67,133,212,0.15);color:#4385d4}
+.badge-stage-red{background:rgba(230,57,70,.15);color:#e63946}
+.badge-stage-orange{background:rgba(232,112,64,.15);color:#e87040}
+.badge-stage-green{background:rgba(76,175,110,.15);color:#4caf6e}
+.badge-stage-yellow{background:rgba(212,168,67,.15);color:#d4a843}
+.skill-tag{font-size:0.64rem;font-family:var(--mono);background:var(--surface);color:var(--ink-faint);padding:2px 7px;border-radius:20px;border:1px solid var(--border)}
+.md-player{display:inline-flex;align-items:center;justify-content:center;height:1.5em;min-width:1.5em;padding:0 0.35em;border-radius:999px;vertical-align:middle;margin:0 2px;font-size:0.78em;color:#fff;font-weight:500;font-family:var(--mono);line-height:1;white-space:nowrap}
+.md-zone{display:inline-flex;align-items:center;padding:0 5px;border-radius:3px;border:1.5px dashed currentColor;height:1.5em;font-size:0.78em;vertical-align:middle;margin:0 2px;font-family:var(--mono);font-weight:500}
+.md-cone{display:inline-flex;align-items:center;vertical-align:middle;font-size:1.32em;margin:0 2px;line-height:1}
+.md-dot{display:inline-flex;align-items:center;width:0.85em;height:0.85em;border-radius:50%;vertical-align:middle;margin:0 2px}
+.md-accent{font-family:var(--serif);color:var(--accent);font-style:italic}
