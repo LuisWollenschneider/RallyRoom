@@ -35,7 +35,7 @@ Paarungen ergeben, damit die Fortgeschrittenen nicht immer nur mit Anfängern sp
 - Zu jeder Runde werden neue Teams gebildet, sodass möglichst nie die gleichen Spieler in einem Team sind.
 - Gespielt wird normal nach Pickleball Regeln, mit Punkten, Aufschlagwechsel, etc.
 
-Eine Mixer-Runde kann beispielsweise über diese Webseite organisiert werden: [Mixer](https://luiswollenschneider.github.io/Americano/#Mixer)
+Eine Mixer-Runde kann beispielsweise über diese Webseite organisiert werden: [Mixer](https://americano.luiswo.dev/#Mixer)
   
 ## Trainer Hinweise
 Da Matches in Pickleball oft sehr unterschiedlich lang dauern können, ist es ratsam bei mehreren Spielen
