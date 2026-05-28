@@ -456,8 +456,17 @@ function renderList(entries) {
   const empty=document.getElementById("empty-state");
   if(!entries.length){grid.innerHTML="";empty.style.display="block";return;}
   empty.style.display="none";
+  _cycleTimers.forEach(t=>clearInterval(t)); _cycleTimers=[];
   grid.innerHTML=entries.map(e=>{
-    const thumb=e.diagram?`<div class="court-thumb">${courtSvg(e.diagram,"t"+e.slug.replace(/-/g,""),e.diagram_stage)}</div>`:"";
+    const frames=(e.frames&&e.frames.length)?e.frames:(e.diagram?[e.diagram]:[]);
+    const sfxBase="t"+e.slug.replace(/-/g,"");
+    let thumb="";
+    if(frames.length===1){
+      thumb=`<div class="court-thumb">${courtSvg(frames[0],sfxBase,e.diagram_stage)}</div>`;
+    }else if(frames.length>1){
+      const slides=frames.map((f,i)=>`<div class="frame-slide${i===0?" active":""}">${courtSvg(f,sfxBase+i,e.diagram_stage)}</div>`).join("");
+      thumb=`<div class="court-thumb frame-cycle">${slides}</div>`;
+    }
     const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
     const hasPlayers = typeof(e.players) !== "object";
     const playerIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.03 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>`;
@@ -481,16 +490,46 @@ function renderList(entries) {
       </div>
     </a>`;
   }).join("");
+  startFrameCycling();
 }
 
 // ── Detail view ────────────────────────────────────────────────────────────────
-let _modalDiagram=null, _modalStage=null;
+let _modalFrames=[], _modalFrameIdx=0, _modalStage=null;
+
+// ── Frame cycling (list thumbnails) ────────────────────────────────────────────
+let _cycleTimers=[];
+function startFrameCycling() {
+  _cycleTimers.forEach(t=>clearInterval(t));
+  _cycleTimers=[];
+  document.querySelectorAll(".frame-cycle").forEach(el=>{
+    const slides=el.querySelectorAll(".frame-slide");
+    if(slides.length<2) return;
+    let idx=0;
+    const t=setInterval(()=>{
+      const out=slides[idx];
+      out.classList.remove("active");
+      out.classList.add("leaving");
+      setTimeout(()=>out.classList.remove("leaving"),650);
+      idx=(idx+1)%slides.length;
+      slides[idx].classList.add("active");
+    },2000);
+    _cycleTimers.push(t);
+  });
+}
+
+function entryCycleHtml(frames, sfx, stage) {
+  if(frames.length<=1) return courtSvg(frames[0]||null,sfx,stage);
+  const slides=frames.map((f,i)=>`<div class="frame-slide${i===0?" active":""}">${courtSvg(f,sfx+i,stage)}</div>`).join("");
+  return `<div class="frame-cycle" style="width:100%;height:100%">${slides}</div>`;
+}
 
 function openEntry(slug, pushState=true) {
   const e=allEntries.find(x=>x.slug===slug);
   if(!e) return;
-  _modalDiagram=e.diagram;
+  _modalFrames=(e.frames&&e.frames.length)?e.frames:(e.diagram?[e.diagram]:[null]);
+  _modalFrameIdx=0;
   _modalStage=e.diagram_stage||null;
+  const _firstFrame=_modalFrames[0]||null;
   const date=e.date?new Date(e.date+"T12:00:00").toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"";
   const skills=(e.skills_trained||[]).map(s=>`<span class="skill-tag">${s}</span>`).join("");
   const hasPlayers = typeof(e.players) !== "object";
@@ -508,14 +547,14 @@ function openEntry(slug, pushState=true) {
         ${skills?`<div class="entry-trained">${skills}</div>`:""}
         ${(e.materials||[]).length?`<div style="margin-bottom:20px"><span style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;display:block;margin-bottom:6px">Materialien</span><ul style="margin:0 0 0 1.2em;font-size:0.85rem;color:var(--ink-muted);line-height:1.8">${e.materials.map(m=>`<li>${m}</li>`).join("")}</ul></div>`:""}
         <div class="court-inline">
-          <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"di",e.diagram_stage)}</div>
+          <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${entryCycleHtml(_modalFrames,"di",e.diagram_stage)}</div>
           <div class="court-info">${courtInfoHtml}</div>
         </div>
         <div class="entry-body">${e.html}</div>
       </div>
       <div class="court-panel">
         <div class="court-panel-label">Court Diagramm</div>
-        <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${courtSvg(e.diagram,"d",e.diagram_stage)}</div>
+        <div class="court-wrap" onclick="openCourtModal()" title="Full screen">${entryCycleHtml(_modalFrames,"d",e.diagram_stage)}</div>
         <div class="court-info">${courtInfoHtml}</div>
       </div>
     </div>`;
@@ -524,12 +563,31 @@ function openEntry(slug, pushState=true) {
   const editBtn=document.getElementById("edit-btn");
   if(editBtn) editBtn.href=`../editor/?sport=${SPORT_ID}&slug=${slug}`;
   showView("entry");
+  startFrameCycling();
 }
 
 function openCourtModal() {
-  document.getElementById("court-modal-svg").innerHTML=courtSvg(_modalDiagram,"modal",_modalStage);
+  _modalFrameIdx=0;
+  renderModalFrame();
   document.getElementById("court-modal").classList.add("open");
   document.body.style.overflow="hidden";
+}
+function renderModalFrame() {
+  document.getElementById("court-modal-svg").innerHTML=courtSvg(_modalFrames[_modalFrameIdx]||null,"modal",_modalStage);
+  const nav=document.getElementById("court-modal-nav");
+  if(!nav) return;
+  if(_modalFrames.length>1){
+    nav.style.display="";
+    document.getElementById("frame-nav-counter").textContent=`${_modalFrameIdx+1} / ${_modalFrames.length}`;
+  } else {
+    nav.style.display="none";
+  }
+}
+function prevModalFrame() {
+  if(_modalFrameIdx>0){_modalFrameIdx--;renderModalFrame();}
+}
+function nextModalFrame() {
+  if(_modalFrameIdx<_modalFrames.length-1){_modalFrameIdx++;renderModalFrame();}
 }
 function closeCourtModal() {
   document.getElementById("court-modal").classList.remove("open");
@@ -547,7 +605,25 @@ function showView(name, pushState=false) {
 
 function toggleSidebar(){document.body.classList.toggle("sidebar-open")}
 function closeSidebar(){document.body.classList.remove("sidebar-open")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCourtModal();closeMaterialsModal();closeSidebar();}})
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){closeCourtModal();closeMaterialsModal();closeSidebar();}
+  if(document.getElementById("court-modal").classList.contains("open")){
+    if(e.key==="ArrowLeft"){e.preventDefault();prevModalFrame();}
+    if(e.key==="ArrowRight"){e.preventDefault();nextModalFrame();}
+  }
+});
+{
+  let _swipeX=null;
+  const _modal=document.getElementById("court-modal");
+  _modal.addEventListener("touchstart",e=>{_swipeX=e.touches[0].clientX;},{passive:true});
+  _modal.addEventListener("touchend",e=>{
+    if(_swipeX===null)return;
+    const dx=e.changedTouches[0].clientX-_swipeX;
+    _swipeX=null;
+    if(Math.abs(dx)<50)return;
+    if(dx<0)nextModalFrame();else prevModalFrame();
+  },{passive:true});
+}
 
 window.addEventListener("popstate", e => {
   if(e.state?.slug) openEntry(e.state.slug, false);

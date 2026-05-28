@@ -166,6 +166,22 @@ a.btn-ghost{text-decoration:none}
 }
 #props-panel.empty .props-filled{display:none}
 #props-panel:not(.empty) .props-empty{display:none}
+#frames-manager{margin-top:auto;border-top:1px solid var(--border);padding-top:10px;flex-shrink:0}
+.frame-item{display:flex;align-items:center;gap:5px;padding:4px 3px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:all 0.1s}
+.frame-item:hover{background:var(--card);border-color:var(--border)}
+.frame-item.active{background:var(--card);border-color:var(--green-dim)}
+.frame-drag-handle{cursor:grab;color:var(--ink-faint);font-size:0.85rem;padding:0 2px;flex-shrink:0;user-select:none;line-height:1}
+.frame-drag-handle:active{cursor:grabbing}
+.frame-thumb-wrap{width:24px;height:50px;border-radius:2px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
+.frame-thumb-wrap svg{width:100%;height:100%}
+.frame-label{flex:1;font-size:0.7rem;color:var(--ink-muted);font-family:var(--mono)}
+.frame-item.active .frame-label{color:#4caf6e}
+.frame-del-btn{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:0.75rem;padding:2px 4px;border-radius:3px;flex-shrink:0;line-height:1}
+.frame-del-btn:hover:not(:disabled){color:var(--red);background:rgba(212,92,67,.1)}
+.frame-del-btn:disabled{opacity:0.25;cursor:default}
+.frame-add-btn{width:100%;margin-top:5px;padding:4px;border-radius:5px;border:1px dashed var(--border);background:transparent;color:var(--ink-faint);cursor:pointer;font-family:var(--sans);font-size:0.7rem;transition:all 0.1s}
+.frame-add-btn:hover{border-color:var(--green-dim);color:#4caf6e;background:rgba(76,175,110,.08)}
+.frame-item.drag-over{border-color:#4caf6e;background:rgba(76,175,110,.08)}
 .props-empty{font-size:0.78rem;color:var(--ink-faint);font-style:italic;line-height:1.6}
 #props-body{display:flex;flex-direction:column;gap:12px}
 .props-filled{display:flex;flex-direction:column;gap:10px}
@@ -551,6 +567,11 @@ a.btn-ghost{text-decoration:none}
           <div class="props-filled">
             <div id="props-body"></div>
           </div>
+          <div id="frames-manager">
+            <div class="prop-label" style="margin-bottom:6px">Sequenz</div>
+            <div id="frames-list"></div>
+            <button class="frame-add-btn" onclick="addFrame()">+ Frame</button>
+          </div>
         </div>
       </div>
     </div>
@@ -706,8 +727,17 @@ function getTCFor(id) {
 
 // ── Court editor state ────────────────────────────────────────────────────────
 const state = {
+  frames: [{ players: [], arrows: [], markers: [], zones: [] }],
+  currentFrame: 0,
+  get players() { return this.frames[this.currentFrame].players; },
+  set players(v) { this.frames[this.currentFrame].players = v; },
+  get arrows()  { return this.frames[this.currentFrame].arrows; },
+  set arrows(v) { this.frames[this.currentFrame].arrows = v; },
+  get markers() { return this.frames[this.currentFrame].markers; },
+  set markers(v){ this.frames[this.currentFrame].markers = v; },
+  get zones()   { return this.frames[this.currentFrame].zones; },
+  set zones(v)  { this.frames[this.currentFrame].zones = v; },
   tool: "select",
-  players: [], arrows: [], markers: [], zones: [],
   selected: null, dragging: null, drawing: null, drawingZone: null,
   nextId: 1,
 };
@@ -1321,10 +1351,12 @@ function confirmReset() {
   syncTagDisplays();
   document.getElementById("f-half-court").checked = false;
   document.getElementById("f-body").value = "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen";
-  state.players=[]; state.arrows=[]; state.markers=[]; state.zones=[];
+  state.frames=[{players:[],arrows:[],markers:[],zones:[]}];
+  state.currentFrame=0;
   state.selected=null; state.drawing=null; state.drawingZone=null; state.nextId=1;
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
   render();
+  renderFrameManager();
 }
 function openClearModal() { document.getElementById("clear-modal").classList.remove("hidden"); }
 function closeModal(id)   { document.getElementById(id).classList.add("hidden"); }
@@ -1333,6 +1365,7 @@ function confirmClear() {
   state.players=[]; state.arrows=[]; state.markers=[]; state.zones=[];
   state.selected=null; state.drawing=null; state.drawingZone=null;
   render();
+  renderFrameManager();
 }
 
 // ── Markdown → HTML (mirrors build.js) ───────────────────────────────────────
@@ -1703,17 +1736,18 @@ function renderPreview() {
 }
 
 // ── Diagram YAML ──────────────────────────────────────────────────────────────
-function diagramYaml() {
+function diagramYaml(frameIdx) {
+  const f = frameIdx !== undefined ? state.frames[frameIdx] : state.frames[state.currentFrame];
   const fmt = v => typeof v === "number" ? +v.toFixed(3) : v;
   const lines = [];
   lines.push("  players:");
-  state.players.forEach(p => {
+  (f.players||[]).forEach(p => {
     const img = p.image ? `, image: '${p.image}'` : "";
     const clr = p.team === 'P' ? `, color: '${p.color||'#888888'}'` : "";
     lines.push(`    - { id: ${p.id}, team: ${p.team}, x: ${fmt(p.x)}, y: ${fmt(p.y)}, label: ${p.label||p.team}${img}${clr} }`);
   });
   lines.push("  arrows:");
-  state.arrows.forEach(a => {
+  (f.arrows||[]).forEach(a => {
     const headEnd   = a.type==="line" ? (a.headEnd??false)  : (a.headEnd??true);
     const headStart = a.headStart||a.bidir||false;
     const hs  = headStart                          ? ", headStart: true"  : "";
@@ -1724,7 +1758,7 @@ function diagramYaml() {
     lines.push(`    - { id: ${a.id}, x1: ${fmt(a.x1)}, y1: ${fmt(a.y1)}, x2: ${fmt(a.x2)}, y2: ${fmt(a.y2)}, type: ${a.type}${hs}${he}${md}${ctrl} }`);
   });
   lines.push("  markers:");
-  state.markers.forEach(m => {
+  (f.markers||[]).forEach(m => {
     const img = m.image ? `, image: '${m.image}'` : "";
     const col = m.color ? `, color: '${m.color}'` : "";
     const txt  = m.text!=null ? `, text: '${String(m.text).replace(/'/g,"\\\'")}'` : "";
@@ -1735,7 +1769,7 @@ function diagramYaml() {
     lines.push(`    - { id: ${m.id}, type: ${m.type}, x: ${fmt(m.x)}, y: ${fmt(m.y)}${img}${col}${txt}${sz}${rot}${bold}${ital} }`);
   });
   lines.push("  zones:");
-  state.zones.forEach(z => {
+  (f.zones||[]).forEach(z => {
     const lbl = z.label ? `, label: ${z.label}` : "";
     lines.push(`    - { id: ${z.id}, x: ${fmt(z.x)}, y: ${fmt(z.y)}, width: ${fmt(z.width)}, height: ${fmt(z.height)}${lbl}, color: '${z.color||"#f5e642"}' }`);
   });
@@ -1775,8 +1809,7 @@ duration: {min: ${durMin}, max: ${durMax}}
 materials:
 ${matYaml}
 summary: ${summary}
-diagram:
-${diagramYaml()}
+${state.frames.map((_, i) => `${i === 0 ? "diagram" : `diagram${i + 1}`}:\n${diagramYaml(i)}`).join("\n")}
 ---
 
 ${body || "Beschreibe die Übung hier.\n\n## Aufbau\n\n## Ziel\n\n## Trainer Hinweise\n\n## Variationen"}
@@ -1942,6 +1975,87 @@ async function submitEntry() {
   } catch(e) { showToast("✗ " + e.message); }
 }
 
+// ── Frame manager ─────────────────────────────────────────────────────────────
+function renderFrameManager() {
+  const list = document.getElementById("frames-list");
+  if (!list) return;
+  list.innerHTML = state.frames.map((_, i) => {
+    const svgHtml = courtSvgForFrame(i);
+    const isActive = i === state.currentFrame;
+    return `<div class="frame-item${isActive ? " active" : ""}"
+      draggable="true" data-frame-idx="${i}"
+      ondragstart="onFrameDragStart(event,${i})"
+      ondragover="onFrameDragOver(event,${i})"
+      ondragleave="onFrameDragLeave(event)"
+      ondrop="onFrameDrop(event,${i})"
+      onclick="switchFrame(${i})">
+      <span class="frame-drag-handle" onclick="event.stopPropagation()">⠿</span>
+      <div class="frame-thumb-wrap">${svgHtml}</div>
+      <span class="frame-label">Frame ${i + 1}</span>
+      <button class="frame-del-btn" onclick="event.stopPropagation();deleteFrame(${i})"
+        ${state.frames.length === 1 ? "disabled" : ""}
+        title="Frame löschen">✕</button>
+    </div>`;
+  }).join("");
+}
+
+function courtSvgForFrame(idx) {
+  const prev = state.currentFrame;
+  state.currentFrame = idx;
+  const svg = previewCourtSvg();
+  state.currentFrame = prev;
+  return svg;
+}
+
+function switchFrame(idx) {
+  if (idx < 0 || idx >= state.frames.length) return;
+  state.selected = null; state.drawing = null; state.drawingZone = null;
+  state.currentFrame = idx;
+  renderFrameManager();
+  render();
+}
+
+function addFrame() {
+  const last = state.frames[state.frames.length - 1];
+  state.frames.push(JSON.parse(JSON.stringify(last)));
+  state.currentFrame = state.frames.length - 1;
+  state.selected = null;
+  renderFrameManager();
+  render();
+}
+
+function deleteFrame(idx) {
+  if (state.frames.length <= 1) return;
+  state.frames.splice(idx, 1);
+  if (state.currentFrame >= state.frames.length) state.currentFrame = state.frames.length - 1;
+  state.selected = null;
+  renderFrameManager();
+  render();
+}
+
+let _dragFrameIdx = null;
+function onFrameDragStart(e, idx) { _dragFrameIdx = idx; e.dataTransfer.effectAllowed = "move"; }
+function onFrameDragOver(e, idx) {
+  e.preventDefault(); e.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".frame-item").forEach(el => el.classList.remove("drag-over"));
+  const items = document.querySelectorAll(".frame-item");
+  if (items[idx]) items[idx].classList.add("drag-over");
+}
+function onFrameDragLeave(e) { e.currentTarget.classList.remove("drag-over"); }
+function onFrameDrop(e, toIdx) {
+  e.preventDefault();
+  document.querySelectorAll(".frame-item").forEach(el => el.classList.remove("drag-over"));
+  if (_dragFrameIdx === null || _dragFrameIdx === toIdx) { _dragFrameIdx = null; return; }
+  const [moved] = state.frames.splice(_dragFrameIdx, 1);
+  state.frames.splice(toIdx, 0, moved);
+  if      (state.currentFrame === _dragFrameIdx) state.currentFrame = toIdx;
+  else if (_dragFrameIdx < state.currentFrame && toIdx >= state.currentFrame) state.currentFrame--;
+  else if (_dragFrameIdx > state.currentFrame && toIdx <= state.currentFrame) state.currentFrame++;
+  _dragFrameIdx = null;
+  renderFrameManager();
+  render();
+}
+
 // ── LocalStorage ─────────────────────────────────────────────────────────────
 const LS_KEY = "rally-room-editor";
 
@@ -1958,10 +2072,12 @@ function saveToStorage() {
       materials: document.getElementById("f-materials").value,
       summary:   document.getElementById("f-summary").value,
       body:      document.getElementById("f-body").value,
-      court: { players: state.players, arrows: state.arrows, markers: state.markers, zones: state.zones, nextId: state.nextId },
+      court: { frames: state.frames, currentFrame: state.currentFrame, nextId: state.nextId },
     }));
   } catch(e) {}
+  if (!_fmRafPending) { _fmRafPending = true; requestAnimationFrame(() => { renderFrameManager(); _fmRafPending = false; }); }
 }
+let _fmRafPending = false;
 
 function loadFromStorage() {
   try {
@@ -1987,9 +2103,17 @@ function loadFromStorage() {
     document.getElementById("f-body").value      = d.body      || "";
     syncTagDisplays();
     if (d.court) {
-      state.players = d.court.players || []; state.arrows  = d.court.arrows  || [];
-      state.markers = d.court.markers || []; state.zones   = d.court.zones   || [];
-      state.nextId  = d.court.nextId  || 1;
+      if (d.court.frames) {
+        state.frames = d.court.frames.map(f => ({
+          players: f.players||[], arrows: f.arrows||[], markers: f.markers||[], zones: f.zones||[]
+        }));
+        state.currentFrame = d.court.currentFrame || 0;
+        if (state.currentFrame >= state.frames.length) state.currentFrame = 0;
+      } else {
+        state.frames = [{ players: d.court.players||[], arrows: d.court.arrows||[], markers: d.court.markers||[], zones: d.court.zones||[] }];
+        state.currentFrame = 0;
+      }
+      state.nextId = d.court.nextId || 1;
     }
     return true;
   } catch(e) { return false; }
@@ -2072,16 +2196,39 @@ function populateFromParsed(meta, body, rawFm) {
   syncTagDisplays();
   document.getElementById("f-summary").value   = meta.summary || "";
   document.getElementById("f-body").value      = body;
-  state.players = parseYamlList(rawFm, "players");
-  state.arrows  = parseYamlList(rawFm, "arrows");
-  state.markers = parseYamlList(rawFm, "markers");
-  state.zones   = parseYamlList(rawFm, "zones");
-  const nums = [...state.players,...state.arrows,...state.markers,...state.zones]
+  function extractYamlBlock(text, key) {
+    const m = text.match(new RegExp(`^${key}:\\s*\\n((?:[ \\t]+[^\\n]*\\n?)*)`, 'm'));
+    return m ? m[1] : null;
+  }
+  const parsedFrames = [];
+  const f1block = extractYamlBlock(rawFm, "diagram") || rawFm;
+  parsedFrames.push({
+    players: parseYamlList(f1block, "players"),
+    arrows:  parseYamlList(f1block, "arrows"),
+    markers: parseYamlList(f1block, "markers"),
+    zones:   parseYamlList(f1block, "zones"),
+  });
+  let _fi = 2;
+  while (true) {
+    const block = extractYamlBlock(rawFm, `diagram${_fi}`);
+    if (!block) break;
+    parsedFrames.push({
+      players: parseYamlList(block, "players"),
+      arrows:  parseYamlList(block, "arrows"),
+      markers: parseYamlList(block, "markers"),
+      zones:   parseYamlList(block, "zones"),
+    });
+    _fi++;
+  }
+  state.frames = parsedFrames;
+  state.currentFrame = 0;
+  const nums = parsedFrames.flatMap(f => [...f.players,...f.arrows,...f.markers,...f.zones])
     .map(o => o.id).filter(id => typeof id === "string" && id.startsWith("e"))
     .map(id => parseInt(id.slice(1))).filter(n => !isNaN(n));
   state.nextId = nums.length ? Math.max(...nums) + 1 : 1;
   state.selected = null;
   render();
+  renderFrameManager();
   renderMdOverlay();
   buildMdSidebar();
   saveToStorage();
@@ -2299,6 +2446,7 @@ function onTagInput(e) {
 window.addEventListener("storage", e => {
   if (e.key !== LS_KEY) return;
   loadFromStorage();
+  renderFrameManager();
   syncTagDisplays();
   render();
   if (currentTab === "preview") renderPreview();
@@ -2307,6 +2455,7 @@ window.addEventListener("storage", e => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadFromStorage();
+renderFrameManager();
 syncTagDisplays();
 loadSportMeta();
 setTab(HASH_TAB[location.hash] || "court", { pushState: false });

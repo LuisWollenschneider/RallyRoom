@@ -65,6 +65,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
 <div id="court-modal" onclick="closeCourtModal()">
   <div class="court-modal-inner" onclick="event.stopPropagation()">
     <button id="court-modal-close" onclick="closeCourtModal()">✕ Close</button>
+    <div id="court-modal-nav" style="display:none">
+      <button class="frame-nav-btn" onclick="prevModalFrame()">←</button>
+      <span id="frame-nav-counter"></span>
+      <button class="frame-nav-btn" onclick="nextModalFrame()">→</button>
+    </div>
     <div id="court-modal-svg"></div>
   </div>
 </div>

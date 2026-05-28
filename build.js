@@ -5,7 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const COURTS_FILE = path.join(__dirname, "sports", "courts.js");
+const COURTS_FILE = path.join(__dirname, "site", "courts.js");
 const CONTENT_DIR = path.join(__dirname, "content");
 const SITE_DIR = path.join(__dirname, "site");
 const TEMPLATE = path.join(__dirname, "templates", "sport.html");
@@ -55,7 +55,9 @@ function mdToHtml(md, diagram, sport) {
         s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const players = (diagram && diagram.players) || [];
     const zones = (diagram && diagram.zones) || [];
-    const TC = sport ? { A: sport.teamA, B: sport.teamB, W: sport.teamW, T: sport.teamT } : {};
+    const TC = sport
+        ? { A: sport.teamA, B: sport.teamB, W: sport.teamW, T: sport.teamT }
+        : {};
     let s = md;
     s = s.replace(/^(#{1,3} .+)$/gm, "$1\n");
     s = s.replace(
@@ -78,7 +80,11 @@ function mdToHtml(md, diagram, sport) {
     s = s.replace(/\$([^$\n]+)\$/g, '<em class="md-accent">$1</em>');
     s = s.replace(/\{([^}\n]+)\}/g, (_, label) => {
         const p = players.find((pl) => (pl.label || pl.team) === label);
-        const col = p ? (p.team === 'P' ? (p.color || '#888') : (TC[p.team] || '#888')) : '#888';
+        const col = p
+            ? p.team === "P"
+                ? p.color || "#888"
+                : TC[p.team] || "#888"
+            : "#888";
         return `<span class="md-player" style="background:${col}">${esc(label)}</span>`;
     });
     s = s.replace(
@@ -345,7 +351,10 @@ function buildSport(sport) {
         const mdDir = path.join(outDir, "md");
         fs.mkdirSync(mdDir, { recursive: true });
         for (const file of files) {
-            fs.copyFileSync(path.join(contentDir, file), path.join(mdDir, file));
+            fs.copyFileSync(
+                path.join(contentDir, file),
+                path.join(mdDir, file),
+            );
             const raw = fs.readFileSync(path.join(contentDir, file), "utf8");
             const { meta, body } = parseFrontmatter(raw);
             const slug = file.replace(/\.md$/, "");
@@ -373,6 +382,16 @@ function buildSport(sport) {
                       : [],
                 diagram_stage: meta.diagram_stage || meta.stage || "",
                 diagram: meta.diagram || null,
+                frames: (() => {
+                    const fs = [];
+                    if (meta.diagram) fs.push(meta.diagram);
+                    let fi = 2;
+                    while (meta[`diagram${fi}`]) {
+                        fs.push(meta[`diagram${fi}`]);
+                        fi++;
+                    }
+                    return fs;
+                })(),
                 html: mdToHtml(body, meta.diagram, sport),
             });
         }
@@ -381,20 +400,36 @@ function buildSport(sport) {
     entries.sort((a, b) => (b.date > a.date ? 1 : -1));
 
     const meta = {
-        categories: [...new Set(entries.map(e => e.category).filter(Boolean))].sort(),
-        skill_requirements: [...new Set(entries.map(e => e.skill_requirement).filter(Boolean))].sort(),
-        skills_trained: [...new Set(entries.flatMap(e => e.skills_trained || []).filter(Boolean))].sort(),
+        categories: [
+            ...new Set(entries.map((e) => e.category).filter(Boolean)),
+        ].sort(),
+        skill_requirements: [
+            ...new Set(entries.map((e) => e.skill_requirement).filter(Boolean)),
+        ].sort(),
+        skills_trained: [
+            ...new Set(
+                entries.flatMap((e) => e.skills_trained || []).filter(Boolean),
+            ),
+        ].sort(),
         stages: sport.stages || [],
-        materials: [...new Set(entries.flatMap(e => {
-            const m = e.materials;
-            if (!m) return [];
-            if (Array.isArray(m)) return m.filter(x => x != null && x !== "");
-            if (typeof m === "object") return Object.keys(m);
-            return [];
-        }))].sort(),
+        materials: [
+            ...new Set(
+                entries.flatMap((e) => {
+                    const m = e.materials;
+                    if (!m) return [];
+                    if (Array.isArray(m))
+                        return m.filter((x) => x != null && x !== "");
+                    if (typeof m === "object") return Object.keys(m);
+                    return [];
+                }),
+            ),
+        ].sort(),
     };
 
-    fs.writeFileSync(path.join(outDir, "meta.json"), JSON.stringify(meta, null, 2));
+    fs.writeFileSync(
+        path.join(outDir, "meta.json"),
+        JSON.stringify(meta, null, 2),
+    );
     fs.writeFileSync(
         path.join(outDir, "data.json"),
         JSON.stringify(entries, null, 2),
@@ -411,8 +446,6 @@ function copyAssets() {
         const dst = path.join(SITE_DIR, asset);
         if (fs.existsSync(src)) fs.copyFileSync(src, dst);
     }
-    // courts.js is loaded by site/index.html as a script tag
-    fs.copyFileSync(COURTS_FILE, path.join(SITE_DIR, "courts.js"));
     // Copy sport logos
     const logosDir = path.join(__dirname, "logos");
     const logosDst = path.join(SITE_DIR, "logos");
