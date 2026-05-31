@@ -1,0 +1,15 @@
+<svg viewBox="0 0 103 62" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round">
+    <style>
+        .lw-fg { stroke: #f3f1e8; fill: #f3f1e8; }
+    </style>
+    <path d="M4.5 42.5h10c3.333-5.333 1.667-5.333 5 0h4.475c1.087 3.176 2.185 3.602 3.3 0H35.5l4 8 3-36 3.016.757L48.5 45.5l5-3h5c6.667-8 3.333-8 10 0h8.773c1.451 2.34 2.903 2.552 4.354 0h3.666c.378-.991.784-1.088 1.227 0h2.138c.77-.943 1.55-.985 2.342 0h4.5" style="fill:none;fill-rule:nonzero;stroke:#ff5b1f;stroke-width:2.5px"/>
+    <path class="lw-fg" d="M12 11v33c0 6.667 3.333 10 10 10h25" style="fill:none;fill-rule:nonzero;stroke-width:4.5px"/>
+    <path class="lw-fg" d="M51 7.5c3 28 5 43 10 43s5.757-26 10-26c4 0 5 26 10 26s7-15 10-43" style="fill:none;fill-rule:nonzero;stroke-width:4.5px"/>
+    <circle class="lw-fg" cx="12" cy="11" r="4"/>
+    <circle class="lw-fg" cx="47" cy="54" r="4"/>
+    <circle class="lw-fg" cx="51" cy="7.5" r="4"/>
+    <circle class="lw-fg" cx="91" cy="7.5" r="4"/>
+    <circle cx="61" cy="51.5" r="3.5" style="fill:#ff5b1f"/>
+    <circle cx="71" cy="24.5" r="3.5" style="fill:#ff5b1f"/>
+    <circle cx="81" cy="50.5" r="3.5" style="fill:#ff5b1f"/>
+</svg>

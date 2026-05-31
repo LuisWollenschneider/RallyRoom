@@ -114,8 +114,11 @@ body>*:not(.bg-courts){position:relative;z-index:1}
   margin-top:auto;padding:20px 40px;border-top:1px solid var(--border);
   font-size:0.65rem;color:var(--ink-faint);display:flex;align-items:center;gap:12px;
 }
-.site-footer a{color:var(--ink-faint);text-decoration:underline;text-underline-offset:3px}
+.site-footer a{color:var(--ink-faint);text-decoration:none}
 .site-footer a:hover{color:var(--ink-muted)}
+.author-link{display:flex;align-items:center;gap:7px}
+.author-logo{height:20px;width:auto;opacity:0.75}
+.author-link:hover .author-logo{opacity:1}
 
 /* ── Responsive ── */
 @media(max-width:600px){
@@ -184,9 +187,10 @@ body>*:not(.bg-courts){position:relative;z-index:1}
 </div>
 
 <footer class="site-footer">
-  <a href="https://github.com/LuisWollenschneider/RallyRoom" target="_blank">GitHub</a>
-  <span>·</span>
-  <span>By Luis Wollenschneider</span>
+  <a href="https://luiswo.dev" target="_blank" class="author-link">
+    <img src="lw_logo_light.svg" class="author-logo" alt="LW">
+    Luis Wollenschneider
+  </a>
 </footer>
 
 <script src="courts.js"></script>
