@@ -63,16 +63,16 @@ diagram2:
 
 ## Aufbau
 - 2v2
-- Jedes Team hat ein [Balllager B] am Ende seines Feldes.
+- Jedes Team hat ein [Balllager] am Ende seines Feldes.
 - Zu Beginn befinden sich dort je `4` Bälle.
 
 ## Ablauf
 Es werden normale Punkte gespielt.
 
 Wenn ein Fehler passiert, muss der für den Fehler verantwortliche Spieler den Ball umgehend sammeln und in sein [Balllager B] bringen. z.B. {B2}
-In der Zwischenzeit holt sich {A2} einen neuen Ball aus dem [Balllager B] und beginnt umgehend den neuen Punkt. 
+In der Zwischenzeit holt sich {A2} einen neuen Ball aus dem [Balllager] und beginnt umgehend den neuen Punkt. 
 Solange {B2} seinen Ball noch nicht abgelegt hat, darf er am Ballwechsel nicht teilnehmen und {B1} muss alleine verteidigen.
 
 
 ## Ziel
-Das Team, das zuerst sein [Balllager B] leer hat, gewinnt.
+Das Team, das zuerst sein [Balllager] leer hat, gewinnt.
