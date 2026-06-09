@@ -446,13 +446,15 @@ function copyAssets() {
         const dst = path.join(SITE_DIR, asset);
         if (fs.existsSync(src)) fs.copyFileSync(src, dst);
     }
-    // Copy sport logos
-    const logosDir = path.join(__dirname, "logos");
-    const logosDst = path.join(SITE_DIR, "logos");
-    if (fs.existsSync(logosDir)) {
-        fs.mkdirSync(logosDst, { recursive: true });
-        for (const f of fs.readdirSync(logosDir)) {
-            fs.copyFileSync(path.join(logosDir, f), path.join(logosDst, f));
+    // Copy sport logos + downscaled favicons
+    for (const dir of ["logos", "favicons"]) {
+        const srcDir = path.join(__dirname, dir);
+        const dstDir = path.join(SITE_DIR, dir);
+        if (fs.existsSync(srcDir)) {
+            fs.mkdirSync(dstDir, { recursive: true });
+            for (const f of fs.readdirSync(srcDir)) {
+                fs.copyFileSync(path.join(srcDir, f), path.join(dstDir, f));
+            }
         }
     }
 }
