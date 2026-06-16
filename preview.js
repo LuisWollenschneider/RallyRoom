@@ -109,6 +109,14 @@ http.createServer((req, res) => {
 
     let urlPath = req.url.split("?")[0];
 
+    // Mirror GitHub Pages: /pickleball → 301 /pickleball/ so relative URLs resolve
+    if (!urlPath.endsWith("/") && !path.extname(urlPath) &&
+        fs.existsSync(path.join(SITE_DIR, urlPath, "index.html"))) {
+        res.writeHead(301, { Location: urlPath + "/" });
+        res.end();
+        return;
+    }
+
     // Directory index → serve index.html
     if (urlPath.endsWith("/") || urlPath === "") urlPath += "index.html";
 
@@ -121,8 +129,15 @@ http.createServer((req, res) => {
         });
         res.end(data);
     } catch {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not found: " + urlPath);
+        // Mirror GitHub Pages: serve 404.html for unknown paths
+        try {
+            const data = fs.readFileSync(path.join(SITE_DIR, "404.html"));
+            res.writeHead(404, { "Content-Type": MIME[".html"] });
+            res.end(data);
+        } catch {
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            res.end("Not found: " + urlPath);
+        }
     }
 }).listen(PORT, () => {
     console.log(`\nSite:         http://localhost:${PORT}`);

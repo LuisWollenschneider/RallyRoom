@@ -697,6 +697,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     filterEntries();
     const hash=location.hash.slice(1);
     if(hash && allEntries.find(e=>e.slug===hash)) openEntry(hash);
+    else if(hash) history.replaceState(null, "", location.pathname);
   } catch {
     document.getElementById("entry-grid").innerHTML=`<div class="empty">⚠ data.json not found — run: node build.js</div>`;
   }

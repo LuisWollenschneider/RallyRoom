@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <title>Seite nicht gefunden · Rally Room</title>
+        <!-- Resolve assets against the deploy base: /RallyRoom/ on GitHub Pages, / in local preview -->
+        <script>
+            document.write(
+                '<base href="' +
+                    (location.pathname.indexOf("/RallyRoom/") === 0
+                        ? "/RallyRoom/"
+                        : "/") +
+                    '">',
+            );
+        </script>
+        <link rel="icon" type="image/png" href="favicons/rally_room.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap"
+            rel="stylesheet" />
+        <link rel="stylesheet" href="shared.css" />
+        <style>
+            html {
+                font-size: 20px;
+            }
+            body {
+                background: var(--bg);
+                color: var(--ink);
+                font-family: var(--sans);
+                font-weight: 300;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 40px;
+                gap: 8px;
+            }
+            .bg-courts {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 0;
+                overflow: hidden;
+            }
+            .bg-courts svg {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+            body > *:not(.bg-courts) {
+                position: relative;
+                z-index: 1;
+            }
+            .nf-logo {
+                width: 44px;
+                height: 44px;
+                object-fit: contain;
+                margin-bottom: 18px;
+                opacity: 0.9;
+            }
+            .nf-code {
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--ink-faint);
+                margin-bottom: 14px;
+            }
+            .nf-heading {
+                font-family: var(--serif);
+                font-size: 2.4rem;
+                font-weight: 300;
+                font-style: italic;
+                line-height: 1.15;
+                color: var(--ink);
+                margin-bottom: 14px;
+            }
+            .nf-desc {
+                font-size: 0.9rem;
+                color: var(--ink-muted);
+                line-height: 1.7;
+                max-width: 440px;
+                margin-bottom: 28px;
+            }
+            .nf-home {
+                padding: 9px 20px;
+                border-radius: 6px;
+                border: 1px solid var(--border);
+                background: transparent;
+                color: var(--ink-muted);
+                text-decoration: none;
+                font-family: var(--mono);
+                font-size: 0.68rem;
+                letter-spacing: 0.05em;
+                transition: all 0.15s;
+            }
+            .nf-home:hover {
+                color: var(--ink);
+                border-color: var(--ink-faint);
+                background: var(--surface);
+            }
+            @media (max-width: 600px) {
+                .nf-heading {
+                    font-size: 1.8rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="bg-courts" aria-hidden="true">
+            <svg
+                viewBox="0 0 900 1100"
+                preserveAspectRatio="xMidYMid slice"
+                xmlns="http://www.w3.org/2000/svg">
+                <g
+                    transform="translate(60,80) rotate(-9,140,310)"
+                    opacity="0.07"
+                    stroke="white"
+                    fill="none">
+                    <rect
+                        x="0"
+                        y="0"
+                        width="280"
+                        height="610"
+                        stroke-width="2" />
+                    <line x1="35" y1="0" x2="35" y2="610" stroke-width="1.2" />
+                    <line
+                        x1="245"
+                        y1="0"
+                        x2="245"
+                        y2="610"
+                        stroke-width="1.2" />
+                    <line
+                        x1="0"
+                        y1="305"
+                        x2="280"
+                        y2="305"
+                        stroke-width="2.8" />
+                    <line
+                        x1="35"
+                        y1="164"
+                        x2="245"
+                        y2="164"
+                        stroke-width="1.2" />
+                    <line
+                        x1="35"
+                        y1="446"
+                        x2="245"
+                        y2="446"
+                        stroke-width="1.2" />
+                    <line
+                        x1="140"
+                        y1="164"
+                        x2="140"
+                        y2="446"
+                        stroke-width="1.2" />
+                </g>
+                <g
+                    transform="translate(550,-60) rotate(11,110,244)"
+                    opacity="0.055"
+                    stroke="white"
+                    fill="none">
+                    <rect
+                        x="0"
+                        y="0"
+                        width="220"
+                        height="484"
+                        stroke-width="1.8" />
+                    <line
+                        x1="0"
+                        y1="165"
+                        x2="220"
+                        y2="165"
+                        stroke-width="1.2" />
+                    <line
+                        x1="0"
+                        y1="319"
+                        x2="220"
+                        y2="319"
+                        stroke-width="1.2" />
+                    <line
+                        x1="0"
+                        y1="242"
+                        x2="220"
+                        y2="242"
+                        stroke-width="2.5" />
+                    <line
+                        x1="110"
+                        y1="165"
+                        x2="110"
+                        y2="319"
+                        stroke-width="1.2" />
+                </g>
+            </svg>
+        </div>
+
+        <img class="nf-logo" src="logo.png" alt="" />
+        <div class="nf-code">404</div>
+        <h1 class="nf-heading">AUS!</h1>
+        <h2 class="nf-heading">Hoppla, die Suche ging wohl daneben.</h1>
+        <p class="nf-desc">
+            Aber keine Sorge, das passiert selbst den Besten mal. Vielleicht
+            findest du, wonach du suchst, auf dem Center Court. Dort gibt es
+            das Beste vom Besten zu sehen.
+        </p>
+        <a class="nf-home" href="./">← Zum Center Court</a>
+    </body>
+</html>
