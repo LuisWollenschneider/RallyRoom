@@ -29,7 +29,7 @@ function renderDiagram(d, W, H, sfx, rb) {
     const zx=z.x*W, zy=z.y*H, zw=(z.width||.15)*W, zh=(z.height||.15)*H;
     const c=z.color||"#f5e642";
     s+=`<rect x="${zx}" y="${zy}" width="${zw}" height="${zh}" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.5" stroke-dasharray="5,3"/>`;
-    if(z.label) s+=`<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle" fill="${c}" font-size="${W*.04}" font-family="DM Mono,monospace" opacity="0.9">${z.label}</text>`;
+    if(z.label){const lx=zx+zw/2,ly=zy+zh/2,rot=z.rotation||0;s+=`<text x="${lx}" y="${ly}" ${rot?`transform="rotate(${rot},${lx},${ly})"`:""} text-anchor="middle" dominant-baseline="middle" fill="${c}" font-size="${W*.04}" font-family="DM Mono,monospace" opacity="0.9">${z.label}</text>`;}
   });
 
   (d.arrows||[]).forEach(a => {

@@ -933,8 +933,8 @@ function renderCanvas() {
     s += `<rect data-id="${z.id}" data-kind="zone" x="${zx}" y="${zy}" width="${zw}" height="${zh}"
       fill="${col}" fill-opacity="${sel?.35:.18}" stroke="${sel?"#fff":col}" stroke-width="${sel?2:1.5}"
       stroke-dasharray="5,3" style="cursor:pointer"/>`;
-    if (z.label) s += `<text x="${zx+zw/2}" y="${zy+zh/2}" text-anchor="middle" dominant-baseline="middle"
-      fill="${col}" font-size="${VW*.04}" font-family="DM Mono,monospace" style="pointer-events:none">${z.label}</text>`;
+    if (z.label){const lx=zx+zw/2,ly=zy+zh/2,rot=z.rotation||0;s += `<text x="${lx}" y="${ly}" ${rot?`transform="rotate(${rot},${lx},${ly})"`:""} text-anchor="middle" dominant-baseline="middle"
+      fill="${col}" font-size="${VW*.04}" font-family="DM Mono,monospace" style="pointer-events:none">${z.label}</text>`;}
   });
 
   if (state.drawingZone) {
@@ -1073,6 +1073,7 @@ function updateProps() {
     html += `<div class="prop-type">Typ: ${sel.type}</div>`;
   } else if (kind === "zone") {
     html += propField("Label", "label", sel.label||"", "text");
+    html += propField("Rotation (°)", "rotation", sel.rotation||0, "number");
     html += propColor("Farbe", sel.color||"#f5e642");
   } else if (kind === "arrow") {
     const headEnd   = sel.type==="line" ? (sel.headEnd??false)  : (sel.headEnd??true);
