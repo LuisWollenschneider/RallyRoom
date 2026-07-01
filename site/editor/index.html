@@ -1783,8 +1783,8 @@ const slugify = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").rep
 function generateMd() {
   const title   = document.getElementById("f-title").value.trim() || "Neue Übung";
   const players = document.getElementById("f-players").value.trim();
-  const durMin  = document.getElementById("f-dur-min").value.trim() || "0";
-  const durMax  = document.getElementById("f-dur-max").value.trim() || durMin;
+  const durMin  = document.getElementById("f-dur-min").value.trim() || "null";
+  const durMax  = document.getElementById("f-dur-max").value.trim() || "null";
   const halfC   = document.getElementById("f-half-court").checked;
   const summary = document.getElementById("f-summary").value.trim();
   const body    = document.getElementById("f-body").value.trim();

@@ -146,9 +146,11 @@ let favourites=new Set(), filterFavs=false;
 
 function fmtDuration(d) {
   if(!d||typeof d!=="object") return "";
-  if(d.min!=null&&d.max!=null) return d.min===d.max ? `${d.min} min` : `${d.min}-${d.max} min`;
-  if(d.min!=null) return `${d.min}+ min`;
-  if(d.max!=null) return `≤${d.max} min`;
+  // 0 means unset (older editor versions wrote 0 instead of null)
+  const min=d.min||null, max=d.max||null;
+  if(min!=null&&max!=null) return min===max ? `${min} min` : `${min}-${max} min`;
+  if(min!=null) return `${min}+ min`;
+  if(max!=null) return `≤${max} min`;
   return "";
 }
 
@@ -167,7 +169,7 @@ function getFiltered() {
     if(durationMin!==null||durationMax!==null){
       const d=e.duration;
       if(!d||typeof d!=="object") return false;
-      if(durationMin!==null&&(d.max??Infinity)<durationMin) return false;
+      if(durationMin!==null&&(d.max||Infinity)<durationMin) return false;
       if(durationMax!==null&&(d.min??0)>durationMax) return false;
     }
     if(q){
@@ -371,7 +373,7 @@ function countWith(ov) {
     if(durationMin!==null||durationMax!==null){
       const d=e.duration;
       if(!d||typeof d!=="object") return false;
-      if(durationMin!==null&&(d.max??Infinity)<durationMin) return false;
+      if(durationMin!==null&&(d.max||Infinity)<durationMin) return false;
       if(durationMax!==null&&(d.min??0)>durationMax) return false;
     }
     if(q){const hay=[e.title,e.summary,...(e.skills_trained||[])].join(" ").toLowerCase();if(!hay.includes(q))return false;}
@@ -472,6 +474,7 @@ function renderList(entries) {
     const playerIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.03 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>`;
     const clockIcon=`<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
     const isFav=favourites.has(e.slug);
+    const dur=fmtDuration(e.duration);
     const favBtn=`<button class="fav-btn${isFav?' active':''}" onclick="toggleFav('${e.slug.replace(/'/g,"\\'")}',this,event)" aria-label="Favorit" title="Favorit">${STAR_SVG}</button>`;
     return `<a class="entry-card${isFav?' is-fav':''}" href="#${e.slug}">
       <div class="card-top">
@@ -485,7 +488,7 @@ function renderList(entries) {
       ${skills?`<div class="card-skills">${skills}</div>`:""}
       <div class="card-meta">
         ${hasPlayers?`<span style="display:inline-flex;align-items:center;gap:4px">${playerIcon}${e.players}</span>`:""}
-        ${e.duration?`<span style="display:inline-flex;align-items:center;gap:4px">${clockIcon}${fmtDuration(e.duration)}</span>`:""}
+        ${dur?`<span style="display:inline-flex;align-items:center;gap:4px">${clockIcon}${dur}</span>`:""}
         ${(e.stages||[]).length?`<span style="display:inline-flex;align-items:center;gap:3px;margin-left:2px">${stageDots(e.stages)}</span>`:""}
       </div>
     </a>`;
@@ -535,7 +538,7 @@ function openEntry(slug, pushState=true) {
   const hasPlayers = typeof(e.players) !== "object";
   const courtInfoHtml=`
     ${hasPlayers?`<div class="info-row"><span class="info-label">Spieler</span><span class="info-value">${e.players}</span></div>`:""}
-    ${e.duration?`<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${fmtDuration(e.duration)}</span></div>`:""}
+    ${fmtDuration(e.duration)?`<div class="info-row"><span class="info-label">Dauer</span><span class="info-value">${fmtDuration(e.duration)}</span></div>`:""}
     ${e.skill_requirement?`<div class="info-row"><span class="info-label">Skill</span><span class="info-value">${SKILL_LABEL[e.skill_requirement]||e.skill_requirement}</span></div>`:""}
     <div class="info-row"><span class="info-label">Court-Hälfte</span><span class="info-value ${e.half_court?"":"danger"}">${e.half_court?"Ja":"Nein"}</span></div>
     ${(e.stages||[]).length?`<div class="info-row"><span class="info-label">Stufen</span><span class="info-value" style="display:inline-flex;gap:8px;flex-wrap:wrap">${sortStages(e.stages).map(stageBadge).join("")}</span></div>`:""}` ;
