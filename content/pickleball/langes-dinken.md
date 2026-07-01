@@ -8,7 +8,7 @@ skills_trained:
   - Taktik
 half_court: true
 players: 2
-duration: {min: 0, max: 0}
+duration: {min: null, max: null}
 materials:
 
 summary: Von der Grundlinie einen kurzen Ball um wieder in ein Dink-Duell zu gelangen

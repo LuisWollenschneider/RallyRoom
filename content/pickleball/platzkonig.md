@@ -8,7 +8,7 @@ skills_trained:
   - Punkte
 half_court: false
 players: 3+
-duration: {min: 5, max: 10}
+duration: {min: 8, max: 12}
 materials:
 
 summary: Schnelle Punkte mit Fokus auf Drucksituationen seitens des "Platzkönigs".

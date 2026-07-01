@@ -8,7 +8,7 @@ skills_trained:
   - Angriff
 half_court: false
 players: 4
-duration: {min: 0, max: 0}
+duration: {min: 15, max: 20}
 materials:
 
 summary: Nur mit Winnern können Punkte erzielt werden

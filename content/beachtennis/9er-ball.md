@@ -8,7 +8,7 @@ skills_trained:
   - Drucksituation
 half_court: false
 players: 4
-duration: {min: 0, max: 0}
+duration: {min: 4, max: 15}
 materials:
   - Bälle
 summary: Ziel ist es seine Bällevorrat aufzubrauchen.
@@ -79,3 +79,5 @@ Das Team, das zuerst sein [Balllager] leer hat, gewinnt.
 
 ## Trainer Hinweis
 Prinzipiell ist es egal wer vom Team läuft. Wenn {B2} den Fehler gemacht hat und der Ball neben {B1} ankommt, kann auch {B1} laufen.
+
+Falls die Spieler allgemein zu langsam sing, um den Ball zurückzulegen und wieder ins Spiel zu kommen, kann man solange bis der 2te Spieler zurück im Feld ist, die leere Hälfte aus dem Spiel nehmen. D.h. im obigen Beispiel muss {B1} nur seine eigene Hälfte verteidigen, wodurch der Druck auf Team B reduzierter ist.

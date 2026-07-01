@@ -8,7 +8,7 @@ skills_trained:
   - Drucksituation
 half_court: false
 players: 4
-duration: {min: 0, max: 0}
+duration: {min: null, max: null}
 materials:
   - Bälle
 summary: Ziel ist es seine Bällevorrat aufzubrauchen.

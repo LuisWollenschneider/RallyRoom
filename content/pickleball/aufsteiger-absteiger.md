@@ -7,7 +7,7 @@ skills_trained:
   - Punkte
 half_court: true
 players: 
-duration: {min: 30, max: 30}
+duration: {min: 25, max: null}
 materials:
 
 summary: Turnier Format über mehrere Runden

@@ -10,7 +10,7 @@ half_court: false
 stages: [orange, green, yellow]
 diagram_stage: yellow
 players: 4
-duration: {min: 0, max: 10}
+duration: {min: null, max: 10}
 materials:
 
 summary: Einzel zu Doppel im gleichen Punkt

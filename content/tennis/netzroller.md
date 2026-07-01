@@ -11,7 +11,7 @@ half_court: false
 stages: [orange, green, yellow]
 diagram_stage: yellow
 players: 3-4
-duration: {min: 0, max: 10}
+duration: {min: null, max: 10}
 materials:
 
 summary: T-Feld Spiel mit Focus auf Platzabdeckung und Genauigkeit.
