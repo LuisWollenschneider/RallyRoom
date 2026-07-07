@@ -600,7 +600,7 @@ function closeCourtModal() {
 function showView(name, pushState=false) {
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   document.getElementById("view-"+name).classList.add("active");
-  document.body.classList.toggle("entry-view", name==="entry");
+  document.body.classList.toggle("entry-view", name==="entry"||name==="sportabzeichen");
   window.scrollTo(0,0);
   closeSidebar();
   if(pushState && name==="list") { history.pushState(null, "", location.pathname); document.title = SPORT_NAME_LABEL + " • Rally Room"; }
@@ -630,6 +630,7 @@ document.addEventListener("keydown",e=>{
 
 window.addEventListener("popstate", e => {
   if(e.state?.slug) openEntry(e.state.slug, false);
+  else if(e.state && "sa" in e.state) showSportabzeichen(e.state.sa||null, false);
   else { history.replaceState(null, "", location.pathname); document.title = SPORT_NAME_LABEL + " • Rally Room"; showView("list"); }
 });
 
@@ -644,6 +645,213 @@ document.getElementById("main").addEventListener("click", e => {
   e.preventDefault();
   openEntry(slug);
 });
+
+// ── Sportabzeichen ─────────────────────────────────────────────────────────────
+let SA=null, _saVariant=null, _saRows=[];
+const SA_LOCAL=["localhost","127.0.0.1"].includes(location.hostname); // edit affordance only in local preview
+const MEDAL_LABEL={gold:"Gold",silver:"Silber",bronze:"Bronze"};
+const MEDAL_COLOR={gold:"#c9a227",silver:"#9fa6ad",bronze:"#b07a48"};
+
+async function loadSportabzeichen() {
+  try {
+    const r=await fetch("sportabzeichen.json");
+    if(!r.ok) return;
+    SA=await r.json();
+    if(!SA.variants||!SA.variants.length){SA=null;return;}
+    const sec=document.getElementById("sportabzeichen-link-section");
+    if(sec) sec.style.display="";
+  } catch {}
+}
+
+function saLSKey(vid){return `rally_sportabzeichen_${SPORT_ID}_${vid||"single"}`;}
+function saLoadRows(vid){try{return JSON.parse(localStorage.getItem(saLSKey(vid))||"[]");}catch{return[];}}
+function saSaveRows(){try{localStorage.setItem(saLSKey(_saVariant.id),JSON.stringify(_saRows));}catch{}}
+
+function saCols(v){
+  const cols=[];
+  v.exercises.forEach(e=>e.scores.forEach((s,si)=>cols.push({
+    ex:e, key:s.key, max:s.max, colId:e.num+"_"+s.key, first:si===0,
+  })));
+  return cols;
+}
+function saRowTotal(row){return Object.values(row.cells||{}).reduce((t,x)=>t+(+x||0),0);}
+function saMedal(total,thr){
+  if(!thr) return null;
+  if(thr.gold!=null && total>=thr.gold) return "gold";
+  if(thr.silver!=null && total>=thr.silver) return "silver";
+  if(thr.bronze!=null && total>=thr.bronze) return "bronze";
+  return null;
+}
+function medalChip(m){
+  if(!m) return `<span class="sa-medal sa-medal-none">–</span>`;
+  return `<span class="sa-medal" style="--mc:${MEDAL_COLOR[m]}">● ${MEDAL_LABEL[m]}</span>`;
+}
+
+function saOpenCourt(num){
+  const e=_saVariant.exercises.find(x=>x.num===num);
+  if(!e) return;
+  const frames=(e.frames&&e.frames.length)?e.frames:(e.diagram?[e.diagram]:[null]);
+  _modalFrames=frames; _modalFrameIdx=0; _modalStage=e.diagram_stage||null;
+  openCourtModal();
+}
+
+function showSportabzeichen(vid, push=true){
+  if(!SA) return;
+  if(vid===undefined||vid===null){
+    // default to first variant, or a remembered hash target
+    vid = SA.variants[0].id;
+  }
+  const variant = SA.variants.find(v=>String(v.id)===String(vid)) || SA.variants[0];
+  _saVariant = variant;
+  _saRows = saLoadRows(variant.id);
+  renderSportabzeichen(variant);
+  showView("sportabzeichen");
+  document.title = (SA.title||"Sportabzeichen") + " • " + SPORT_NAME_LABEL;
+  if(push){
+    const h = "#sportabzeichen" + (variant.id?("-"+variant.id):"");
+    history.pushState({sa:variant.id??""}, "", h);
+  }
+}
+
+function renderSportabzeichen(v){
+  const multi = SA.variants.length>1;
+  const selector = multi ? `<div class="sa-switch">
+      <span class="sa-switch-label">Stufe</span>
+      <div class="sa-switch-track">${
+        SA.variants.map(x=>`<button class="sa-switch-btn stage-${x.id}${x===v?" active":""}" style="--sc:${x.color}" onclick="showSportabzeichen('${x.id}')">${x.label}</button>`).join("")
+      }</div>
+    </div>` : "";
+
+  const thr=v.thresholds||{};
+  const hasMedals = thr.gold!=null||thr.silver!=null||thr.bronze!=null;
+  const legend = `<div class="sa-medals">
+      ${hasMedals?["gold","silver","bronze"].filter(k=>thr[k]!=null).map(k=>
+        `<div class="sa-medal-card" style="--mc:${MEDAL_COLOR[k]}">
+           <span class="sa-medal-dot"></span>
+           <span class="sa-medal-name">${MEDAL_LABEL[k]}</span>
+           <span class="sa-medal-req">ab <b>${thr[k]}</b></span>
+         </div>`).join(""):""}
+      <div class="sa-medal-card sa-medal-max">
+        <span class="sa-medal-name">Maximal</span>
+        <span class="sa-medal-req"><b>${v.maxTotal}</b> Pkt.</span>
+      </div>
+    </div>`;
+
+  // exercises — rendered like the individual entry detail view
+  const exHtml = v.exercises.map((e,i)=>{
+    const frames=(e.frames&&e.frames.length)?e.frames:(e.diagram?[e.diagram]:[]);
+    const scoreItems=e.scores.map(s=>`<li><span class="sa-score-key">${s.key}</span>${s.max!=null?`<span class="sa-score-max"><b>${s.max}</b> Punkte</span>`:""}</li>`).join("");
+    const scores=e.scores.length?`<div class="sa-scores"><span class="sa-scores-label">Maximalpunkte</span><ul class="sa-score-list">${scoreItems}</ul></div>`:"";
+    const courtWrap=(sfx)=>`<div class="court-wrap" onclick="saOpenCourt(${e.num})" title="Full screen">${entryCycleHtml(frames,sfx+e.num,e.diagram_stage)}</div>`;
+    const inline=frames.length?`<div class="court-inline sa-court-inline">${courtWrap("sai")}</div>`:"";
+    const panel=frames.length?`<div class="court-panel sa-court-panel"><div class="court-panel-label">Court Diagramm</div>${courtWrap("sa")}</div>`:"";
+    return `<div class="sa-ex${frames.length?"":" sa-ex-nocourt"}" style="--ec:${e.color}">
+      <div class="sa-ex-head"><span class="sa-ex-num">${i+1}</span><span class="sa-ex-title">${e.title}</span>${SA_LOCAL?`<a class="sa-ex-edit" href="../editor/?sport=${SPORT_ID}&sa=${e.num}" target="_blank" rel="noopener" title="Lokal bearbeiten">✎ Bearbeiten</a>`:""}</div>
+      ${e.summary?`<div class="sa-ex-summary">${e.summary}</div>`:""}
+      <div class="entry-layout sa-ex-layout">
+        <div>
+          ${inline}
+          <div class="entry-body">${e.html}</div>
+          ${scores}
+        </div>
+        ${panel}
+      </div>
+    </div>`;
+  }).join("");
+
+  // downloads / links — official sports link out only; others offer generated PDFs
+  let actions="";
+  if(SA.officialUrl) actions+=`<a class="sa-btn sa-btn-primary sa-btn-ext" href="${SA.officialUrl}" target="_blank" rel="noopener">Zur offiziellen Seite</a>`;
+  if(v.scoreSheet) actions+=`<a class="sa-btn" href="${v.scoreSheet}" download>⬇ Prüfkarte (PDF)</a>`;
+  if(v.groupScoreSheet) actions+=`<a class="sa-btn" href="${v.groupScoreSheet}" download>⬇ Gruppen-Prüfkarte (PDF)</a>`;
+  if(v.certificate) actions+=`<a class="sa-btn" href="${v.certificate}" download>⬇ Urkunde (PDF)</a>`;
+
+  document.getElementById("sportabzeichen-content").innerHTML=`
+    <div class="sa-header">
+      <h1 class="sa-title">${SA.title||"Sportabzeichen"}</h1>
+      ${SA.intro?`<p class="sa-intro">${SA.intro}</p>`:""}
+      ${selector}
+      ${legend}
+    </div>
+    <div class="sa-exercises">${exHtml}</div>
+    <div class="sa-table-section">
+      <div class="sa-table-head">
+        <h2 class="sa-subtitle">Teilnehmer*innen${multi?` — ${v.label}`:""}</h2>
+        <button class="sa-btn sa-btn-add" onclick="saAddParticipant()">+ Teilnehmer*in</button>
+      </div>
+      <div class="sa-table-wrap">${saTableHtml(v)}</div>
+    </div>
+    ${actions?`<div class="sa-actions">${actions}</div>`:""}
+  `;
+}
+
+function saTableHtml(v){
+  const cols=saCols(v);
+  const thr=v.thresholds;
+  // single header row — key columns grouped by exercise colour + thick separators
+  let head=`<th class="sa-th-name">Name</th>`;
+  cols.forEach(c=>{head+=`<th class="sa-th-key ${c.first?"sa-th-first":""}" style="--ec:${c.ex.color}" title="${c.ex.title.replace(/"/g,"&quot;")}">${c.key}${c.max!=null?`<span class="sa-th-max">${c.max}</span>`:""}</th>`;});
+  head+=`<th class="sa-th-total">Gesamt</th><th class="sa-th-medal">Medaille</th><th class="sa-th-act"></th>`;
+
+  const body = _saRows.map((row,ri)=>{
+    const cells=cols.map(c=>{
+      const val=(row.cells&&row.cells[c.colId]!=null)?row.cells[c.colId]:"";
+      const full=c.max!=null && val!=="" && +val>=c.max;
+      return `<td class="sa-td-cell ${c.first?"sa-td-first":""}${full?" sa-cell-full":""}"><input type="number" min="0" ${c.max!=null?`max="${c.max}"`:""} value="${val}" oninput="saCellInput(${ri},'${c.colId}',this)"/></td>`;
+    }).join("");
+    const total=saRowTotal(row);
+    const medal=saMedal(total,thr);
+    const totalFull=v.maxTotal>0 && total>=v.maxTotal;
+    return `<tr>
+      <td class="sa-td-name"><input type="text" placeholder="Name" value="${(row.name||"").replace(/"/g,"&quot;")}" oninput="saNameInput(${ri},this)"/></td>
+      ${cells}
+      <td class="sa-td-total${totalFull?" sa-total-full":""}">${total}</td>
+      <td class="sa-td-medal" id="sa-medal-${ri}">${medalChip(medal)}</td>
+      <td class="sa-td-act"><button class="sa-del" onclick="saRemoveParticipant(${ri})" title="Entfernen">✕</button></td>
+    </tr>`;
+  }).join("");
+
+  const colCount=cols.length+4;
+  const empty=_saRows.length?"":`<tr><td class="sa-empty" colspan="${colCount}">Noch keine Teilnehmer*innen. Füge oben welche hinzu.</td></tr>`;
+
+  return `<table class="sa-table"><thead><tr>${head}</tr></thead><tbody>${body}${empty}</tbody></table>`;
+}
+
+function saAddParticipant(){
+  _saRows.push({name:"",cells:{}});
+  saSaveRows();
+  document.querySelector(".sa-table-wrap").innerHTML=saTableHtml(_saVariant);
+}
+function saRemoveParticipant(ri){
+  _saRows.splice(ri,1);
+  saSaveRows();
+  document.querySelector(".sa-table-wrap").innerHTML=saTableHtml(_saVariant);
+}
+function saNameInput(ri,el){
+  if(!_saRows[ri]) return;
+  _saRows[ri].name=el.value;
+  saSaveRows();
+}
+function saCellInput(ri,colId,el){
+  const row=_saRows[ri]; if(!row) return;
+  row.cells=row.cells||{};
+  let val=el.value===""?null:Math.max(0,+el.value||0);
+  const max=el.max?+el.max:null;
+  if(val!=null && max!=null && val>max){val=max; el.value=max;}
+  if(val==null) delete row.cells[colId]; else row.cells[colId]=val;
+  saSaveRows();
+  // live-update this cell's full-points highlight
+  const td=el.closest("td");
+  if(td) td.classList.toggle("sa-cell-full", max!=null && val!=null && val>=max);
+  // live-update total + medal for this row
+  const total=saRowTotal(row);
+  const tr=el.closest("tr");
+  const totalTd=tr.querySelector(".sa-td-total");
+  totalTd.textContent=total;
+  totalTd.classList.toggle("sa-total-full", _saVariant.maxTotal>0 && total>=_saVariant.maxTotal);
+  const cell=document.getElementById("sa-medal-"+ri);
+  if(cell) cell.innerHTML=medalChip(saMedal(total,_saVariant.thresholds));
+}
 
 // ── Background court lines ─────────────────────────────────────────────────────
 (function(){
@@ -698,8 +906,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     applyFilterStateToUI();
     updateFavSection();
     filterEntries();
+    await loadSportabzeichen();
     const hash=location.hash.slice(1);
     if(hash && allEntries.find(e=>e.slug===hash)) openEntry(hash);
+    else if(hash.startsWith("sportabzeichen") && SA){
+      const vid=hash.slice("sportabzeichen".length).replace(/^-/,"");
+      showSportabzeichen(vid||null, false);
+    }
     else if(hash) history.replaceState(null, "", location.pathname);
   } catch {
     document.getElementById("entry-grid").innerHTML=`<div class="empty">⚠ data.json not found — run: node build.js</div>`;

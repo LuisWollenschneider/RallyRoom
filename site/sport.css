@@ -299,3 +299,112 @@ body.entry-view #menu-btn{display:none}
   .info-row{font-size:0.7rem}
   #edit-btn{display:none}
 }
+
+/* ── Sportabzeichen ─────────────────────────────────────────────────────────── */
+.chip.chip-sportabzeichen{
+  width:100%;justify-content:center;gap:6px;padding:8px 12px;font-size:0.72rem;
+  border-color:var(--accent-dim);color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 8%,transparent);
+}
+.chip.chip-sportabzeichen:hover{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent)}
+
+#view-sportabzeichen{max-width:1100px}
+.sa-header{margin-bottom:32px}
+.sa-title{font-family:var(--serif);font-weight:600;font-size:2rem;color:var(--ink);margin:0 0 8px}
+.sa-intro{color:var(--ink-muted);font-size:0.9rem;line-height:1.6;max-width:70ch;margin:0 0 20px}
+
+/* prominent stage switch (segmented control) */
+.sa-switch{display:flex;align-items:center;gap:14px;margin:22px 0}
+.sa-switch-label{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint)}
+.sa-switch-track{display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.sa-switch-btn{
+  appearance:none;border:none;cursor:pointer;
+  padding:8px 18px;border-radius:7px;background:transparent;
+  font-family:var(--sans);font-size:0.9rem;font-weight:500;color:var(--ink-muted);
+  transition:all 0.14s;
+}
+.sa-switch-btn:hover{color:var(--ink)}
+.sa-switch-btn.active{background:color-mix(in srgb,var(--sc) 22%,var(--card));color:#fff;box-shadow:inset 0 0 0 1.5px var(--sc)}
+@media(max-width:560px){.sa-switch{flex-direction:column;align-items:flex-start;gap:8px}.sa-switch-track{width:100%;justify-content:space-between}.sa-switch-btn{flex:1;padding:8px 6px}}
+
+/* medal / points requirement cards */
+.sa-medals{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.sa-medal-card{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 15px;border-radius:10px;
+  background:color-mix(in srgb,var(--mc,var(--ink-faint)) 12%,var(--card));
+  border:1px solid color-mix(in srgb,var(--mc,var(--border)) 40%,var(--border));
+  font-family:var(--sans);font-size:0.82rem;color:var(--ink);
+}
+.sa-medal-dot{width:11px;height:11px;border-radius:50%;background:var(--mc);box-shadow:0 0 0 3px color-mix(in srgb,var(--mc) 25%,transparent);flex-shrink:0}
+.sa-medal-name{font-weight:500}
+.sa-medal-req{font-family:var(--mono);font-size:0.72rem;color:var(--ink-muted)}
+.sa-medal-req b{color:var(--ink);font-weight:600;font-size:0.86rem}
+.sa-medal-max{background:var(--surface);border-style:dashed;margin-left:auto}
+@media(max-width:560px){.sa-medal-max{margin-left:0}}
+/* medal chip inside score table */
+.sa-medal{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:0.68rem;font-weight:500;color:var(--mc,var(--ink-muted));white-space:nowrap}
+.sa-medal-none{color:var(--ink-faint)}
+
+.sa-subtitle{font-family:var(--serif);font-weight:600;font-size:1.15rem;color:var(--ink);margin:0}
+
+/* exercises — mirror the individual entry detail view */
+body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
+.sa-exercises{display:flex;flex-direction:column;margin-bottom:40px}
+.sa-ex{padding:32px 0;border-top:1px solid var(--border)}
+.sa-ex:first-child{border-top:none;padding-top:8px}
+.sa-ex-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sa-ex-edit{margin-left:auto;font-family:var(--mono);font-size:0.7rem;color:var(--ink-faint);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;transition:all 0.12s;white-space:nowrap}
+.sa-ex-edit:hover{color:var(--accent);border-color:var(--accent-dim)}
+.sa-ex-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ec,var(--accent));color:#151815;font-family:var(--mono);font-size:0.78rem;font-weight:500;flex-shrink:0}
+.sa-ex-title{font-family:var(--serif);font-size:1.5rem;font-weight:300;font-style:italic;color:var(--ink);line-height:1.2}
+.sa-ex-summary{color:var(--ink-muted);font-size:0.85rem;margin:0 0 18px 38px}
+.sa-ex-layout{align-items:start}
+.sa-court-panel{position:sticky;top:28px}
+.sa-scores{margin-top:20px}
+.sa-scores-label{display:block;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;margin-bottom:8px}
+.sa-score-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.sa-score-list li{display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--ink-muted);padding-left:16px;position:relative}
+.sa-score-list li::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--ec,var(--accent))}
+.sa-score-key{color:var(--ink-muted);font-weight:400}
+.sa-score-max{margin-left:auto;display:flex;align-items:baseline;gap:4px;font-family:var(--mono);font-size:0.8rem;color:var(--ink-faint);white-space:nowrap}
+.sa-score-max b{font-family:var(--serif);font-size:1.35rem;font-weight:600;color:var(--ec,var(--accent));margin-right:2px}
+.sa-ex-nocourt .sa-ex-layout{grid-template-columns:1fr}
+
+/* table */
+.sa-table-section{margin-bottom:32px}
+.sa-table-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sa-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+.sa-table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:0.72rem}
+.sa-table th,.sa-table td{border:1px solid var(--border);padding:0;text-align:center}
+.sa-table thead th{background:var(--surface);color:var(--ink-muted);font-weight:500;padding:6px 8px;white-space:nowrap}
+.sa-th-key{font-size:0.66rem;border-bottom:2px solid color-mix(in srgb,var(--ec) 55%,var(--border)) !important}
+.sa-th-max{display:block;color:var(--ink-faint);font-weight:400;font-size:0.9em;margin-top:1px}
+.sa-th-name,.sa-td-name{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;min-width:120px}
+.sa-td-name{background:var(--card)}
+.sa-th-total,.sa-th-medal{color:var(--ink)}
+/* thick separator between exercise groups */
+.sa-th-first,.sa-td-first{border-left:3px solid var(--ec,var(--ink-faint)) !important}
+.sa-td-total{font-weight:600;color:var(--accent);min-width:48px}
+/* full-points highlight */
+.sa-cell-full{background:color-mix(in srgb,#4caf6e 22%,transparent)}
+.sa-cell-full input{color:#8fe0a8;font-weight:600}
+.sa-total-full{background:color-mix(in srgb,#4caf6e 26%,transparent);color:#8fe0a8}
+.sa-td-medal{min-width:78px}
+.sa-table td input{width:100%;box-sizing:border-box;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:0.74rem;text-align:center;padding:7px 4px;-moz-appearance:textfield}
+.sa-td-name input{text-align:left;padding-left:8px}
+.sa-table td input:focus{outline:none;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.sa-table td input::-webkit-outer-spin-button,.sa-table td input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sa-td-cell{min-width:52px}
+.sa-del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:0.8rem;padding:6px 8px;transition:color 0.12s}
+.sa-del:hover{color:var(--red)}
+.sa-empty{color:var(--ink-faint);padding:18px !important;font-family:var(--sans);font-size:0.82rem}
+
+/* buttons / actions */
+.sa-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--ink-muted);font-family:var(--mono);font-size:0.72rem;cursor:pointer;text-decoration:none;transition:all 0.12s}
+.sa-btn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.sa-btn-ext::after{content:"↗";font-size:0.9em;opacity:0.8}
+.sa-btn-primary{border-color:var(--accent-dim);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.sa-btn-primary:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:var(--accent)}
+.sa-btn-add{background:color-mix(in srgb,var(--accent) 8%,transparent);border-color:var(--accent-dim);color:var(--accent)}
+.sa-actions{display:flex;flex-wrap:wrap;gap:10px;padding-top:8px;border-top:1px solid var(--border)}

@@ -456,6 +456,12 @@ a.btn-ghost{text-decoration:none}
       <input id="f-summary" class="field-input" type="text" placeholder="Einzeiler für die Übersicht" oninput="onFormChange()"/>
     </div>
 
+    <div class="field-section" id="sa-section" style="display:none">
+      <div class="field-label">Wertungen (Sportabzeichen)</div>
+      <div id="sa-scores-rows"></div>
+      <button class="chip-btn" type="button" onclick="saAddScore()" style="margin-top:6px">+ Wertung</button>
+    </div>
+
     <div class="field-section">
       <div class="field-label">Kategorie<span class="req">*</span></div>
       <div class="chip-group" id="cat-group">
@@ -719,6 +725,60 @@ let currentStages       = [];
 let currentDiagramStage = "yellow";
 let currentTab      = "court";
 let TC = getTCFor("tennis");
+
+// ── Sportabzeichen mode (local editing of content/{sport}/sportabzeichen/N.md) ──
+let saMode = null;   // { sport, file } when editing a Sportabzeichen exercise
+let saScores = [];   // [{ key, max }]
+function renderSaScores() {
+  const wrap = document.getElementById("sa-scores-rows");
+  if (!wrap) return;
+  wrap.innerHTML = saScores.length ? saScores.map((s, i) => `
+    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+      <input class="field-input" placeholder="Name (z.B. VH)" value="${(s.key||"").replace(/"/g,"&quot;")}" oninput="saScores[${i}].key=this.value;onFormChange()"/>
+      <input class="field-input" type="number" min="0" placeholder="max" value="${s.max??""}" style="max-width:78px" oninput="saScores[${i}].max=this.value===''?null:+this.value;onFormChange()"/>
+      <button class="chip-btn" type="button" style="color:var(--red)" onclick="saRemoveScore(${i})">✕</button>
+    </div>`).join("") : `<div style="font-size:0.8rem;color:var(--ink-faint)">Noch keine Wertungen.</div>`;
+}
+function saAddScore() { saScores.push({ key: "", max: null }); renderSaScores(); onFormChange(); }
+function saRemoveScore(i) { saScores.splice(i, 1); renderSaScores(); onFormChange(); }
+function saNormalizeScores(raw) {
+  return (raw || []).map(s => {
+    if (typeof s === "string") {
+      const ci = s.indexOf(":");
+      if (ci === -1) return { key: s.trim(), max: null };
+      const n = Number(s.slice(ci + 1).trim());
+      return { key: s.slice(0, ci).trim(), max: isNaN(n) ? null : n };
+    }
+    if (s && typeof s === "object") { const k = Object.keys(s)[0]; return { key: k, max: s[k] }; }
+    return { key: String(s), max: null };
+  });
+}
+function enterSaMode(sport, file) {
+  saMode = { sport, file };
+  setSport(sport);
+  document.getElementById("sa-section").style.display = "";
+  // hide fields irrelevant to Sportabzeichen exercises
+  ["f-players", "f-dur-min", "f-half-court", "f-skills", "f-materials"].forEach(id => {
+    const sec = document.getElementById(id)?.closest(".field-section"); if (sec) sec.style.display = "none";
+  });
+  ["cat-group", "skill-group"].forEach(id => {
+    const sec = document.getElementById(id)?.closest(".field-section"); if (sec) sec.style.display = "none";
+  });
+  const ap = document.getElementById("stufe-applies-group");
+  if (ap) { ap.style.display = "none"; if (ap.previousElementSibling) ap.previousElementSibling.style.display = "none"; }
+  document.getElementById("btn-download").style.display = "none";
+  const submitBtn = document.querySelector(".btn-submit"); if (submitBtn) submitBtn.style.display = "none";
+  document.getElementById("btn-save").style.display = isLocal ? "" : "none";
+  const tt = document.querySelector(".top-title"); if (tt) tt.textContent = "Sportabzeichen · " + file.replace(/\.md$/, "");
+  loadSaFile(sport, file);
+}
+async function loadSaFile(sport, file) {
+  try {
+    const r = await fetch(`/api/load?sport=${sport}&dir=sportabzeichen&file=${file}`);
+    if (!r.ok) throw new Error();
+    loadMdText(await r.text(), file);
+  } catch { showToast("⚠ Neue Übung " + file); saScores = []; renderSaScores(); }
+}
 
 function getTCFor(id) {
   const s = SPORT_MAP[id];
@@ -1789,6 +1849,24 @@ function generateMd() {
   const summary = document.getElementById("f-summary").value.trim();
   const body    = document.getElementById("f-body").value.trim();
 
+  if (saMode) {
+    const stageLine = (SPORT_MAP[currentSport]?.stages?.length && currentDiagramStage)
+      ? `\nstage: ${currentDiagramStage}` : "";
+    const scoresYaml = saScores.filter(s => (s.key || "").trim())
+      .map(s => `  - ${s.key.trim()}: ${s.max ?? 0}`).join("\n");
+    const diagramsYaml = state.frames.map((_, i) => `${i === 0 ? "diagram" : `diagram${i + 1}`}:\n${diagramYaml(i)}`).join("\n");
+    return `---
+title: ${title}${stageLine}
+summary: ${summary}
+scores:
+${scoresYaml}
+${diagramsYaml}
+---
+
+${body || "Beschreibe die Übung hier."}
+`;
+  }
+
   const trainList = document.getElementById("f-skills").value.split(",").map(s=>s.trim()).filter(Boolean);
   const matList   = document.getElementById("f-materials").value.split(",").map(s=>s.trim()).filter(Boolean);
 
@@ -1838,6 +1916,18 @@ if (isLocal) {
 async function saveMd(overwrite = false) {
   const title = document.getElementById("f-title").value.trim();
   if (!title) { showToast("⚠ Titel erforderlich"); return; }
+  if (saMode) {
+    try {
+      const res = await fetch("/api/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sport: saMode.sport, dir: "sportabzeichen", filename: saMode.file, content: generateMd(), overwrite: true }),
+      });
+      if (res.ok) { showToast("✓ Gespeichert — rebuild läuft…"); return; }
+      showToast("✗ " + await res.text());
+    } catch (e) { showToast("✗ " + e.message); }
+    return;
+  }
   const filename = slugify(title) + ".md";
   try {
     const res = await fetch("/api/save", {
@@ -2144,8 +2234,11 @@ function parseYamlList(text, key) {
       const colon = pair.indexOf(":");
       if (colon === -1) return;
       const k = pair.slice(0, colon).trim();
-      let v = pair.slice(colon + 1).trim().replace(/^['"]|['"]$/g, "");
-      if (v === "true") v = true; else if (v === "false") v = false;
+      const rawV = pair.slice(colon + 1).trim();
+      const quoted = /^['"].*['"]$/.test(rawV);
+      let v = rawV.replace(/^['"]|['"]$/g, "");
+      if (quoted) { /* keep as string, e.g. text "+1" */ }
+      else if (v === "true") v = true; else if (v === "false") v = false;
       else if (v !== "" && !isNaN(v)) v = Number(v);
       obj[k] = v;
     });
@@ -2197,6 +2290,7 @@ function populateFromParsed(meta, body, rawFm) {
   syncTagDisplays();
   document.getElementById("f-summary").value   = meta.summary || "";
   document.getElementById("f-body").value      = body;
+  if (saMode) { saScores = saNormalizeScores(meta.scores); renderSaScores(); }
   function extractYamlBlock(text, key) {
     const m = text.match(new RegExp(`^${key}:\\s*\\n((?:[ \\t]+[^\\n]*\\n?)*)`, 'm'));
     return m ? m[1] : null;
@@ -2461,10 +2555,21 @@ syncTagDisplays();
 loadSportMeta();
 setTab(HASH_TAB[location.hash] || "court", { pushState: false });
 
+// URL param: ?sport=tennis&sa=1 → edit Sportabzeichen exercise N (local preview only)
+(() => {
+  const p = new URLSearchParams(location.search);
+  const pSport = p.get("sport"), pSa = p.get("sa");
+  if (pSa === null || !pSport || !SPORT_MAP[pSport]) return;
+  const file = pSa.endsWith(".md") ? pSa : pSa + ".md";
+  history.replaceState(null, "", location.pathname);
+  enterSaMode(pSport, file);
+})();
+
 // URL param: ?sport=tennis&slug=winner → prompt to load entry
 (async () => {
   const p = new URLSearchParams(location.search);
   const pSport = p.get("sport"), pSlug = p.get("slug");
+  if (p.get("sa") !== null) return;
   if (!pSport || !pSlug || !SPORT_MAP[pSport]) return;
   setSport(pSport);
   let title = pSlug;

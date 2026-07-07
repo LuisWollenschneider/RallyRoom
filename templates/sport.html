@@ -83,6 +83,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
 
   <hr/>
 
+  <div class="sb-section" id="sportabzeichen-link-section" style="display:none">
+    <button class="chip chip-sportabzeichen" onclick="showSportabzeichen()">🏅 Sportabzeichen</button>
+  </div>
+
   <input id="search" type="text" placeholder="Suche…" oninput="filterEntries()"/>
 
   <div class="sb-section" id="fav-section" style="display:none">
@@ -173,6 +177,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
       <a id="edit-btn" class="back-btn" style="margin-bottom:0;color:var(--accent);text-decoration:none" href="#" target="_blank" rel="noopener">Bearbeiten</a>
     </div>
     <div id="entry-content"></div>
+  </div>
+
+  <div id="view-sportabzeichen" class="view">
+    <button class="back-btn" onclick="showView('list',true)">← Zurück zur Übersicht</button>
+    <div id="sportabzeichen-content"></div>
   </div>
 </main>
 

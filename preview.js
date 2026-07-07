@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SITE_DIR = path.join(__dirname, "site");
 const CONTENT_DIR = path.join(__dirname, "content");
 const SPORTS_DIR = path.join(__dirname, "sports");
@@ -51,6 +51,7 @@ watchDirs.forEach((dir) => {
 });
 
 const SPORT_IDS = ["pickleball", "tennis", "beachtennis", "padel"];
+const SUBDIRS = ["", "sportabzeichen"]; // allowed content subfolders for load/save
 
 http.createServer((req, res) => {
     // ── POST /api/save — write .md to content/{sport}/ ──
@@ -59,13 +60,13 @@ http.createServer((req, res) => {
         req.on("data", chunk => (body += chunk));
         req.on("end", () => {
             try {
-                const { sport, filename, content, overwrite } = JSON.parse(body);
-                if (!SPORT_IDS.includes(sport) || !filename || !/^[\w-]+\.md$/.test(filename)) {
+                const { sport, dir, filename, content, overwrite } = JSON.parse(body);
+                if (!SPORT_IDS.includes(sport) || !filename || !/^[\w-]+\.md$/.test(filename) || !SUBDIRS.includes(dir || "")) {
                     res.writeHead(400, { "Content-Type": "text/plain" });
-                    res.end("Invalid sport or filename");
+                    res.end("Invalid sport, dir or filename");
                     return;
                 }
-                const sportDir = path.join(CONTENT_DIR, sport);
+                const sportDir = path.join(CONTENT_DIR, sport, dir || "");
                 const filePath = path.join(sportDir, filename);
                 if (!overwrite && fs.existsSync(filePath)) {
                     res.writeHead(409, { "Content-Type": "application/json" });
@@ -90,12 +91,13 @@ http.createServer((req, res) => {
         const params = new URL(req.url, "http://localhost").searchParams;
         const sport = params.get("sport");
         const file  = params.get("file");
-        if (!SPORT_IDS.includes(sport) || !/^[\w-]+\.md$/.test(file)) {
+        const dir   = params.get("dir") || "";
+        if (!SPORT_IDS.includes(sport) || !/^[\w-]+\.md$/.test(file) || !SUBDIRS.includes(dir)) {
             res.writeHead(400, { "Content-Type": "text/plain" });
-            res.end("Invalid sport or filename");
+            res.end("Invalid sport, dir or filename");
             return;
         }
-        const filePath = path.join(CONTENT_DIR, sport, file);
+        const filePath = path.join(CONTENT_DIR, sport, dir, file);
         try {
             const data = fs.readFileSync(filePath, "utf8");
             res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });

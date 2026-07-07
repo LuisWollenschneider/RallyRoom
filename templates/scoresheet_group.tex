@@ -1,0 +1,65 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,landscape,top=10mm,bottom=10mm,left=10mm,right=10mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\definecolor{ink}{HTML}{2A2018}
+\definecolor{soft}{HTML}{8A7A66}
+\definecolor{rule}{HTML}{CFC6BA}
+\definecolor{paper}{HTML}{F7F3EC}
+\definecolor{accent}{HTML}{{{ACCENT}}}
+\arrayrulecolor{rule}
+% Vertically centre content of tabularx X columns (the Name column) instead of
+% the default top alignment, so its label sits centred like the other corners.
+\renewcommand\tabularxcolumn[1]{m{#1}}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\color{ink}
+
+% Fillable fields (borderless, transparent so table rules/fills show through).
+\newcommand{\gfield}[3]{%
+  \TextField[name=#1,width=#2,height=#3,borderwidth=0pt,bordercolor={1 1 1},%
+    color={0.165 0.125 0.094},charsize=10pt,align=1]{}}
+\newcommand{\gfieldl}[3]{%
+  \TextField[name=#1,width=#2,height=#3,borderwidth=0pt,bordercolor={1 1 1},%
+    color={0.165 0.125 0.094},charsize=10pt]{}}
+
+\begin{document}
+\begin{Form}
+
+% ── Header ──────────────────────────────────────────────────────────────────
+\begin{minipage}[c]{18mm}{{LOGO}}\end{minipage}%
+\hspace{3mm}%
+\begin{minipage}[c]{0.62\linewidth}
+  {\LARGE\bfseries {{TITLE}}}
+\end{minipage}\hfill
+\begin{minipage}[c]{34mm}\raggedleft
+  \setlength{\fboxsep}{3pt}%
+  \colorbox{accent}{\makebox[30mm][c]{\rule[-1.5mm]{0pt}{5mm}\color{white}\small\textbf{Gruppen-Prüfkarte}}}
+\end{minipage}
+
+\vspace{2.5mm}
+{\color{accent}\rule{\linewidth}{1.6pt}}
+
+\vspace{2mm}
+{\footnotesize\color{soft}Punkte je Wertung eintragen — Ziel: {{MAXTOTAL}} Punkte insgesamt.\quad Auszeichnung: {{THRESHOLDS}}}
+
+\vspace{3mm}
+{{TABLE}}
+
+\vfill
+{\color{rule}\rule{\linewidth}{0.3pt}}\\[1.5mm]
+{\footnotesize\color{soft}Datum: }\gfieldl{grp_datum}{32mm}{5mm}\qquad
+{\footnotesize\color{soft}Unterschrift Prüfer*in: }\gfieldl{grp_pruefer}{52mm}{5mm}
+
+\end{Form}
+\end{document}

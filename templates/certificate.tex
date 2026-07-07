@@ -1,0 +1,53 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper,landscape,margin=18mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{ink}{HTML}{2A2018}
+\definecolor{gold}{HTML}{C9A227}
+\definecolor{soft}{HTML}{8A7A66}
+\definecolor{accent}{HTML}{{{ACCENT}}}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\color{ink}
+
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[accent,line width=2pt]
+    ($(current page.north west)+(14mm,-14mm)$) rectangle
+    ($(current page.south east)+(-14mm,14mm)$);
+  \draw[accent,line width=0.6pt]
+    ($(current page.north west)+(17mm,-17mm)$) rectangle
+    ($(current page.south east)+(-17mm,17mm)$);
+\end{tikzpicture}
+
+\vspace*{6mm}
+\begin{center}
+  {{LOGO}}\\[6mm]
+
+  {\Huge\bfseries Urkunde}\\[4mm]
+  {\color{accent}\rule{60mm}{1.6pt}}\\[16mm]
+
+  {\large Verliehen an}\\[8mm]
+  {\Large\rule{110mm}{0.5pt}}\\[2mm]
+  {\footnotesize\color{soft} Name}\\[14mm]
+
+  {\normalsize für das erfolgreiche Ablegen der Prüfung}\\[3mm]
+  {\large\bfseries {{TITLE}}}\\[10mm]
+
+  {\normalsize\color{soft} Auszeichnung: {{THRESHOLDS}}}\\[16mm]
+
+  \begin{minipage}{55mm}\centering
+    \rule{50mm}{0.4pt}\\[1mm]{\footnotesize Datum}
+  \end{minipage}\hspace{20mm}
+  \begin{minipage}{55mm}\centering
+    \rule{50mm}{0.4pt}\\[1mm]{\footnotesize Unterschrift}
+  \end{minipage}
+\end{center}
+
+\end{document}

@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,portrait,top=10mm,bottom=9mm,left=14mm,right=14mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\definecolor{ink}{HTML}{2A2018}
+\definecolor{soft}{HTML}{8A7A66}
+\definecolor{rule}{HTML}{CFC6BA}
+\definecolor{paper}{HTML}{F7F3EC}
+\definecolor{accent}{HTML}{{{ACCENT}}}
+\definecolor{gold}{HTML}{C9A227}
+\definecolor{silver}{HTML}{9AA0A6}
+\definecolor{bronze}{HTML}{B08D57}
+\arrayrulecolor{rule}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\color{ink}
+
+% A blank framed box to write a value into: {width}{height}
+\newcommand{\writebox}[2]{%
+  \setlength{\fboxsep}{0pt}%
+  \fcolorbox{rule}{white}{\makebox[#1]{\rule[-2mm]{0pt}{#2}}}}
+% A rounded-ish label chip: {color}{text}
+\newcommand{\chip}[2]{%
+  \setlength{\fboxsep}{2pt}%
+  \colorbox{#1}{\makebox[6mm][c]{\rule[-1.2mm]{0pt}{4mm}}\color{white}\small\textbf{#2}\makebox[3mm]{}}}
+
+% ── Fillable AcroForm fields ─────────────────────────────────────────────────
+% Fields live in normal flow so their widget rectangles land exactly where
+% drawn and stay clickable. (borderwidth=0 + a set bordercolor suppresses the
+% viewer's default red frame.)
+% Bordered numeric entry — looks like the framed score box: {name}{width}{height}
+\newcommand{\finput}[3]{%
+  \TextField[name=#1,width=#2,height=#3,borderwidth=0.6pt,%
+    bordercolor={0.812 0.776 0.729},backgroundcolor={1 1 1},%
+    color={0.165 0.125 0.094},charsize=11pt,align=1]{}}
+% Borderless text input with an underline rule drawn back under it: {name}{width}
+\newcommand{\fline}[2]{%
+  \TextField[name=#1,width=#2,height=5mm,borderwidth=0pt,bordercolor={1 1 1},%
+    color={0.165 0.125 0.094},charsize=11pt]{}%
+  \kern-#2{\color{rule}\rule[-0.8mm]{#2}{0.5pt}}}
+% Bordered checkbox: {name}
+\newcommand{\fcheckbox}[1]{%
+  \CheckBox[name=#1,width=5mm,height=5mm,borderwidth=0.6pt,%
+    bordercolor={0.812 0.776 0.729},backgroundcolor={1 1 1}]{}}
+
+\begin{document}
+\begin{Form}
+
+% ── Header ──────────────────────────────────────────────────────────────────
+\begin{minipage}[c]{18mm}{{LOGO}}\end{minipage}%
+\hspace{3mm}%
+\begin{minipage}[c]{0.70\linewidth}
+  {\LARGE\bfseries {{TITLE}}}
+\end{minipage}\hfill
+\begin{minipage}[c]{24mm}\raggedleft
+  \setlength{\fboxsep}{3pt}%
+  \colorbox{accent}{\makebox[20mm][c]{\rule[-1.5mm]{0pt}{5mm}\color{white}\small\textbf{Prüfkarte}}}
+\end{minipage}
+
+\vspace{2.5mm}
+{\color{accent}\rule{\linewidth}{1.6pt}}
+
+% ── Participant bar ─────────────────────────────────────────────────────────
+\vspace{2.5mm}
+\setlength{\fboxsep}{2.5mm}%
+\colorbox{paper}{\begin{minipage}{\dimexpr\linewidth-5mm\relax}
+  {\footnotesize\color{soft}TEILNEHMER*IN}\\[4.5mm]
+  \fline{name}{0.90\linewidth}\\[1mm]
+  {\footnotesize\color{soft}Name}
+\end{minipage}}
+
+\vspace{3mm}
+{\large\bfseries Stationen}\hfill
+{\footnotesize\color{soft}Punkte je Station eintragen — Ziel: {{MAXTOTAL}} Punkte insgesamt}\\[1mm]
+{\color{rule}\rule{\linewidth}{0.3pt}}
+
+% ── Exercise cards ──────────────────────────────────────────────────────────
+{{BODY}}
+
+% ── Result ──────────────────────────────────────────────────────────────────
+\vfill
+{\color{accent}\rule{\linewidth}{1.6pt}}\\[2mm]
+\begin{minipage}[c]{0.42\linewidth}
+  {\footnotesize\color{soft}GESAMTPUNKTZAHL}\\[2mm]
+  {\finput{total}{26mm}{12mm}}\hspace{2mm}{\LARGE\bfseries / {{MAXTOTAL}}}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\raggedleft
+  {\footnotesize\color{soft}AUSZEICHNUNG}\\[2mm]
+  {{MEDALS}}
+\end{minipage}
+
+\vspace{2mm}
+{\color{rule}\rule{\linewidth}{0.3pt}}\\[1.5mm]
+{\footnotesize\color{soft}Datum: }\fline{sig_datum}{32mm}\qquad
+{\footnotesize\color{soft}Unterschrift Prüfer*in: }\fline{sig_pruefer}{52mm}
+
+\end{Form}
+\end{document}
