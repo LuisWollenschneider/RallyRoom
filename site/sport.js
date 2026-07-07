@@ -601,6 +601,7 @@ function showView(name, pushState=false) {
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   document.getElementById("view-"+name).classList.add("active");
   document.body.classList.toggle("entry-view", name==="entry"||name==="sportabzeichen");
+  document.body.classList.remove("sa-table-open");
   window.scrollTo(0,0);
   closeSidebar();
   if(pushState && name==="list") { history.pushState(null, "", location.pathname); document.title = SPORT_NAME_LABEL + " • Rally Room"; }
@@ -609,7 +610,7 @@ function showView(name, pushState=false) {
 function toggleSidebar(){document.body.classList.toggle("sidebar-open")}
 function closeSidebar(){document.body.classList.remove("sidebar-open")}
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeCourtModal();closeMaterialsModal();closeSidebar();}
+  if(e.key==="Escape"){closeCourtModal();closeMaterialsModal();closeSidebar();saCloseTable();}
   if(document.getElementById("court-modal").classList.contains("open")){
     if(e.key==="ArrowLeft"){e.preventDefault();prevModalFrame();}
     if(e.key==="ArrowRight"){e.preventDefault();nextModalFrame();}
@@ -651,6 +652,8 @@ let SA=null, _saVariant=null, _saRows=[];
 const SA_LOCAL=["localhost","127.0.0.1"].includes(location.hostname); // edit affordance only in local preview
 const MEDAL_LABEL={gold:"Gold",silver:"Silber",bronze:"Bronze"};
 const MEDAL_COLOR={gold:"#c9a227",silver:"#9fa6ad",bronze:"#b07a48"};
+const SA_DL_ICON=`<svg class="sa-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>`;
+const SA_TABLE_ICON=`<svg class="sa-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>`;
 
 async function loadSportabzeichen() {
   try {
@@ -762,9 +765,9 @@ function renderSportabzeichen(v){
   // downloads / links — official sports link out only; others offer generated PDFs
   let actions="";
   if(SA.officialUrl) actions+=`<a class="sa-btn sa-btn-primary sa-btn-ext" href="${SA.officialUrl}" target="_blank" rel="noopener">Zur offiziellen Seite</a>`;
-  if(v.scoreSheet) actions+=`<a class="sa-btn" href="${v.scoreSheet}" download>⬇ Prüfkarte (PDF)</a>`;
-  if(v.groupScoreSheet) actions+=`<a class="sa-btn" href="${v.groupScoreSheet}" download>⬇ Gruppen-Prüfkarte (PDF)</a>`;
-  if(v.certificate) actions+=`<a class="sa-btn" href="${v.certificate}" download>⬇ Urkunde (PDF)</a>`;
+  if(v.scoreSheet) actions+=`<a class="sa-btn" href="${v.scoreSheet}" download>${SA_DL_ICON}Prüfkarte (PDF)</a>`;
+  if(v.groupScoreSheet) actions+=`<a class="sa-btn" href="${v.groupScoreSheet}" download>${SA_DL_ICON}Gruppen-Prüfkarte (PDF)</a>`;
+  if(v.certificate) actions+=`<a class="sa-btn" href="${v.certificate}" download>${SA_DL_ICON}Urkunde (PDF)</a>`;
 
   document.getElementById("sportabzeichen-content").innerHTML=`
     <div class="sa-header">
@@ -774,16 +777,24 @@ function renderSportabzeichen(v){
       ${legend}
     </div>
     <div class="sa-exercises">${exHtml}</div>
-    <div class="sa-table-section">
+    <div class="sa-table-section" id="sa-table-section">
       <div class="sa-table-head">
         <h2 class="sa-subtitle">Teilnehmer*innen${multi?` — ${v.label}`:""}</h2>
-        <button class="sa-btn sa-btn-add" onclick="saAddParticipant()">+ Teilnehmer*in</button>
+        <div class="sa-table-head-btns">
+          <button class="sa-btn sa-btn-add" onclick="saAddParticipant()">+ Teilnehmer*in</button>
+          <button class="sa-btn sa-table-close" onclick="saCloseTable()" aria-label="Tabelle schließen">✕ Schließen</button>
+        </div>
       </div>
       <div class="sa-table-wrap">${saTableHtml(v)}</div>
     </div>
     ${actions?`<div class="sa-actions">${actions}</div>`:""}
+    <button class="sa-table-fab" onclick="saOpenTable()">${SA_TABLE_ICON}Punktetabelle</button>
   `;
 }
+
+// mobile: table lives in a full-screen overlay so it can't widen the page
+function saOpenTable(){document.body.classList.add("sa-table-open");}
+function saCloseTable(){document.body.classList.remove("sa-table-open");}
 
 function saTableHtml(v){
   const cols=saCols(v);
@@ -797,7 +808,7 @@ function saTableHtml(v){
     const cells=cols.map(c=>{
       const val=(row.cells&&row.cells[c.colId]!=null)?row.cells[c.colId]:"";
       const full=c.max!=null && val!=="" && +val>=c.max;
-      return `<td class="sa-td-cell ${c.first?"sa-td-first":""}${full?" sa-cell-full":""}"><input type="number" min="0" ${c.max!=null?`max="${c.max}"`:""} value="${val}" oninput="saCellInput(${ri},'${c.colId}',this)"/></td>`;
+      return `<td class="sa-td-cell ${c.first?"sa-td-first":""}${full?" sa-cell-full":""}"><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" ${c.max!=null?`max="${c.max}"`:""} value="${val}" oninput="saCellInput(${ri},'${c.colId}',this)"/></td>`;
     }).join("");
     const total=saRowTotal(row);
     const medal=saMedal(total,thr);

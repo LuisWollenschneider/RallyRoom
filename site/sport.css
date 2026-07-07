@@ -330,7 +330,7 @@ body.entry-view #menu-btn{display:none}
 /* medal / points requirement cards */
 .sa-medals{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .sa-medal-card{
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 8px;max-width:100%;
   padding:9px 15px;border-radius:10px;
   background:color-mix(in srgb,var(--mc,var(--ink-faint)) 12%,var(--card));
   border:1px solid color-mix(in srgb,var(--mc,var(--border)) 40%,var(--border));
@@ -341,7 +341,7 @@ body.entry-view #menu-btn{display:none}
 .sa-medal-req{font-family:var(--mono);font-size:0.72rem;color:var(--ink-muted)}
 .sa-medal-req b{color:var(--ink);font-weight:600;font-size:0.86rem}
 .sa-medal-max{background:var(--surface);border-style:dashed;margin-left:auto}
-@media(max-width:560px){.sa-medal-max{margin-left:0}}
+@media(max-width:780px){.sa-medal-max{margin-left:0}.sa-medals{gap:8px}.sa-medal-card{padding:8px 12px;font-size:0.8rem}}
 /* medal chip inside score table */
 .sa-medal{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:0.68rem;font-weight:500;color:var(--mc,var(--ink-muted));white-space:nowrap}
 .sa-medal-none{color:var(--ink-faint)}
@@ -353,7 +353,8 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 .sa-exercises{display:flex;flex-direction:column;margin-bottom:40px}
 .sa-ex{padding:32px 0;border-top:1px solid var(--border)}
 .sa-ex:first-child{border-top:none;padding-top:8px}
-.sa-ex-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sa-ex-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:6px}
+.sa-ex-title{min-width:0;overflow-wrap:anywhere}
 .sa-ex-edit{margin-left:auto;font-family:var(--mono);font-size:0.7rem;color:var(--ink-faint);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;transition:all 0.12s;white-space:nowrap}
 .sa-ex-edit:hover{color:var(--accent);border-color:var(--accent-dim)}
 .sa-ex-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ec,var(--accent));color:#151815;font-family:var(--mono);font-size:0.78rem;font-weight:500;flex-shrink:0}
@@ -372,9 +373,14 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 .sa-ex-nocourt .sa-ex-layout{grid-template-columns:1fr}
 
 /* table */
-.sa-table-section{margin-bottom:32px}
+#sportabzeichen-content{min-width:0}
+.sa-table-section{margin-bottom:32px;max-width:100%}
 .sa-table-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.sa-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+.sa-table-head-btns{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.sa-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;border:1px solid var(--border);border-radius:10px}
+.sa-ic{flex-shrink:0;vertical-align:-2px}
+/* mobile-only affordances (hidden on desktop) */
+.sa-table-close,.sa-table-fab{display:none}
 .sa-table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:0.72rem}
 .sa-table th,.sa-table td{border:1px solid var(--border);padding:0;text-align:center}
 .sa-table thead th{background:var(--surface);color:var(--ink-muted);font-weight:500;padding:6px 8px;white-space:nowrap}
@@ -408,3 +414,41 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 .sa-btn-primary:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:var(--accent)}
 .sa-btn-add{background:color-mix(in srgb,var(--accent) 8%,transparent);border-color:var(--accent-dim);color:var(--accent)}
 .sa-actions{display:flex;flex-wrap:wrap;gap:10px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* ── Sportabzeichen table: mobile overlay + floating quick access ── */
+@media(max-width:780px){
+  /* inline table hidden in normal flow so it can't widen the page */
+  #sa-table-section{display:none}
+  /* floating quick access, bottom-right so it never overlaps the back button */
+  .sa-table-fab{
+    display:inline-flex;align-items:center;gap:7px;
+    position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:620;
+    padding:11px 17px;border-radius:999px;
+    border:1px solid var(--accent-dim);
+    background:color-mix(in srgb,var(--accent) 20%,var(--card));
+    color:var(--accent);font-family:var(--mono);font-size:0.74rem;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);cursor:pointer;
+  }
+  .sa-table-fab:active{transform:scale(0.96)}
+  /* opened: table becomes a full-screen sheet above the nav bar.
+     #main is a stacking context (z-index:1) below #mobile-header (z-index:200),
+     so lift it while open to let the overlay clear the nav bar. */
+  body.sa-table-open #main{z-index:660}
+  body.sa-table-open #sa-table-section{
+    display:flex;flex-direction:column;
+    position:fixed;inset:0;z-index:650;margin:0;
+    background:var(--bg);
+    padding:calc(12px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+    overflow:auto;
+  }
+  body.sa-table-open .sa-table-fab{display:none}
+  body.sa-table-open{overflow:hidden}
+  #sa-table-section .sa-table-head{
+    position:sticky;top:0;z-index:2;
+    flex-wrap:wrap;margin:0 -12px 12px;
+    padding:2px 12px 10px;background:var(--bg);
+    border-bottom:1px solid var(--border);
+  }
+  .sa-table-close{display:inline-flex}
+  #sa-table-section .sa-table-wrap{flex:1}
+}
