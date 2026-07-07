@@ -17,6 +17,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Install LaTeX (Sportabzeichen PDFs)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-pictures
       - name: Build
         run: node build.js
       - name: Upload Pages artifact

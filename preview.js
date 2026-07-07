@@ -18,6 +18,7 @@ const MIME = {
     ".css": "text/css",
     ".js": "application/javascript",
     ".json": "application/json",
+    ".pdf": "application/pdf",
     ".png": "image/png",
     ".ico": "image/x-icon",
     ".svg": "image/svg+xml",

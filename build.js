@@ -447,6 +447,7 @@ function buildSport(sport) {
         console.log(`  ↳ sportabzeichen: ${saData.variants.length} variant(s), ${nEx} exercise(s)`);
         if (saData.generated && (BUILD_PDFS || !IS_WATCH)) {
             generateSportabzeichenPdfs(sport, saData, outDir);
+            pruneMissingSaPdfs(saData, outDir);
         }
     }
 
@@ -851,6 +852,29 @@ function generateSportabzeichenPdfs(sport, data, outDir) {
 }
 
 // ── Copy static assets ────────────────────────────────────────────────────────
+// Drop download paths whose PDF didn't actually get produced (missing LaTeX,
+// compile failure) so the site never links to a file the server will 404 —
+// a 404 gets saved by the browser as e.g. scoresheet.pdf.html.
+function pruneMissingSaPdfs(data, outDir) {
+    if (!data || !data.generated) return;
+    let pruned = false;
+    for (const v of data.variants) {
+        for (const key of ["scoreSheet", "groupScoreSheet", "certificate"]) {
+            if (v[key] && !fs.existsSync(path.join(outDir, v[key]))) {
+                delete v[key];
+                pruned = true;
+            }
+        }
+    }
+    if (pruned) {
+        fs.writeFileSync(
+            path.join(outDir, "sportabzeichen.json"),
+            JSON.stringify(data, null, 2),
+        );
+        console.warn(`  ⚠ ${data.sport}: some Sportabzeichen PDFs missing — download links pruned`);
+    }
+}
+
 function copyAssets() {
     for (const asset of ["favicon.ico", "logo.png"]) {
         const src = path.join(__dirname, asset);
