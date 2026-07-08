@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage[a4paper,landscape,margin=18mm]{geometry}
+\usepackage[a4paper,portrait,margin=18mm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{xcolor}
@@ -8,13 +8,29 @@
 \usetikzlibrary{calc}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
 \definecolor{ink}{HTML}{2A2018}
 \definecolor{gold}{HTML}{C9A227}
+\definecolor{silver}{HTML}{A7A9AC}
+\definecolor{bronze}{HTML}{B08D57}
 \definecolor{soft}{HTML}{8A7A66}
 \definecolor{accent}{HTML}{{{ACCENT}}}
 \setlength{\parindent}{0pt}
 \pagestyle{empty}
 \color{ink}
+
+% ── Fillable AcroForm fields (prefilled client-side with pdf-lib) ─────────────
+% Borderless centred name field with an underline rule drawn back under it.
+\newcommand{\fname}[2]{% {name}{width}
+  \TextField[name=#1,width=#2,height=10mm,borderwidth=0pt,bordercolor={1 1 1},%
+    color={0.165 0.125 0.094},charsize=20pt,align=1]{}%
+  \kern-#2\raisebox{-1mm}{\color{soft}\rule{#2}{0.5pt}}}
+% Right-aligned accent-coloured numeric field with an underline: [size]{name}{width}
+\newcommand{\fpts}[3][13pt]{% [charsize]{name}{width}
+  \raisebox{-1.8mm}{\TextField[name=#2,width=#3,height=7mm,borderwidth=0pt,%
+    bordercolor={1 1 1},color={{{ACCENT_RGB}}},charsize=#1,align=2]{}}%
+  \kern-#3\raisebox{-0.9mm}{\color{soft}\rule{#3}{0.4pt}}}
 
 \begin{document}
 \begin{tikzpicture}[remember picture,overlay]
@@ -26,21 +42,25 @@
     ($(current page.south east)+(-17mm,17mm)$);
 \end{tikzpicture}
 
-\vspace*{6mm}
+\begin{Form}
+\null\vfill
 \begin{center}
-  {{LOGO}}\\[6mm]
+  {\Huge\bfseries Urkunde}\\[2mm]
+  {\color{accent}\rule{60mm}{1.6pt}}\\[10mm]
 
-  {\Huge\bfseries Urkunde}\\[4mm]
-  {\color{accent}\rule{60mm}{1.6pt}}\\[16mm]
+  {\large Verliehen an}\\[5mm]
+  \fname{name}{120mm}\\[2mm]
+  % {\footnotesize\color{soft} Name}\\[10mm]
 
-  {\large Verliehen an}\\[8mm]
-  {\Large\rule{110mm}{0.5pt}}\\[2mm]
-  {\footnotesize\color{soft} Name}\\[14mm]
+  {\normalsize für das erfolgreiche Ablegen der Prüfung}\\[2mm]
+  {\large\bfseries {{TITLE}}}\\[6mm]
 
-  {\normalsize für das erfolgreiche Ablegen der Prüfung}\\[3mm]
-  {\large\bfseries {{TITLE}}}\\[10mm]
+  {{MEDAL_IMG}}
 
-  {\normalsize\color{soft} Auszeichnung: {{THRESHOLDS}}}\\[16mm]
+  {{EXERCISES}}\\[7mm]
+
+  {\normalsize\bfseries Gesamt:}\hspace{3mm}\fpts[18pt]{total}{16mm}\hspace{2mm}{\normalsize\bfseries von {{MAXTOTAL}} Punkten}\\[5mm]
+  {\footnotesize {{TIERS}}}\\[12mm]
 
   \begin{minipage}{55mm}\centering
     \rule{50mm}{0.4pt}\\[1mm]{\footnotesize Datum}
@@ -49,5 +69,7 @@
     \rule{50mm}{0.4pt}\\[1mm]{\footnotesize Unterschrift}
   \end{minipage}
 \end{center}
+\vfill
+\end{Form}
 
 \end{document}

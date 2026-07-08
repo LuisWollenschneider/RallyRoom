@@ -404,6 +404,10 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 .sa-td-cell{min-width:52px}
 .sa-del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:0.8rem;padding:6px 8px;transition:color 0.12s}
 .sa-del:hover{color:var(--red)}
+.sa-td-act{white-space:nowrap}
+.sa-cert{background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:6px 6px;line-height:0;transition:color 0.12s}
+.sa-cert:hover{color:var(--accent)}
+.sa-cert .sa-ic{width:16px;height:16px}
 .sa-empty{color:var(--ink-faint);padding:18px !important;font-family:var(--sans);font-size:0.82rem}
 
 /* buttons / actions */

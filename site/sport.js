@@ -767,7 +767,11 @@ function renderSportabzeichen(v){
   if(SA.officialUrl) actions+=`<a class="sa-btn sa-btn-primary sa-btn-ext" href="${SA.officialUrl}" target="_blank" rel="noopener">Zur offiziellen Seite</a>`;
   if(v.scoreSheet) actions+=`<a class="sa-btn" href="${v.scoreSheet}" download>${SA_DL_ICON}Prüfkarte (PDF)</a>`;
   if(v.groupScoreSheet) actions+=`<a class="sa-btn" href="${v.groupScoreSheet}" download>${SA_DL_ICON}Gruppen-Prüfkarte (PDF)</a>`;
-  if(v.certificate) actions+=`<a class="sa-btn" href="${v.certificate}" download>${SA_DL_ICON}Urkunde (PDF)</a>`;
+  if(v.certificates){
+    const SA_MEDAL_LABELS={gold:"Gold",silver:"Silber",bronze:"Bronze"};
+    for(const m of ["gold","silver","bronze"])
+      if(v.certificates[m]) actions+=`<a class="sa-btn sa-btn-medal sa-btn-medal-${m}" href="${v.certificates[m]}" download>${SA_DL_ICON}Urkunde ${SA_MEDAL_LABELS[m]} (PDF)</a>`;
+  }
 
   document.getElementById("sportabzeichen-content").innerHTML=`
     <div class="sa-header">
@@ -818,7 +822,7 @@ function saTableHtml(v){
       ${cells}
       <td class="sa-td-total${totalFull?" sa-total-full":""}">${total}</td>
       <td class="sa-td-medal" id="sa-medal-${ri}">${medalChip(medal)}</td>
-      <td class="sa-td-act"><button class="sa-del" onclick="saRemoveParticipant(${ri})" title="Entfernen">✕</button></td>
+      <td class="sa-td-act">${_saVariant.certificates?`<button class="sa-cert" onclick="saDownloadCert(${ri})" title="Urkunde herunterladen">${SA_DL_ICON}</button>`:""}<button class="sa-del" onclick="saRemoveParticipant(${ri})" title="Entfernen">✕</button></td>
     </tr>`;
   }).join("");
 
@@ -862,6 +866,75 @@ function saCellInput(ri,colId,el){
   totalTd.classList.toggle("sa-total-full", _saVariant.maxTotal>0 && total>=_saVariant.maxTotal);
   const cell=document.getElementById("sa-medal-"+ri);
   if(cell) cell.innerHTML=medalChip(saMedal(total,_saVariant.thresholds));
+}
+
+// Point colour by achievement ratio: black / bronze / silver / gold.
+// Returns a PDF "r g b" triplet (0–1) matching the medal palette.
+function saPtColor(ratio){
+  if(ratio>=0.75) return "0.788 0.635 0.153"; // gold   C9A227
+  if(ratio>=0.50) return "0.655 0.663 0.675"; // silver A7A9AC
+  if(ratio>=0.25) return "0.690 0.553 0.341"; // bronze B08D57
+  return "0 0 0";                             // black
+}
+
+// Lazy-load pdf-lib (only when a certificate is first requested).
+let _pdfLibPromise=null;
+function saLoadPdfLib(){
+  if(window.PDFLib) return Promise.resolve(window.PDFLib);
+  if(_pdfLibPromise) return _pdfLibPromise;
+  _pdfLibPromise=new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js";
+    s.onload=()=>window.PDFLib?res(window.PDFLib):rej(new Error("pdf-lib missing"));
+    s.onerror=()=>rej(new Error("pdf-lib load failed"));
+    document.head.appendChild(s);
+  });
+  return _pdfLibPromise;
+}
+
+// Build a personalised certificate: pick the template PDF for the earned medal,
+// prefill name + per-exercise points + total via AcroForm fields, download.
+async function saDownloadCert(ri){
+  const row=_saRows[ri]; if(!row) return;
+  const certs=_saVariant.certificates; if(!certs) return;
+  const total=saRowTotal(row);
+  const medal=saMedal(total,_saVariant.thresholds);
+  if(!medal){alert("Noch kein Abzeichen erreicht — die Gesamtpunktzahl liegt unter Bronze.");return;}
+  const url=certs[medal];
+  if(!url){alert("Für diese Stufe ist keine Urkunde verfügbar.");return;}
+  try{
+    const PDFLib=await saLoadPdfLib();
+    const bytes=await (await fetch(url)).arrayBuffer();
+    const doc=await PDFLib.PDFDocument.load(bytes);
+    const form=doc.getForm();
+    const helv=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    // Fill + generate each field's appearance with its own font (bold for name +
+    // total). DA colour (accent for points) is preserved by the appearance provider.
+    const put=(n,val,font)=>{try{const f=form.getTextField(n);f.setText(val===""||val==null?"":String(val));f.updateAppearances(font);}catch{}};
+    put("name",row.name||"",bold);
+    _saVariant.exercises.forEach(e=>{
+      const exMax=e.scores.reduce((t,s)=>t+(+s.max||0),0);
+      const sum=e.scores.reduce((t,s)=>t+(+(row.cells&&row.cells[e.num+"_"+s.key])||0),0);
+      // colour the value by how much of this exercise's max was reached
+      try{form.getTextField("points"+e.num).acroField.setDefaultAppearance(`/Helv 13 Tf ${saPtColor(exMax>0?sum/exMax:0)} rg`);}catch{}
+      put("points"+e.num,sum||"",helv);
+    });
+    put("total",total,bold);
+    // flatten WITHOUT regenerating appearances (would drop the bold fonts above)
+    try{form.flatten({updateFieldAppearances:false});}catch{}
+    const out=await doc.save();
+    const blob=new Blob([out],{type:"application/pdf"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    const safe=(row.name||"Teilnehmer").trim().replace(/[^\wÀ-ÿ]+/g,"_")||"Teilnehmer";
+    a.download=`Urkunde_${safe}_${MEDAL_LABEL[medal]}.pdf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  }catch(err){
+    console.error(err);
+    alert("Urkunde konnte nicht erstellt werden (Internetverbindung nötig).");
+  }
 }
 
 // ── Background court lines ─────────────────────────────────────────────────────

@@ -580,7 +580,11 @@ function buildSportabzeichen(sport, outDir) {
         if (generated) {
             v.scoreSheet = `sportabzeichen/scoresheet${suffix}.pdf`;
             v.groupScoreSheet = `sportabzeichen/scoresheet_group${suffix}.pdf`;
-            v.certificate = `sportabzeichen/certificate${suffix}.pdf`;
+            v.certificates = {};
+            for (const m of ["gold", "silver", "bronze"]) {
+                if (v.thresholds && v.thresholds[m] != null)
+                    v.certificates[m] = `sportabzeichen/certificate_${m}${suffix}.pdf`;
+            }
         }
     }
 
@@ -648,6 +652,13 @@ function fillTex(templateName, tokens) {
     }
     return tex;
 }
+
+// Hex colour → PDF "r g b" triplet (0–1) for hyperref field DA colour.
+const hexToPdfRgb = (hex, fallback) => {
+    const h = String(hex || fallback || "000000").replace(/^#/, "");
+    const n = parseInt(/^[0-9a-fA-F]{6}$/.test(h) ? h : "000000", 16);
+    return `${((n >> 16 & 255) / 255).toFixed(3)} ${((n >> 8 & 255) / 255).toFixed(3)} ${((n & 255) / 255).toFixed(3)}`;
+};
 
 // Strip leading "#" from a hex colour (LaTeX HTML model wants bare RRGGBB).
 const hex6 = (c, fallback) => {
@@ -773,6 +784,13 @@ function groupScoreSheetTable(variant, rows = 12) {
     );
 }
 
+// Medal levels: key + German label + accent colour for the per-medal certificate.
+const SA_MEDALS = [
+    { key: "gold", name: "Gold", color: "C9A227", file: "gold" },
+    { key: "silver", name: "Silber", color: "A7A9AC", file: "silver" },
+    { key: "bronze", name: "Bronze", color: "B08D57", file: "bronce" },
+];
+
 // Coloured medal chips (Gold/Silber/Bronze) stacked, right-aligned.
 function medalsTex(thr) {
     thr = thr || {};
@@ -788,6 +806,25 @@ function medalsTex(thr) {
             `\\fcheckbox{medal_${c}}\\hspace{2mm}` +
             `\\colorbox{${c}}{\\makebox[34mm][l]{\\rule[-1.4mm]{0pt}{5mm}\\hspace{2mm}\\color{white}\\textbf{${name}}\\hfill{\\small ab ${v} Pkt.}\\hspace{2mm}}}`)
         .join("\\\\[1.5mm]\n");
+}
+
+// Certificate exercise list: one row per exercise with a blank field to write
+// the points reached and the exercise max (right-aligned).
+function certExercisesTex(variant) {
+    const rows = variant.exercises.map((ex) => {
+        const exMax = ex.scores.reduce((s, sc) => s + (sc.max || 0), 0);
+        return `${texEsc(ex.title)} & \\fpts{points${ex.num}}{20mm}\\hspace{2mm}{\\footnotesize\\color{soft}/ ${exMax}}`;
+    }).join(" \\\\[3.5mm]\n");
+    return `\\begin{tabular}{@{}p{92mm}r@{}}\n${rows}\n\\end{tabular}`;
+}
+
+// Medal thresholds line (Bronze/Silber/Gold, each in its colour) for the cert.
+function certTiersTex(thr) {
+    thr = thr || {};
+    return [["bronze", "Bronze"], ["silver", "Silber"], ["gold", "Gold"]]
+        .filter(([k]) => thr[k] != null)
+        .map(([k, name]) => `{\\bfseries\\color{${k}}${name}}~{\\color{soft}ab ${thr[k]}}`)
+        .join("\\quad ");
 }
 
 function generateSportabzeichenPdfs(sport, data, outDir) {
@@ -841,13 +878,26 @@ function generateSportabzeichenPdfs(sport, data, outDir) {
         });
         cached(`scoresheet_group${suffix}`, groupTex, path.join(outDir, "sportabzeichen", `scoresheet_group${suffix}.pdf`));
 
-        const certTex = fillTex("certificate.tex", {
-            TITLE: texEsc(label),
-            THRESHOLDS: thrLine || "—",
-            ACCENT: hex6(v.color || sport.accent, sport.accent),
-            LOGO: logoTex,
-        });
-        cached(`certificate${suffix}`, certTex, path.join(outDir, "sportabzeichen", `certificate${suffix}.pdf`));
+        // One certificate per medal level (Gold/Silber/Bronze), medal-coloured.
+        for (const m of SA_MEDALS) {
+            if (thr[m.key] == null) continue;
+            const medalImgPath = path.join(__dirname, "logos", "sportabzeichen", `${sport.id}_${m.file}.png`);
+            const medalImgTex = fs.existsSync(medalImgPath)
+                ? `\\includegraphics[width=42mm,height=42mm,keepaspectratio]{${medalImgPath}}\\\\[8mm]`
+                : "";
+            const certTex = fillTex("certificate.tex", {
+                TITLE: texEsc(label),
+                MEDAL: m.name,
+                THRESHOLD: thr[m.key],
+                MAXTOTAL: v.maxTotal || "",
+                MEDAL_IMG: medalImgTex,
+                EXERCISES: certExercisesTex(v),
+                TIERS: certTiersTex(v.thresholds),
+                ACCENT: m.color,
+                ACCENT_RGB: hexToPdfRgb(m.color),
+            });
+            cached(`certificate_${m.key}${suffix}`, certTex, path.join(outDir, "sportabzeichen", `certificate_${m.key}${suffix}.pdf`));
+        }
     }
 }
 
@@ -859,9 +909,15 @@ function pruneMissingSaPdfs(data, outDir) {
     if (!data || !data.generated) return;
     let pruned = false;
     for (const v of data.variants) {
-        for (const key of ["scoreSheet", "groupScoreSheet", "certificate"]) {
+        for (const key of ["scoreSheet", "groupScoreSheet"]) {
             if (v[key] && !fs.existsSync(path.join(outDir, v[key]))) {
                 delete v[key];
+                pruned = true;
+            }
+        }
+        for (const m of Object.keys(v.certificates || {})) {
+            if (!fs.existsSync(path.join(outDir, v.certificates[m]))) {
+                delete v.certificates[m];
                 pruned = true;
             }
         }
@@ -888,7 +944,8 @@ function copyAssets() {
         if (fs.existsSync(srcDir)) {
             fs.mkdirSync(dstDir, { recursive: true });
             for (const f of fs.readdirSync(srcDir)) {
-                fs.copyFileSync(path.join(srcDir, f), path.join(dstDir, f));
+                const sf = path.join(srcDir, f);
+                if (fs.statSync(sf).isFile()) fs.copyFileSync(sf, path.join(dstDir, f));
             }
         }
     }
