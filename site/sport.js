@@ -786,6 +786,7 @@ function renderSportabzeichen(v){
         <h2 class="sa-subtitle">Teilnehmer*innen${multi?` — ${v.label}`:""}</h2>
         <div class="sa-table-head-btns">
           <button class="sa-btn sa-btn-add" onclick="saAddParticipant()">+ Teilnehmer*in</button>
+          <button class="sa-btn sa-btn-sort" onclick="saSortByTotal()" title="Nach Gesamtpunkten sortieren">↓ Sortieren</button>
           <button class="sa-btn sa-table-close" onclick="saCloseTable()" aria-label="Tabelle schließen">✕ Schließen</button>
         </div>
       </div>
@@ -796,7 +797,7 @@ function renderSportabzeichen(v){
   `;
 }
 
-// mobile: table lives in a full-screen overlay so it can't widen the page
+// table lives in a full-screen overlay (all widths) so it can't widen the page
 function saOpenTable(){document.body.classList.add("sa-table-open");}
 function saCloseTable(){document.body.classList.remove("sa-table-open");}
 
@@ -839,6 +840,12 @@ function saAddParticipant(){
 }
 function saRemoveParticipant(ri){
   _saRows.splice(ri,1);
+  saSaveRows();
+  document.querySelector(".sa-table-wrap").innerHTML=saTableHtml(_saVariant);
+}
+// sort participants by total points, best → worst (stable)
+function saSortByTotal(){
+  _saRows.sort((a,b)=>saRowTotal(b)-saRowTotal(a));
   saSaveRows();
   document.querySelector(".sa-table-wrap").innerHTML=saTableHtml(_saVariant);
 }

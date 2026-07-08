@@ -419,10 +419,9 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 .sa-btn-add{background:color-mix(in srgb,var(--accent) 8%,transparent);border-color:var(--accent-dim);color:var(--accent)}
 .sa-actions{display:flex;flex-wrap:wrap;gap:10px;padding-top:8px;border-top:1px solid var(--border)}
 
-/* ── Sportabzeichen table: mobile overlay + floating quick access ── */
-@media(max-width:780px){
-  /* inline table hidden in normal flow so it can't widen the page */
-  #sa-table-section{display:none}
+/* ── Sportabzeichen table: overlay modal + floating quick access (all widths) ── */
+/* inline table hidden in normal flow so it can't widen the page */
+#sa-table-section{display:none}
   /* floating quick access, bottom-right so it never overlaps the back button */
   .sa-table-fab{
     display:inline-flex;align-items:center;gap:7px;
@@ -455,4 +454,8 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
   }
   .sa-table-close{display:inline-flex}
   #sa-table-section .sa-table-wrap{flex:1}
+
+/* desktop: cap sheet width so a wide screen doesn't stretch inputs edge-to-edge */
+@media(min-width:781px){
+  body.sa-table-open #sa-table-section{padding-left:max(24px,calc((100vw - 1100px)/2));padding-right:max(24px,calc((100vw - 1100px)/2))}
 }
