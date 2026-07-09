@@ -808,14 +808,22 @@ function medalsTex(thr) {
         .join("\\\\[1.5mm]\n");
 }
 
-// Certificate exercise list: one row per exercise with a blank field to write
-// the points reached and the exercise max (right-aligned).
+// Certificate exercise list: an invisible (rule-less) table, one line per exercise
+// — bold title, then one column per score variant so the fields align vertically.
 function certExercisesTex(variant) {
+    const maxCols = variant.exercises.reduce((m, ex) => Math.max(m, ex.scores.length), 0);
     const rows = variant.exercises.map((ex) => {
-        const exMax = ex.scores.reduce((s, sc) => s + (sc.max || 0), 0);
-        return `${texEsc(ex.title)} & \\fpts{points${ex.num}}{20mm}\\hspace{2mm}{\\footnotesize\\color{soft}/ ${exMax}}`;
+        const cells = [];
+        for (let i = 0; i < maxCols; i++) {
+            const sc = ex.scores[i];
+            // per variant: [key left] [points right]
+            cells.push(sc ? `{\\color{soft}${texEsc(sc.key)}}` : "");
+            cells.push(sc ? `\\fpts[11pt]{pts${ex.num}i${i}}{5mm}\\,{\\footnotesize\\color{soft}/ ${sc.max || 0}}` : "");
+        }
+        return `{\\bfseries ${texEsc(ex.title)}} & ${cells.join(" & ")}`;
     }).join(" \\\\[3.5mm]\n");
-    return `\\begin{tabular}{@{}p{92mm}r@{}}\n${rows}\n\\end{tabular}`;
+    const colspec = `@{}p{48mm}` + "@{\\hspace{6mm}}l@{\\hspace{1.5mm}}r".repeat(maxCols) + `@{}`;
+    return `\\begin{tabular}{${colspec}}\n${rows}\n\\end{tabular}`;
 }
 
 // Medal thresholds line (Bronze/Silber/Gold, each in its colour) for the cert.
