@@ -392,9 +392,13 @@ body.entry-view #view-sportabzeichen{margin:0 auto;max-width:900px;width:100%}
 /* thick separator between exercise groups */
 .sa-th-first,.sa-td-first{border-left:3px solid var(--ec,var(--ink-faint)) !important}
 .sa-td-total{font-weight:600;color:var(--accent);min-width:48px}
+/* medal-tier point highlight (25/50/75% thresholds) — font colour only */
+.sa-table td.sa-pt-bronze input{color:#d9ab72;font-weight:600}
+.sa-table td.sa-pt-silver input{color:#d2d4d7;font-weight:600}
+.sa-table td.sa-pt-gold input{color:#e8c94a;font-weight:600}
 /* full-points highlight */
 .sa-cell-full{background:color-mix(in srgb,#4caf6e 22%,transparent)}
-.sa-cell-full input{color:#8fe0a8;font-weight:600}
+.sa-table td.sa-cell-full input{color:#8fe0a8;font-weight:600}
 .sa-total-full{background:color-mix(in srgb,#4caf6e 26%,transparent);color:#8fe0a8}
 .sa-td-medal{min-width:78px}
 .sa-table td input{width:100%;box-sizing:border-box;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:0.74rem;text-align:center;padding:7px 4px;-moz-appearance:textfield}

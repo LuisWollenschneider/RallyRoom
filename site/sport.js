@@ -813,7 +813,8 @@ function saTableHtml(v){
     const cells=cols.map(c=>{
       const val=(row.cells&&row.cells[c.colId]!=null)?row.cells[c.colId]:"";
       const full=c.max!=null && val!=="" && +val>=c.max;
-      return `<td class="sa-td-cell ${c.first?"sa-td-first":""}${full?" sa-cell-full":""}"><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" ${c.max!=null?`max="${c.max}"`:""} value="${val}" oninput="saCellInput(${ri},'${c.colId}',this)"/></td>`;
+      const ptCls=saPtClass(val,c.max);
+      return `<td class="sa-td-cell ${c.first?"sa-td-first":""}${ptCls?" "+ptCls:""}${full?" sa-cell-full":""}"><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" ${c.max!=null?`max="${c.max}"`:""} value="${val}" oninput="saCellInput(${ri},'${c.colId}',this)"/></td>`;
     }).join("");
     const total=saRowTotal(row);
     const medal=saMedal(total,thr);
@@ -864,7 +865,12 @@ function saCellInput(ri,colId,el){
   saSaveRows();
   // live-update this cell's full-points highlight
   const td=el.closest("td");
-  if(td) td.classList.toggle("sa-cell-full", max!=null && val!=null && val>=max);
+  if(td){
+    td.classList.toggle("sa-cell-full", max!=null && val!=null && val>=max);
+    td.classList.remove("sa-pt-bronze","sa-pt-silver","sa-pt-gold");
+    const ptCls=saPtClass(val==null?"":val,max);
+    if(ptCls) td.classList.add(ptCls);
+  }
   // live-update total + medal for this row
   const total=saRowTotal(row);
   const tr=el.closest("tr");
@@ -882,6 +888,16 @@ function saPtColor(ratio){
   if(ratio>=0.50) return "0.655 0.663 0.675"; // silver A7A9AC
   if(ratio>=0.25) return "0.690 0.553 0.341"; // bronze B08D57
   return "0 0 0";                             // black
+}
+
+// CSS medal-tier class for a score cell by achievement ratio (25/50/75% thresholds).
+function saPtClass(val,max){
+  if(max==null||!(max>0)||val===""||val==null) return "";
+  const r=(+val)/max;
+  if(r>=0.75) return "sa-pt-gold";
+  if(r>=0.50) return "sa-pt-silver";
+  if(r>=0.25) return "sa-pt-bronze";
+  return "";
 }
 
 // Lazy-load pdf-lib (only when a certificate is first requested).
@@ -921,11 +937,14 @@ async function saDownloadCert(ri){
     const put=(n,val,font)=>{try{const f=form.getTextField(n);f.setText(val===""||val==null?"":String(val));f.updateAppearances(font);}catch{}};
     put("name",row.name||"",bold);
     _saVariant.exercises.forEach(e=>{
-      const exMax=e.scores.reduce((t,s)=>t+(+s.max||0),0);
-      const sum=e.scores.reduce((t,s)=>t+(+(row.cells&&row.cells[e.num+"_"+s.key])||0),0);
-      // colour the value by how much of this exercise's max was reached
-      try{form.getTextField("points"+e.num).acroField.setDefaultAppearance(`/Helv 13 Tf ${saPtColor(exMax>0?sum/exMax:0)} rg`);}catch{}
-      put("points"+e.num,sum||"",helv);
+      e.scores.forEach((s,i)=>{
+        const fn="pts"+e.num+"i"+i;
+        const val=+(row.cells&&row.cells[e.num+"_"+s.key])||0;
+        const max=+s.max||0;
+        // colour the value by how much of this score variant's max was reached
+        try{form.getTextField(fn).acroField.setDefaultAppearance(`/Helv 11 Tf ${saPtColor(max>0?val/max:0)} rg`);}catch{}
+        put(fn,val||"",helv);
+      });
     });
     put("total",total,bold);
     // flatten WITHOUT regenerating appearances (would drop the bold fonts above)
