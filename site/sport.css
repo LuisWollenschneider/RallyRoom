@@ -225,6 +225,12 @@ a[target="_blank"]:hover::after{margin-left:6px}
 .entry-body p{margin-bottom:0.85em}
 .entry-body ul,.entry-body ol{margin:0 0 0.85em 1.4em}
 .entry-body li{margin-bottom:0.3em}
+.entry-body ol{list-style:none;counter-reset:li;margin-left:0;padding-left:2em}
+.entry-body ol>li{counter-increment:li;position:relative}
+.entry-body ol>li::before{content:counter(li)".";position:absolute;left:-1.8em;width:1.5em;text-align:right;top:-0.05em;font-family:var(--serif);font-weight:600;color:var(--accent);font-size:1.05em}
+.entry-body ul{list-style:none;padding-left:0.4em}
+.entry-body ul>li{position:relative}
+.entry-body ul>li::before{content:"";position:absolute;left:-1.1em;top:0.6em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .entry-body strong{color:var(--ink);font-weight:500}
 .entry-body code{font-family:var(--mono);font-size:0.83em;background:var(--border);padding:1px 5px;border-radius:3px}
 .entry-body pre{background:var(--surface);border:1px solid var(--border);padding:14px;border-radius:6px;overflow-x:auto;margin:1em 0;font-family:var(--mono);font-size:0.8rem;line-height:1.6}

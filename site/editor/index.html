@@ -263,6 +263,12 @@ a.btn-ghost{text-decoration:none}
 .prev-body p{margin-bottom:0.8em}
 .prev-body ul,.prev-body ol{margin:0 0 0.8em 1.3em}
 .prev-body li{margin-bottom:0.3em}
+.prev-body ol{list-style:none;counter-reset:li;margin-left:0;padding-left:2em}
+.prev-body ol>li{counter-increment:li;position:relative}
+.prev-body ol>li::before{content:counter(li)".";position:absolute;left:-1.8em;width:1.5em;text-align:right;top:-0.05em;font-family:var(--serif);font-weight:600;color:var(--accent);font-size:1.05em}
+.prev-body ul{list-style:none;padding-left:0.4em}
+.prev-body ul>li{position:relative}
+.prev-body ul>li::before{content:"";position:absolute;left:-1.1em;top:0.6em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .prev-body strong{color:var(--ink);font-weight:500}
 .prev-body code{font-family:var(--mono);font-size:0.82em;background:var(--border);padding:1px 5px;border-radius:3px}
 .prev-body a{color:var(--green);text-decoration:underline;text-underline-offset:3px}
@@ -593,6 +599,7 @@ a.btn-ghost{text-decoration:none}
         <button class="md-tb-btn" title="Überschrift 3" onclick="prefixMdLine('### ')">H3</button>
         <div class="md-tb-sep"></div>
         <button class="md-tb-btn" title="Aufzählung" onclick="prefixMdLine('- ')">― Liste</button>
+        <button class="md-tb-btn" title="Nummerierte Liste" onclick="prefixMdLine('1. ')">1. Liste</button>
         <div class="md-tb-sep"></div>
         <button class="md-tb-btn md-tb-accent" title="Akzent-Stil: $text$" onclick="wrapMdSel('$','$')">$ Akzent</button>
       </div>
@@ -1430,10 +1437,13 @@ function confirmClear() {
 }
 
 // ── Markdown → HTML (mirrors build.js) ───────────────────────────────────────
+const LIST_RE = /^( *)(?:[-*]|\d+[.)]) (.+)$/;
+
 function buildNestedList(items) {
   let pos = 0;
   function parseAt(minIndent) {
-    let html = "<ul>";
+    const tag = items[pos].ordered ? "ol" : "ul";
+    let html = "<" + tag + ">";
     while (pos < items.length && items[pos].indent >= minIndent) {
       const {indent, text} = items[pos++];
       html += "<li>" + text;
@@ -1441,7 +1451,7 @@ function buildNestedList(items) {
         html += parseAt(items[pos].indent);
       html += "</li>";
     }
-    return html + "</ul>";
+    return html + "</" + tag + ">";
   }
   return parseAt(items[0].indent);
 }
@@ -1451,13 +1461,13 @@ function renderLists(text) {
   const out = [];
   let i = 0;
   while (i < lines.length) {
-    const m = lines[i].match(/^( *)[-*] (.+)$/);
+    const m = lines[i].match(LIST_RE);
     if (m) {
       const items = [];
       while (i < lines.length) {
-        const lm = lines[i].match(/^( *)[-*] (.+)$/);
+        const lm = lines[i].match(LIST_RE);
         if (!lm) break;
-        items.push({ indent: lm[1].length, text: lm[2] });
+        items.push({ indent: lm[1].length, text: lm[2], ordered: /\d/.test(lines[i].trim()[0]) });
         i++;
       }
       out.push(buildNestedList(items));
