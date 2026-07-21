@@ -16,10 +16,13 @@ const BUILD_PDFS = process.argv.includes("--pdfs");
 const IS_WATCH = process.argv.includes("--watch");
 
 // ── Markdown → HTML ───────────────────────────────────────────────────────────
+const LIST_RE = /^( *)(?:[-*]|\d+[.)]) (.+)$/;
+
 function buildNestedList(items) {
     let pos = 0;
     function parseAt(minIndent) {
-        let html = "<ul>";
+        const tag = items[pos].ordered ? "ol" : "ul";
+        let html = "<" + tag + ">";
         while (pos < items.length && items[pos].indent >= minIndent) {
             const { indent, text } = items[pos++];
             html += "<li>" + text;
@@ -27,7 +30,7 @@ function buildNestedList(items) {
                 html += parseAt(items[pos].indent);
             html += "</li>";
         }
-        return html + "</ul>";
+        return html + "</" + tag + ">";
     }
     return parseAt(items[0].indent);
 }
@@ -37,13 +40,17 @@ function renderLists(text) {
     const out = [];
     let i = 0;
     while (i < lines.length) {
-        const m = lines[i].match(/^( *)[-*] (.+)$/);
+        const m = lines[i].match(LIST_RE);
         if (m) {
             const items = [];
             while (i < lines.length) {
-                const lm = lines[i].match(/^( *)[-*] (.+)$/);
+                const lm = lines[i].match(LIST_RE);
                 if (!lm) break;
-                items.push({ indent: lm[1].length, text: lm[2] });
+                items.push({
+                    indent: lm[1].length,
+                    text: lm[2],
+                    ordered: /\d/.test(lines[i].trim()[0]),
+                });
                 i++;
             }
             out.push(buildNestedList(items));
